@@ -1,0 +1,42 @@
+# .gitignore
+
+# Backend
+backend/__pycache__/
+backend/instance/
+backend/venv/
+*.pyc
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Betriebssystem-Dateien
+.DS_Store
+Thumbs.db
+
+# Vorhandene .gitignore-Einträge
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
