@@ -1,5 +1,3 @@
-/* frontend/src/styles/Home.css */
-
 .home-container {
   width: 80%;
   max-width: 1000px;
@@ -21,35 +19,42 @@
   margin: 0;
 }
 
-.login-btn {
-  padding: 0.4rem 1rem;
-  border: none;
-  border-radius: 8px;
-  background-color: #6366f1;
-  color: white;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s;
+/* Login */
+.login-box input {
+  margin: 4px;
+  padding: 6px;
+}
+.login-box button {
+  margin-top: 4px;
+  padding: 6px 12px;
 }
 
-.login-btn:hover {
-  background-color: #4f46e5;
+.login-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-weight: bold;
+  position: relative;
 }
 
+.login-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Scanner + Kalender */
 .home-scanner,
 .home-calendar {
   margin-bottom: 2rem;
 }
-
 .home-scanner h2,
 .home-calendar h2 {
   font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
 }
-
-.scan-box,
-.calendar-placeholder {
+.scan-box {
   padding: 2rem;
   background-color: #f3f4f6;
   border: 1px solid #e5e7eb;
@@ -58,25 +63,60 @@
   color: #111827;
 }
 
-/* Mobile optimierung */
+/* Admin Dropdown */
+.admin-menu-wrapper {
+  position: relative;
+}
+.admin-toggle {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+.admin-dropdown {
+  position: absolute;
+  top: 2.2rem;
+  right: 0;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  display: none;
+  flex-direction: column;
+  padding: 0.5rem;
+  z-index: 100;
+}
+.admin-menu-wrapper:hover .admin-dropdown {
+  display: flex;
+}
+.admin-dropdown button {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.admin-dropdown button:hover {
+  background: #f3f4f6;
+  font-weight: 500;
+}
+
+/* Mobile */
 @media (max-width: 768px) {
   .home-container {
     padding: 1rem;
   }
-
-  .scan-box,
-  .calendar-placeholder {
+  .scan-box {
     font-size: 0.95rem;
     padding: 0.75rem;
   }
-
-  .login-btn {
-    font-size: 0.9rem;
-  }
-}
-
-.calendar-wrapper {
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
 }

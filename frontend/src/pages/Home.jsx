@@ -1,8 +1,19 @@
-// frontend/src/pages/Home.jsx
 import { useState, useEffect } from "react";
 import ScannerHandler from "../components/ScannerHandler";
-import "../styles/Home.css"; // separates Styling
+import "../styles/Home.css";
 import CalendarView from "../components/CalendarView";
+import { jwtDecode } from "jwt-decode";
+
+// Font Awesome Imports
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCog,
+  faTools,
+  faUser,
+  faKey,
+  faPlus,
+  faSignOutAlt,
+} from "@fortawesome/free-solid-svg-icons";
 
 function Home() {
   const [scanState, setScanState] = useState({
@@ -14,6 +25,24 @@ function Home() {
   const [message, setMessage] = useState("");
   const [reservations, setReservations] = useState([]);
   const [returnMode, setReturnMode] = useState(false);
+
+  const [loginData, setLoginData] = useState({ username: "", password: "" });
+  const [loggedInUser, setLoggedInUser] = useState(null);
+  const [role, setRole] = useState(null);
+
+  const fetchWithAuth = (url, options = {}) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return fetch(url, options);
+    }
+    return fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  };
 
   const handleScan = (scannedCode) => {
     const code = scannedCode.toLowerCase();
@@ -57,7 +86,7 @@ function Home() {
     if (code.startsWith("tool")) {
       const toolCode = code;
       if (returnMode) {
-        fetch("http://localhost:5050/api/reservations/return-tool", {
+        fetchWithAuth("http://localhost:5050/api/reservations/return-tool", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ tool: toolCode }),
@@ -96,7 +125,7 @@ function Home() {
         setScanState(newState);
         setMessage(`Dauer erkannt: ${durationDays} Tag(e)`);
 
-        fetch("http://localhost:5050/api/reservations", {
+        fetchWithAuth("http://localhost:5050/api/reservations", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -127,7 +156,7 @@ function Home() {
   };
 
   const fetchReservations = () => {
-    fetch("http://localhost:5050/api/reservations")
+    fetchWithAuth("http://localhost:5050/api/reservations")
       .then((res) => res.json())
       .then((data) => setReservations(data))
       .catch((err) =>
@@ -135,7 +164,45 @@ function Home() {
       );
   };
 
+  const handleLogin = () => {
+    fetch("http://localhost:5050/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(loginData),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Login fehlgeschlagen");
+        return res.json();
+      })
+      .then((data) => {
+        setLoggedInUser(data.username);
+        setRole(data.role);
+        localStorage.setItem("token", data.token);
+        setLoginData({ username: "", password: "" });
+        fetchReservations();
+      })
+      .catch(() => alert("❌ Ungültiger Login"));
+  };
+
+  const handleLogout = () => {
+    setLoggedInUser(null);
+    setRole(null);
+    localStorage.removeItem("token");
+    fetchReservations();
+  };
+
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setLoggedInUser(decoded.username || "");
+        setRole(decoded.role);
+      } catch (err) {
+        console.error("Ungültiger Token:", err);
+        localStorage.removeItem("token");
+      }
+    }
     fetchReservations();
   }, []);
 
@@ -143,7 +210,71 @@ function Home() {
     <div className="home-container">
       <header className="home-header">
         <h1>Scanventory</h1>
-        <button className="login-btn">Login</button>
+
+        {!loggedInUser ? (
+          <div className="login-box">
+            <input
+              type="text"
+              placeholder="Benutzername"
+              value={loginData.username}
+              onChange={(e) =>
+                setLoginData({ ...loginData, username: e.target.value })
+              }
+            />
+            <input
+              type="password"
+              placeholder="Passwort"
+              value={loginData.password}
+              onChange={(e) =>
+                setLoginData({ ...loginData, password: e.target.value })
+              }
+            />
+            <button onClick={handleLogin}>Login</button>
+          </div>
+        ) : (
+          <div className="login-info">
+            <div className="user-label">
+              Angemeldet als: <strong>{loggedInUser}</strong> ({role})
+            </div>
+            <div className="login-actions">
+              {/* Admin Dropdown */}
+              {loggedInUser && (role === "admin" || role === "supervisor") && (
+                <div className="admin-menu-wrapper">
+                  <button className="admin-toggle">
+                    <FontAwesomeIcon icon={faCog} />
+                  </button>
+                  <div className="admin-dropdown">
+                    <button onClick={() => (window.location.href = "/tools")}>
+                      <FontAwesomeIcon icon={faTools} /> Werkzeuge
+                    </button>
+                    {role === "admin" && (
+                      <>
+                        <button
+                          onClick={() => (window.location.href = "/users")}
+                        >
+                          <FontAwesomeIcon icon={faUser} /> Benutzer
+                        </button>
+                        <button
+                          onClick={() =>
+                            (window.location.href = "/admin-tools")
+                          }
+                        >
+                          <FontAwesomeIcon icon={faKey} /> Rechte
+                        </button>
+                      </>
+                    )}
+                    <button onClick={() => alert("Manuelle Reservation folgt")}>
+                      <FontAwesomeIcon icon={faPlus} /> Reservation
+                    </button>
+                  </div>
+                </div>
+              )}
+              <button onClick={handleLogout}>
+                <FontAwesomeIcon icon={faSignOutAlt} /> Logout
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
       <section className="home-scanner">
