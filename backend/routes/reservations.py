@@ -118,11 +118,17 @@ def get_reservations():
 # Werkzeug zurückgeben
 # -----------------------------
 @reservation_bp.route("/return-tool", methods=["PATCH"])
-@requires_permission("edit_reservations")
 def return_tool():
-    """Werkzeug zurückgeben"""
-    user = request.user
-    value = request.permission_value
+    """Werkzeug zurückgeben – erlaubt für alle, auch ohne Login"""
+    try:
+        from utils.permissions import get_token_payload
+
+        payload = get_token_payload()
+        user_id = payload["user_id"] if payload else None
+        role = payload["role"] if payload else "guest"
+    except:
+        user_id = None
+        role = "guest"
 
     data = request.get_json()
     tool_code = data.get("tool")
@@ -142,10 +148,28 @@ def return_tool():
     if not reservation or reservation.end_time < datetime.utcnow():
         return jsonify({"error": "Keine aktive Ausleihe gefunden"}), 404
 
-    # Bei self_only: nur eigene Reservationen zurückgeben
-    if value == "self_only" and reservation.user_id != user.id:
-        return jsonify({"error": "Keine Berechtigung für fremde Reservationen"}), 403
+    # ❗️Bei eingeloggten Benutzern mit self_only: nur eigene Reservation zurückgeben
+    if role != "guest":
+        from models import RolePermission, Permission, User
 
+        perm = Permission.query.filter_by(key="edit_reservations").first()
+        user = User.query.get(user_id)
+
+        if perm and user:
+            role_permission = RolePermission.query.filter_by(
+                role_id=user.role_id, permission_id=perm.id
+            ).first()
+
+            if role_permission and role_permission.value == "self_only":
+                if reservation.user_id != user.id:
+                    return (
+                        jsonify(
+                            {"error": "Keine Berechtigung für fremde Reservationen"}
+                        ),
+                        403,
+                    )
+
+    # ✅ Rückgabe durchführen – auch für Gäste
     reservation.end_time = datetime.utcnow()
     tool.is_borrowed = False
     db.session.commit()

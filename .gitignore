@@ -5,6 +5,7 @@ backend/__pycache__/
 backend/instance/database.db
 backend/venv/
 *.pyc
+backend/.env
 
 # Frontend
 frontend/node_modules/
