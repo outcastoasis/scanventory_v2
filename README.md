@@ -57,50 +57,55 @@ npm run dev
 
 ---
 
-## 🚀 Projektstatus & Phasenplan
+## 🚧 Phasenplan
 
-### ✅ Phase 1: Grundstruktur
+### ✅ Phase 1: Grundgerüst
 
 * [x] Vite + Flask Grundgerüst
 * [x] API-Endpunkte `/ping`, `/api/reservations`, etc.
 * [x] ScannerHandler mit globalem Keybuffer
+* [x] QR-Scan-Logik implementiert
 
-### ✅ Phase 2: Datenmodell & Auth
+### ✅ Phase 2: Datenmodelle & Auth
 
 * [x] Modelle für User, Tool, Reservation, Rollen & Rechte
 * [x] SQLite-DB mit SQLAlchemy
 * [x] JWT-Login (Token-Handling)
 * [x] Rollenmodell + Rechteprüfung via Middleware
 
-### ✅ Phase 3: Scannerfunktionen & Rückgabe
+### ✅ Phase 3: Ausleihe per Scanner
 
 * [x] Reservationen via QR-Scan (usr + tool + dur)
 * [x] Rückgabe per "return" + Werkzeugcode
 * [x] Rückgabe auch ohne Login
 * [x] Kalenderansicht mit allen Einträgen (offentlich)
 
-### ⏳ Phase 4: Adminbereich & UI-Erweiterung
+### ⏳ Phase 4: Kalender & Anzeige
+
+* [x] Monats-/Wochenansicht mit Reservationen
+* [ ] PopUps für Bearbeiten (eigene + adminfähig)
+* [ ] Farbcodierung, Anzeige nach Rollen
+
+### 🔲 Phase 5: Adminbereich
 
 * [x] Admin-Menü als Icon-Dropdown (⚙️)
 * [ ] Benutzerverwaltung UI (/users)
 * [ ] Werkzeugverwaltung UI (/tools)
 * [ ] Rechteverwaltung UI (/admin-tools)
+* [ ] QR-Code-Export über Webinterface als PNG/ZIP
 
-### ☑️ Phase 5: Erweiterte Funktionen (geplant)
-
-* Automatische Rückgaben via Scheduler
-* Filter nach Kategorien (Elektro, Handwerk etc.)
-* CSV-Import/Export für Benutzer & Werkzeuge
-* QR-Code-Export über Webinterface
-
----
-
-## ✅ Features in Arbeit
+### ✅ Features in Arbeit
 
 * [ ] Manuelle Reservation per UI (statt QR)
 * [ ] Bearbeitungsfunktion für eigene Einträge
 * [ ] UI für Admin-Funktionen (`/users`, `/tools`, `/admin-tools`)
 * [ ] Logging von Aktionen (auditierbar)
+* [ ] Sondercodes wie reload, cancel, return
+* [ ] QR-Code-Export über Webinterface als PNG/ZIP
+
+### 🔲 Zusatzfunktionen
+
+* Offline-Hilfe implementieren
 
 ---
 
