@@ -2,7 +2,7 @@
 
 # Backend
 backend/__pycache__/
-backend/instance/
+backend/instance/database.db
 backend/venv/
 *.pyc
 
