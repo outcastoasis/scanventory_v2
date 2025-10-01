@@ -1,0 +1,189 @@
+/* === Benutzerverwaltung === */
+
+.users-page {
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+}
+
+.users-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.users-title {
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.users-back-button {
+  background-color: #f2f2f2;
+  color: #333;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.users-back-button:hover {
+  background-color: #ddd;
+}
+
+.users-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.users-add-button {
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.users-add-button:hover {
+  background-color: #155aa8;
+}
+
+.users-search {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex-grow: 1;
+  max-width: 300px;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.users-table th,
+.users-table td {
+  border: 1px solid #e0e0e0;
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+}
+
+.users-table th {
+  background-color: #f9f9f9;
+  cursor: pointer;
+  user-select: none;
+}
+
+.users-role-admin {
+  color: red;
+  font-weight: bold;
+}
+
+.users-role-user {
+  color: green;
+}
+
+.users-role-supervisor {
+  color: orange;
+}
+
+.users-role-guest {
+  color: gray;
+}
+
+.users-edit-button,
+.users-delete-button {
+  margin-right: 0.3rem;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.users-edit-button {
+  background-color: #1976d2;
+  color: white;
+}
+
+.users-delete-button {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.users-edit-button:hover {
+  background-color: #155aa8;
+}
+
+.users-delete-button:hover {
+  background-color: #aa1e1e;
+}
+
+.users-error {
+  color: red;
+  margin-bottom: 1rem;
+}
+
+.users-loading {
+  font-style: italic;
+}
+
+/* === Modal === */
+.users-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.users-modal {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.users-modal-close {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #ccc;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.users-modal-close:hover {
+  background-color: #bbb;
+}
+
+.users-table th.sorted {
+  background-color: #e3f2fd;
+  font-weight: bold;
+}
+
+.sort-icon {
+  display: inline-block;
+  width: 1ch;
+  text-align: center;
+  opacity: 0.5;
+  font-size: 0.9rem;
+  margin-left: 0.3rem;
+}
+
+.sorted .sort-icon {
+  opacity: 1;
+}

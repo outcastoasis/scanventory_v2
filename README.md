@@ -4,18 +4,24 @@
 
 ---
 
-## 📆 Aktueller Stand (September 2025)
+## 📆 Aktueller Stand (Oktober 2025)
 
-* QR-Scan per Tastaturemulation (User, Werkzeug, Dauer)
-* Werkzeugreservierungen mit Start-/Endzeitpunkt (UTC)
-* Rückgabe per QR-Scan oder Login
-* Kalenderansicht mit allen Einträgen (offentlich sichtbar)
-* Login-System mit JWT-Token
-* Rollenbasiertes Berechtigungssystem: `guest`, `user`, `supervisor`, `admin`
-* Adminmenü mit Dropdown (Werkzeuge, Benutzer, Rechte, Reservation)
-* Rechte-Logik vollständig datenbankgesteuert
-* Rückgabe auch ohne Login möglich
-* `.env`-basierte Konfiguration im Backend
+- QR-Scan per Tastaturemulation (User, Werkzeug, Dauer)
+- Werkzeugreservierungen mit Start-/Endzeitpunkt (UTC)
+- Rückgabe per QR-Scan oder Login
+- Kalenderansicht mit allen Einträgen (öffentlich sichtbar)
+- Login-System mit JWT-Token
+- Rollenbasiertes Berechtigungssystem: `guest`, `user`, `supervisor`, `admin`
+- Adminmenü mit Dropdown (Werkzeuge, Benutzer, Rechte, Reservation)
+- Rechte-Logik vollständig datenbankgesteuert
+- Rückgabe auch ohne Login möglich
+- **Benutzerverwaltung im Adminbereich:**
+  - Benutzerliste mit Filter & Sortierfunktion
+  - Erstellen, Bearbeiten, Löschen von Benutzern
+  - Visuelle Sortieranzeige (▲▼)
+  - QR-ID-Vergabe mit nächster freier `usr000X`-ID
+  - Zugriff nur mit `manage_users = true`
+- `.env`-basierte Konfiguration im Backend **und im Frontend**
 
 ---
 
@@ -34,11 +40,10 @@ pip install -r requirements.txt
 
 ```ini
 # backend/.env
-SECRET_KEY=admin1234 #für jwt Token
-ADMIN_USERNAME=admin #wird beim start erstellt, wenn nicht vorhanden
+SECRET_KEY=admin1234            # für JWT-Token
+ADMIN_USERNAME=admin            # Initial-Admin
 ADMIN_PASSWORD=admin123
 ADMIN_QR=usr0001
-
 ```
 
 Starten:
@@ -46,6 +51,17 @@ Starten:
 ```bash
 python app.py
 ```
+
+---
+
+#### ⚙️ .env Struktur im Frontend (neu erforderlich)
+
+```ini
+# frontend/.env
+VITE_API_URL=http://localhost:5050
+```
+
+Diese Variable wird benötigt, damit alle API-Calls (z. B. `/api/users`) an das Backend weitergeleitet werden. Ohne diese Konfiguration funktionieren keine Admin-Funktionen.
 
 ### 🔹 Frontend (React + Vite)
 
@@ -61,51 +77,59 @@ npm run dev
 
 ### ✅ Phase 1: Grundgerüst
 
-* [x] Vite + Flask Grundgerüst
-* [x] API-Endpunkte `/ping`, `/api/reservations`, etc.
-* [x] ScannerHandler mit globalem Keybuffer
-* [x] QR-Scan-Logik implementiert
+- [x] Vite + Flask Grundgerüst
+- [x] API-Endpunkte `/ping`, `/api/reservations`, etc.
+- [x] ScannerHandler mit globalem Keybuffer
+- [x] QR-Scan-Logik implementiert
 
 ### ✅ Phase 2: Datenmodelle & Auth
 
-* [x] Modelle für User, Tool, Reservation, Rollen & Rechte
-* [x] SQLite-DB mit SQLAlchemy
-* [x] JWT-Login (Token-Handling)
-* [x] Rollenmodell + Rechteprüfung via Middleware
+- [x] Modelle für User, Tool, Reservation, Rollen & Rechte
+- [x] SQLite-DB mit SQLAlchemy
+- [x] JWT-Login (Token-Handling)
+- [x] Rollenmodell + Rechteprüfung via Middleware
 
 ### ✅ Phase 3: Ausleihe per Scanner
 
-* [x] Reservationen via QR-Scan (usr + tool + dur)
-* [x] Rückgabe per "return" + Werkzeugcode
-* [x] Rückgabe auch ohne Login
-* [x] Kalenderansicht mit allen Einträgen (offentlich)
+- [x] Reservationen via QR-Scan (usr + tool + dur)
+- [x] Rückgabe per "return" + Werkzeugcode
+- [x] Rückgabe auch ohne Login
+- [x] Kalenderansicht mit allen Einträgen (öffentlich)
 
-### ⏳ Phase 4: Kalender & Anzeige
+### ✅ Phase 4: Kalender & Anzeige
 
-* [x] Monats-/Wochenansicht mit Reservationen
-* [ ] PopUps für Bearbeiten (eigene + adminfähig)
-* [ ] Farbcodierung, Anzeige nach Rollen
+- [x] Monats-/Wochenansicht mit Reservationen
+- [x] PopUps für Bearbeiten (eigene + adminfähig)
+- [x] Farbcodierung, Anzeige nach Rollen
 
-### 🔲 Phase 5: Adminbereich
+### ✅ Phase 5: Adminbereich
 
-* [x] Admin-Menü als Icon-Dropdown (⚙️)
-* [ ] Benutzerverwaltung UI (/users)
-* [ ] Werkzeugverwaltung UI (/tools)
-* [ ] Rechteverwaltung UI (/admin-tools)
-* [ ] QR-Code-Export über Webinterface als PNG/ZIP
+- [x] Admin-Menü als Icon-Dropdown (⚙️)
+- [x] Benutzerverwaltung UI (`/users`)
+  - Suche über alle Spalten
+  - Sortierbare Spalten mit Icons (▲▼)
+  - QR-ID-Vergabe automatisch (`usr000X`)
+  - Modal-Fenster für neue Benutzer
+- [ ] Werkzeugverwaltung UI (`/tools`)
+- [ ] Rechteverwaltung UI (`/admin-tools`)
+- [ ] QR-Code-Export über Webinterface als PNG/ZIP
 
-### ✅ Features in Arbeit
+---
 
-* [ ] Manuelle Reservation per UI (statt QR)
-* [ ] Bearbeitungsfunktion für eigene Einträge
-* [ ] UI für Admin-Funktionen (`/users`, `/tools`, `/admin-tools`)
-* [ ] Logging von Aktionen (auditierbar)
-* [ ] Sondercodes wie reload, cancel, return
-* [ ] QR-Code-Export über Webinterface als PNG/ZIP
+## ✅ Weitere Features in Arbeit
 
-### 🔲 Zusatzfunktionen
+- [ ] Manuelle Reservation per UI (statt QR)
+- [ ] Bearbeitungsfunktion für eigene Einträge
+- [ ] Logging von Aktionen (auditierbar)
+- [ ] Sondercodes wie reload, cancel, return
+- [ ] CSV-/QR-Code-Export für Benutzer/Werkzeuge
 
-* Offline-Hilfe implementieren
+---
+
+## 🔲 Zusatzfunktionen
+
+- Offline-Hilfe für Admins und Nutzer
+- Tool-Kategorien & Einschränkungen nach Rollen (geplant)
 
 ---
 

@@ -1,7 +1,7 @@
 # backend/routes/auth.py
 from flask import Blueprint, request, jsonify
 from flask_cors import cross_origin
-from models import db, User
+from models import db, User, RolePermission, Permission
 from werkzeug.security import check_password_hash
 import jwt
 import datetime
@@ -64,4 +64,13 @@ def get_me():
     if not user:
         return jsonify({"error": "Benutzer nicht gefunden"}), 404
 
-    return jsonify({"username": user.username, "role": user.role.name})
+    permissions = RolePermission.query.filter_by(role_id=user.role_id).all()
+    permission_map = {p.permission.key: p.value for p in permissions if p.permission}
+
+    return jsonify(
+        {
+            "username": user.username,
+            "role": user.role.name,
+            "permissions": permission_map,
+        }
+    )

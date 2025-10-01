@@ -30,6 +30,8 @@ function Home() {
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [role, setRole] = useState(null);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const fetchWithAuth = (url, options = {}) => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -86,7 +88,7 @@ function Home() {
     if (code.startsWith("tool")) {
       const toolCode = code;
       if (returnMode) {
-        fetchWithAuth("http://localhost:5050/api/reservations/return-tool", {
+        fetchWithAuth(`${API_URL}/api/reservations/return-tool`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ tool: toolCode }),
@@ -125,7 +127,7 @@ function Home() {
         setScanState(newState);
         setMessage(`Dauer erkannt: ${durationDays} Tag(e)`);
 
-        fetchWithAuth("http://localhost:5050/api/reservations", {
+        fetchWithAuth(`${API_URL}/api/reservations`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -156,7 +158,7 @@ function Home() {
   };
 
   const fetchReservations = () => {
-    fetchWithAuth("http://localhost:5050/api/reservations")
+    fetchWithAuth(`${API_URL}/api/reservations`)
       .then((res) => res.json())
       .then((data) => setReservations(data))
       .catch((err) =>
@@ -165,7 +167,7 @@ function Home() {
   };
 
   const handleLogin = () => {
-    fetch("http://localhost:5050/api/login", {
+    fetch(`${API_URL}/api/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(loginData),

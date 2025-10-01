@@ -3,7 +3,8 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from models import db
 from routes.reservations import reservation_bp
-from routes.auth import auth_bp  # <-- NEU
+from routes.auth import auth_bp
+from routes.users import users_bp
 import os
 from setup import create_initial_data
 
@@ -24,6 +25,7 @@ CORS(
 # Blueprints registrieren
 app.register_blueprint(reservation_bp, url_prefix="/api/reservations")
 app.register_blueprint(auth_bp, url_prefix="/api")
+app.register_blueprint(users_bp)
 
 
 @app.route("/api/ping")
