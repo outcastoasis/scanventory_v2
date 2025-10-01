@@ -1,3 +1,4 @@
+// frontend/src/components/CalendarView.jsx
 import { useState } from "react";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";

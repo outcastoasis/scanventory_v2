@@ -72,5 +72,6 @@ def get_me():
             "username": user.username,
             "role": user.role.name,
             "permissions": permission_map,
+            "user_id": user.id,
         }
     )

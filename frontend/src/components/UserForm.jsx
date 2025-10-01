@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import "../styles/AdminUsers.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -8,8 +9,20 @@ function UserForm({ user, onClose, onSave }) {
   const [qrCode, setQrCode] = useState(user?.qr_code || "");
   const [role, setRole] = useState(user?.role || "user");
   const [roles, setRoles] = useState([]);
+  const [currentUsername, setCurrentUsername] = useState(null);
 
   const isEditing = !!user?.id;
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/me`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => setCurrentUsername(data.username))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch(`${API_URL}/api/roles`, {
@@ -19,7 +32,7 @@ function UserForm({ user, onClose, onSave }) {
     })
       .then((res) => res.json())
       .then((data) => setRoles(data))
-      .catch(() => setRoles(["admin", "supervisor", "user", "guest"])); // Fallback
+      .catch(() => setRoles(["admin", "supervisor", "user", "guest"]));
   }, []);
 
   useEffect(() => {
@@ -31,12 +44,18 @@ function UserForm({ user, onClose, onSave }) {
       })
         .then((res) => res.json())
         .then((data) => setQrCode(data.next_qr))
-        .catch(() => setQrCode("usr0001")); // Fallback
+        .catch(() => setQrCode("usr0001"));
     }
   }, [isEditing]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (isEditing && currentUsername === username && role !== user.role) {
+      alert("Du kannst deine eigene Rolle nicht ändern.");
+      return;
+    }
+
     const payload = {
       username,
       role,
@@ -68,13 +87,16 @@ function UserForm({ user, onClose, onSave }) {
   };
 
   return (
-    <div className="modal">
-      <div className="modal-content">
-        <h3>{isEditing ? "Benutzer bearbeiten" : "Neuer Benutzer"}</h3>
-        <form onSubmit={handleSubmit}>
-          <label>
+    <div className="user-form-overlay">
+      <div className="user-form-modal">
+        <h3 className="user-form-title">
+          {isEditing ? "Benutzer bearbeiten" : "Neuer Benutzer"}
+        </h3>
+        <form className="user-form" onSubmit={handleSubmit}>
+          <label className="user-form-label">
             Benutzername:
             <input
+              className="user-form-input"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -83,9 +105,10 @@ function UserForm({ user, onClose, onSave }) {
           </label>
 
           {!isEditing && (
-            <label>
+            <label className="user-form-label">
               Passwort:
               <input
+                className="user-form-input"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -95,9 +118,10 @@ function UserForm({ user, onClose, onSave }) {
           )}
 
           {isEditing && (
-            <label>
+            <label className="user-form-label">
               Neues Passwort (optional):
               <input
+                className="user-form-input"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -105,9 +129,14 @@ function UserForm({ user, onClose, onSave }) {
             </label>
           )}
 
-          <label>
+          <label className="user-form-label">
             Rolle:
-            <select value={role} onChange={(e) => setRole(e.target.value)}>
+            <select
+              className="user-form-select"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              disabled={currentUsername === username}
+            >
               {roles.map((r) => (
                 <option key={r.id || r} value={r.name || r}>
                   {r.name || r}
@@ -116,22 +145,26 @@ function UserForm({ user, onClose, onSave }) {
             </select>
           </label>
 
-          <label>
+          <label className="user-form-label">
             QR-Code:
             <input
+              className="user-form-input"
               type="text"
               value={qrCode}
               onChange={(e) => setQrCode(e.target.value)}
               required
+              disabled
             />
           </label>
 
-          <div style={{ marginTop: "1rem" }}>
-            <button type="submit">Speichern</button>
+          <div className="user-form-buttons">
+            <button type="submit" className="user-form-save-button">
+              Speichern
+            </button>
             <button
               type="button"
+              className="user-form-cancel-button"
               onClick={onClose}
-              style={{ marginLeft: "1rem" }}
             >
               Abbrechen
             </button>

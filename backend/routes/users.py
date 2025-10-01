@@ -1,6 +1,7 @@
+# backend/routes/users.py
 from flask import Blueprint, request, jsonify
 from models import db, User, Role
-from utils.permissions import requires_permission
+from utils.permissions import requires_permission, get_token_payload
 from werkzeug.security import generate_password_hash
 
 users_bp = Blueprint("users", __name__)
@@ -102,14 +103,25 @@ def update_user(user_id):
     )
 
 
-# DELETE user
+# DELETE user (mit Schutz vor Selbstlöschung)
 @users_bp.route("/api/users/<int:user_id>", methods=["DELETE"])
 @requires_permission("manage_users")
 def delete_user(user_id):
-    user = User.query.get_or_404(user_id)
+    # Token auswerten, um aktuellen Benutzer zu bestimmen
+    payload = get_token_payload()
+    if not payload:
+        return jsonify({"error": "Nicht autorisiert"}), 401
+
+    if user_id == payload["user_id"]:
+        return jsonify({"error": "Du kannst dich nicht selbst löschen."}), 400
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "Benutzer nicht gefunden"}), 404
+
     db.session.delete(user)
     db.session.commit()
-    return jsonify({"message": "Benutzer gelöscht"})
+    return jsonify({"message": "Benutzer gelöscht"}), 200
 
 
 # GET roles for dropdown
@@ -120,14 +132,13 @@ def get_roles():
     return jsonify([{"id": r.id, "name": r.name} for r in roles])
 
 
+# Nächste freie QR-ID für neue Benutzer
 @users_bp.route("/api/users/next-id", methods=["GET"])
 @requires_permission("manage_users")
 def get_next_user_qr():
-    # Alle QR-Codes, die mit usr beginnen
     users = User.query.all()
     qr_codes = [u.qr_code for u in users if u.qr_code and u.qr_code.startswith("usr")]
 
-    # Extrahiere die Nummern
     used_numbers = []
     for qr in qr_codes:
         try:
@@ -136,7 +147,6 @@ def get_next_user_qr():
         except ValueError:
             continue
 
-    # Finde die erste freie Zahl
     next_num = 1
     while next_num in used_numbers:
         next_num += 1

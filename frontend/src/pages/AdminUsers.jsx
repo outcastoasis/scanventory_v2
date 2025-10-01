@@ -1,3 +1,4 @@
+// frontend/src/pages/AdminUsers.jsx
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import UserForm from "../components/UserForm";
@@ -12,31 +13,40 @@ function AdminUsers() {
   const [editingUser, setEditingUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   const getToken = () => localStorage.getItem("token");
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${API_URL}/api/me`, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-      },
-    })
-      .then((res) => {
+    const fetchCurrentUser = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/me`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        });
+
         if (!res.ok) throw new Error("Nicht autorisiert");
-        return res.json();
-      })
-      .then((data) => {
+
+        const data = await res.json();
+
         if (data.permissions?.manage_users !== "true") {
           navigate("/");
+        } else {
+          setCurrentUserId(data.user_id);
         }
-      })
-      .catch(() => {
+      } catch (err) {
         navigate("/");
-      });
+      }
+    };
+
+    fetchCurrentUser();
   }, []);
 
   useEffect(() => {
+    if (currentUserId === null) return; // Warte, bis ID geladen
+
     fetch(`${API_URL}/api/users`, {
       headers: {
         Authorization: `Bearer ${getToken()}`,
@@ -55,9 +65,14 @@ function AdminUsers() {
         setError("Fehler beim Laden der Benutzer.");
         setLoading(false);
       });
-  }, []);
+  }, [currentUserId]);
 
   const handleDelete = (id) => {
+    if (!currentUserId) {
+      alert("Benutzerdaten noch nicht geladen.");
+      return;
+    }
+
     if (confirm("Benutzer wirklich löschen?")) {
       fetch(`${API_URL}/api/users/${id}`, {
         method: "DELETE",
@@ -65,8 +80,16 @@ function AdminUsers() {
           Authorization: `Bearer ${getToken()}`,
         },
       })
-        .then(() => setUsers(users.filter((u) => u.id !== id)))
-        .catch(() => alert("Fehler beim Löschen."));
+        .then(async (res) => {
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || "Fehler beim Löschen.");
+          }
+          setUsers(users.filter((u) => u.id !== id));
+        })
+        .catch((err) => {
+          alert(err.message);
+        });
     }
   };
 
@@ -253,12 +276,6 @@ function AdminUsers() {
                 }
               }}
             />
-            <button
-              className="users-modal-close"
-              onClick={() => setShowForm(false)}
-            >
-              Schließen
-            </button>
           </div>
         </div>
       )}

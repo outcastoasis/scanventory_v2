@@ -110,6 +110,7 @@ npm run dev
   - Sortierbare Spalten mit Icons (▲▼)
   - QR-ID-Vergabe automatisch (`usr000X`)
   - Modal-Fenster für neue Benutzer
+  - Admin kann sich nicht selbst löschen
 - [ ] Werkzeugverwaltung UI (`/tools`)
 - [ ] Rechteverwaltung UI (`/admin-tools`)
 - [ ] QR-Code-Export über Webinterface als PNG/ZIP
