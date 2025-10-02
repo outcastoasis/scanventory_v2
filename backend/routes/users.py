@@ -29,6 +29,22 @@ def get_users():
     )
 
 
+# GET /api/users/qr/<qr_code> → Benutzer via QR-Code abrufen (ohne Auth)
+@users_bp.route("/api/users/qr/<qr_code>", methods=["GET"])
+def get_user_by_qr(qr_code):
+    user = User.query.filter(User.qr_code.ilike(qr_code)).first()
+    if not user:
+        return jsonify({"error": "Benutzer nicht gefunden"}), 404
+
+    return jsonify(
+        {
+            "qr_code": user.qr_code,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+        }
+    )
+
+
 # POST new user
 @users_bp.route("/api/users", methods=["POST"])
 @requires_permission("manage_users")

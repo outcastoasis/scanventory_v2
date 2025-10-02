@@ -83,22 +83,23 @@ function Home() {
     if (code.startsWith("usr")) {
       setReturnMode(false);
 
-      fetchWithAuth(`${API_URL}/api/users`)
-        .then((res) => res.json())
-        .then((data) => {
-          const foundUser = data.find((u) => u.qr_code.toLowerCase() === code);
-          if (foundUser) {
-            setScanState({ user: code, tool: null, duration: null });
-            setScannedUser(foundUser); // Speichern für Anzeige
-            setMessage(
-              `Benutzer erkannt: ${foundUser.first_name} ${foundUser.last_name}, ${foundUser.qr_code}`
-            );
-          } else {
-            setMessage(`❌ Benutzer nicht gefunden: ${code}`);
+      fetch(`${API_URL}/api/users/qr/${code}`)
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("Benutzer nicht gefunden");
           }
+          return res.json();
         })
-        .catch(() => {
-          setMessage("❌ Fehler beim Laden der Benutzerdaten");
+        .then((foundUser) => {
+          setScanState({ user: code, tool: null, duration: null });
+          setScannedUser(foundUser); // Speichern für Anzeige
+          setMessage(
+            `Benutzer erkannt: ${foundUser.first_name} ${foundUser.last_name}, ${foundUser.qr_code}`
+          );
+        })
+        .catch((err) => {
+          console.error(err);
+          setMessage(`❌ Benutzer nicht gefunden: ${code}`);
         });
 
       return;
