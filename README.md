@@ -21,6 +21,11 @@
   - Visuelle Sortieranzeige (▲▼)
   - QR-ID-Vergabe mit nächster freier `usr000X`-ID
   - Zugriff nur mit `manage_users = true`
+  - Anzeige von:
+    - Benutzername
+    - Vorname, Nachname
+    - Firma (Dropdown-Auswahl: Administration, RTS, RSS, RTC, PZM)
+    - Rolle & Erstellungsdatum
 - `.env`-basierte Konfiguration im Backend **und im Frontend**
 
 ---
@@ -40,10 +45,19 @@ pip install -r requirements.txt
 
 ```ini
 # backend/.env
-SECRET_KEY=admin1234            # für JWT-Token
-ADMIN_USERNAME=admin            # Initial-Admin
+SECRET_KEY=admin1234
+
+ADMIN_USERNAME=admin
 ADMIN_PASSWORD=admin123
 ADMIN_QR=usr0001
+
+SUPERVISOR_USERNAME=supervisor
+SUPERVISOR_PASSWORD=supervisor123
+SUPERVISOR_QR=usr0002
+
+TESTUSER_USERNAME=testuser
+TESTUSER_PASSWORD=testuser123
+TESTUSER_QR=usr0003
 ```
 
 Starten:
@@ -111,9 +125,12 @@ npm run dev
   - QR-ID-Vergabe automatisch (`usr000X`)
   - Modal-Fenster für neue Benutzer
   - Admin kann sich nicht selbst löschen
+- [x] QR-Code-Exportfunktion in /users
+  - Einzel-QR als PNG (inkl. Vorschau)
+  - Massenexport (ZIP mit mehreren PNGs)
+  - Dynamisches Canvas mit weißem Hintergrund, Textausrichtung und Schriftanpassung
 - [ ] Werkzeugverwaltung UI (`/tools`)
 - [ ] Rechteverwaltung UI (`/admin-tools`)
-- [ ] QR-Code-Export über Webinterface als PNG/ZIP
 
 ---
 
@@ -123,7 +140,7 @@ npm run dev
 - [ ] Bearbeitungsfunktion für eigene Einträge
 - [ ] Logging von Aktionen (auditierbar)
 - [ ] Sondercodes wie reload, cancel, return
-- [ ] CSV-/QR-Code-Export für Benutzer/Werkzeuge
+- [ ] CSV-/QR-Code-Export für Werkzeuge
 
 ---
 
