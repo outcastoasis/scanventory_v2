@@ -98,7 +98,10 @@
 }
 
 .users-edit-button,
-.users-delete-button {
+.users-delete-button,
+.users-qr-button {
+  margin-top: 0.1rem;
+  margin-bottom: 0.1rem;
   margin-right: 0.3rem;
   padding: 0.4rem 0.8rem;
   font-size: 0.9rem;
@@ -117,12 +120,21 @@
   color: white;
 }
 
+.users-qr-button {
+  background-color: #f2f2f2;
+  color: #333;
+}
+
 .users-edit-button:hover {
   background-color: #155aa8;
 }
 
 .users-delete-button:hover {
   background-color: #aa1e1e;
+}
+
+.users-qr-button:hover {
+  background-color: #ddd;
 }
 
 .users-error {

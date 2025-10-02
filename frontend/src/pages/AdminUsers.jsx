@@ -2,7 +2,12 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import UserForm from "../components/UserForm";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
+import QRCode from "qrcode";
+import QrModal from "../components/QrModal";
 import "../styles/AdminUsers.css";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 function AdminUsers() {
@@ -14,6 +19,7 @@ function AdminUsers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const getToken = () => localStorage.getItem("token");
   const navigate = useNavigate();
@@ -45,7 +51,7 @@ function AdminUsers() {
   }, []);
 
   useEffect(() => {
-    if (currentUserId === null) return; // Warte, bis ID geladen
+    if (currentUserId === null) return;
 
     fetch(`${API_URL}/api/users`, {
       headers: {
@@ -116,6 +122,9 @@ function AdminUsers() {
     return (
       u.id.toString().includes(term) ||
       u.username.toLowerCase().includes(term) ||
+      (u.first_name && u.first_name.toLowerCase().includes(term)) ||
+      (u.last_name && u.last_name.toLowerCase().includes(term)) ||
+      (u.company_name && u.company_name.toLowerCase().includes(term)) ||
       u.qr_code.toLowerCase().includes(term) ||
       u.role.toLowerCase().includes(term) ||
       (u.created_at && u.created_at.toLowerCase().includes(term))
@@ -130,6 +139,79 @@ function AdminUsers() {
     if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
     return 0;
   });
+
+  const handleExportAllQR = async () => {
+    const zip = new JSZip();
+
+    for (const user of sortedUsers) {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      const qrSize = 200;
+      const padding = 20;
+
+      // Textbreiten vorher messen
+      ctx.font = "bold 25px Arial";
+      const name = `${user.first_name || ""} ${user.last_name || ""}`;
+      const nameWidth = ctx.measureText(name).width;
+
+      ctx.font = "20px Arial";
+      const qrCodeWidth = ctx.measureText(user.qr_code).width;
+      const companyWidth = user.company_name
+        ? ctx.measureText(user.company_name).width
+        : 0;
+
+      const maxTextWidth = Math.max(qrCodeWidth, nameWidth, companyWidth);
+
+      // Dynamische Breite
+      const canvasWidth = qrSize + padding * 3 + maxTextWidth;
+      const canvasHeight = 250;
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+
+      // Hintergrund komplett weiß
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      // QR Code vorbereiten und zeichnen
+      const qrCanvas = document.createElement("canvas");
+      await QRCode.toCanvas(qrCanvas, user.qr_code, {
+        width: qrSize,
+        margin: 1,
+      });
+      ctx.drawImage(qrCanvas, padding, 20);
+
+      const textX = qrSize + padding * 2;
+      const textY = 100;
+
+      // Weißer Hintergrund hinter Textbereich
+      const boxPadding = 12;
+      const textBoxWidth = maxTextWidth + boxPadding * 2;
+      const textBoxHeight = 90;
+      ctx.fillStyle = "white";
+      ctx.fillRect(textX - boxPadding, textY - 40, textBoxWidth, textBoxHeight);
+
+      // Text zeichnen
+      ctx.fillStyle = "black";
+      ctx.font = "20px Arial";
+      ctx.fillText(user.qr_code, textX, textY);
+      ctx.font = "bold 25px Arial";
+      ctx.fillText(name, textX, textY + 30);
+      ctx.font = "20px Arial";
+      if (user.company_name) ctx.fillText(user.company_name, textX, textY + 60);
+
+      // Export vorbereiten
+      const dataUrl = canvas.toDataURL("image/png");
+      const base64 = dataUrl.split(",")[1];
+      const filename = `${user.qr_code}_${user.company_name || ""}_${
+        user.first_name || ""
+      }_${user.last_name || ""}.png`;
+      zip.file(filename, base64, { base64: true });
+    }
+
+    const content = await zip.generateAsync({ type: "blob" });
+    saveAs(content, "qr_codes.zip");
+  };
 
   return (
     <div className="users-page">
@@ -152,10 +234,13 @@ function AdminUsers() {
             <input
               className="users-search"
               type="text"
-              placeholder="Benutzername, QR-Code, Rolle suchen"
+              placeholder="Suche nach Benutzer..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+            <button className="users-export-button" onClick={handleExportAllQR}>
+              QR-Massenexport
+            </button>
           </div>
 
           <table className="users-table">
@@ -165,7 +250,7 @@ function AdminUsers() {
                   onClick={() => handleSort("id")}
                   className={sortConfig.key === "id" ? "sorted" : ""}
                 >
-                  ID
+                  ID{" "}
                   <span className="sort-icon">
                     {sortConfig.key === "id"
                       ? sortConfig.direction === "asc"
@@ -178,9 +263,48 @@ function AdminUsers() {
                   onClick={() => handleSort("username")}
                   className={sortConfig.key === "username" ? "sorted" : ""}
                 >
-                  Benutzername
+                  Benutzername{" "}
                   <span className="sort-icon">
                     {sortConfig.key === "username"
+                      ? sortConfig.direction === "asc"
+                        ? "▲"
+                        : "▼"
+                      : "▲"}
+                  </span>
+                </th>
+                <th
+                  onClick={() => handleSort("first_name")}
+                  className={sortConfig.key === "first_name" ? "sorted" : ""}
+                >
+                  Vorname{" "}
+                  <span className="sort-icon">
+                    {sortConfig.key === "first_name"
+                      ? sortConfig.direction === "asc"
+                        ? "▲"
+                        : "▼"
+                      : "▲"}
+                  </span>
+                </th>
+                <th
+                  onClick={() => handleSort("last_name")}
+                  className={sortConfig.key === "last_name" ? "sorted" : ""}
+                >
+                  Nachname{" "}
+                  <span className="sort-icon">
+                    {sortConfig.key === "last_name"
+                      ? sortConfig.direction === "asc"
+                        ? "▲"
+                        : "▼"
+                      : "▲"}
+                  </span>
+                </th>
+                <th
+                  onClick={() => handleSort("company_name")}
+                  className={sortConfig.key === "company_name" ? "sorted" : ""}
+                >
+                  Firma{" "}
+                  <span className="sort-icon">
+                    {sortConfig.key === "company_name"
                       ? sortConfig.direction === "asc"
                         ? "▲"
                         : "▼"
@@ -191,7 +315,7 @@ function AdminUsers() {
                   onClick={() => handleSort("qr_code")}
                   className={sortConfig.key === "qr_code" ? "sorted" : ""}
                 >
-                  QR-Code
+                  QR-Code{" "}
                   <span className="sort-icon">
                     {sortConfig.key === "qr_code"
                       ? sortConfig.direction === "asc"
@@ -204,7 +328,7 @@ function AdminUsers() {
                   onClick={() => handleSort("role")}
                   className={sortConfig.key === "role" ? "sorted" : ""}
                 >
-                  Rolle
+                  Rolle{" "}
                   <span className="sort-icon">
                     {sortConfig.key === "role"
                       ? sortConfig.direction === "asc"
@@ -217,7 +341,7 @@ function AdminUsers() {
                   onClick={() => handleSort("created_at")}
                   className={sortConfig.key === "created_at" ? "sorted" : ""}
                 >
-                  Erstellt
+                  Erstellt{" "}
                   <span className="sort-icon">
                     {sortConfig.key === "created_at"
                       ? sortConfig.direction === "asc"
@@ -234,6 +358,9 @@ function AdminUsers() {
                 <tr key={u.id}>
                   <td>{u.id}</td>
                   <td>{u.username}</td>
+                  <td>{u.first_name || "-"}</td>
+                  <td>{u.last_name || "-"}</td>
+                  <td>{u.company_name || "-"}</td>
                   <td>{u.qr_code}</td>
                   <td className={`users-role users-role-${u.role}`}>
                     {u.role}
@@ -252,11 +379,24 @@ function AdminUsers() {
                     >
                       Löschen
                     </button>
+                    <button
+                      className="users-qr-button"
+                      onClick={() => setSelectedUser(u)}
+                    >
+                      QR anzeigen
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+
+          {selectedUser && (
+            <QrModal
+              user={selectedUser}
+              onClose={() => setSelectedUser(null)}
+            />
+          )}
         </>
       )}
 

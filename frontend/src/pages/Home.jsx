@@ -29,6 +29,8 @@ function Home() {
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [role, setRole] = useState(null);
+  const [scannedUser, setScannedUser] = useState(null);
+  const [scannedTool, setScannedTool] = useState(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -80,8 +82,25 @@ function Home() {
 
     if (code.startsWith("usr")) {
       setReturnMode(false);
-      setScanState({ user: code, tool: null, duration: null });
-      setMessage(`Benutzer erkannt: ${code}`);
+
+      fetchWithAuth(`${API_URL}/api/users`)
+        .then((res) => res.json())
+        .then((data) => {
+          const foundUser = data.find((u) => u.qr_code.toLowerCase() === code);
+          if (foundUser) {
+            setScanState({ user: code, tool: null, duration: null });
+            setScannedUser(foundUser); // Speichern für Anzeige
+            setMessage(
+              `Benutzer erkannt: ${foundUser.first_name} ${foundUser.last_name}, ${foundUser.qr_code}`
+            );
+          } else {
+            setMessage(`❌ Benutzer nicht gefunden: ${code}`);
+          }
+        })
+        .catch(() => {
+          setMessage("❌ Fehler beim Laden der Benutzerdaten");
+        });
+
       return;
     }
 
@@ -112,11 +131,29 @@ function Home() {
       }
 
       if (scanState.user) {
-        setScanState((prev) => ({ ...prev, tool: toolCode }));
-        setMessage(`Werkzeug erkannt: ${toolCode}`);
+        fetchWithAuth(`${API_URL}/api/tools`)
+          .then((res) => res.json())
+          .then((tools) => {
+            const foundTool = tools.find(
+              (t) => t.code.toLowerCase() === toolCode
+            );
+            if (foundTool) {
+              setScanState((prev) => ({ ...prev, tool: toolCode }));
+              setScannedTool(foundTool);
+              setMessage(
+                `Werkzeug erkannt: ${foundTool.name}, ${foundTool.code}`
+              );
+            } else {
+              setMessage(`❌ Werkzeug nicht gefunden: ${toolCode}`);
+            }
+          })
+          .catch(() => {
+            setMessage("❌ Fehler beim Laden der Werkzeuge");
+          });
       } else {
         setMessage("Bitte zuerst Benutzer scannen");
       }
+
       return;
     }
 
@@ -138,12 +175,12 @@ function Home() {
         })
           .then((res) => res.json())
           .then(() => {
-            resetScan("Reservation gespeichert ✅");
+            resetScan("✅Reservation gespeichert");
             fetchReservations();
           })
           .catch((err) => {
             console.error("Fehler beim Speichern:", err);
-            resetScan("Fehler bei der Reservation ❌");
+            resetScan("❌ Fehler bei der Reservation");
           });
         return;
       }
@@ -154,6 +191,8 @@ function Home() {
 
   const resetScan = (msg = "") => {
     setScanState({ user: null, tool: null, duration: null });
+    setScannedUser(null);
+    setScannedTool(null);
     if (msg) setMessage(msg);
   };
 

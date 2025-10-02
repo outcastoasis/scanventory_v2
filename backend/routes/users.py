@@ -17,6 +17,9 @@ def get_users():
             {
                 "id": u.id,
                 "username": u.username,
+                "first_name": u.first_name,
+                "last_name": u.last_name,
+                "company_name": u.company_name,
                 "qr_code": u.qr_code,
                 "role": u.role.name,
                 "created_at": u.created_at.isoformat() if u.created_at else None,
@@ -32,6 +35,9 @@ def get_users():
 def create_user():
     data = request.json
     username = data.get("username")
+    first_name = data.get("first_name")
+    last_name = data.get("last_name")
+    company_name = data.get("company_name")
     password = data.get("password")
     qr_code = data.get("qr_code")
     role_name = data.get("role")
@@ -48,6 +54,9 @@ def create_user():
 
     user = User(
         username=username,
+        first_name=first_name,
+        last_name=last_name,
+        company_name=company_name,
         password=generate_password_hash(password),
         qr_code=qr_code,
         role_id=role.id,
@@ -60,6 +69,9 @@ def create_user():
             {
                 "id": user.id,
                 "username": user.username,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "company_name": user.company_name,
                 "qr_code": user.qr_code,
                 "role": role.name,
                 "created_at": user.created_at.isoformat() if user.created_at else None,
@@ -78,6 +90,12 @@ def update_user(user_id):
 
     if "username" in data:
         user.username = data["username"]
+    if "first_name" in data:
+        user.first_name = data["first_name"]
+    if "last_name" in data:
+        user.last_name = data["last_name"]
+    if "company_name" in data:
+        user.company_name = data["company_name"]
 
     if "password" in data and data["password"]:
         user.password = generate_password_hash(data["password"])
@@ -96,6 +114,9 @@ def update_user(user_id):
         {
             "id": user.id,
             "username": user.username,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "company_name": user.company_name,
             "qr_code": user.qr_code,
             "role": user.role.name,
             "created_at": user.created_at.isoformat() if user.created_at else None,

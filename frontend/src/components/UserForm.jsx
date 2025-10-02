@@ -10,6 +10,10 @@ function UserForm({ user, onClose, onSave }) {
   const [role, setRole] = useState(user?.role || "user");
   const [roles, setRoles] = useState([]);
   const [currentUsername, setCurrentUsername] = useState(null);
+  const [firstName, setFirstName] = useState(user?.first_name || "");
+  const [lastName, setLastName] = useState(user?.last_name || "");
+  const [companyName, setCompanyName] = useState(user?.company_name || "");
+  const allowedCompanies = ["Administration", "RTS", "RSS", "RTC", "PZM"];
 
   const isEditing = !!user?.id;
 
@@ -60,6 +64,9 @@ function UserForm({ user, onClose, onSave }) {
       username,
       role,
       qr_code: qrCode,
+      first_name: firstName,
+      last_name: lastName,
+      company_name: companyName,
       ...(password ? { password } : {}),
     };
 
@@ -102,6 +109,42 @@ function UserForm({ user, onClose, onSave }) {
               onChange={(e) => setUsername(e.target.value)}
               required
             />
+          </label>
+
+          <label className="user-form-label">
+            Vorname:
+            <input
+              className="user-form-input"
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+          </label>
+
+          <label className="user-form-label">
+            Nachname:
+            <input
+              className="user-form-input"
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+            />
+          </label>
+          <label className="user-form-label">
+            Firma:
+            <select
+              className="user-form-select"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              required
+            >
+              <option value="">– Auswahl –</option>
+              {allowedCompanies.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
           </label>
 
           {!isEditing && (

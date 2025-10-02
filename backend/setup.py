@@ -11,6 +11,14 @@ admin_username = os.getenv("ADMIN_USERNAME")
 admin_password = os.getenv("ADMIN_PASSWORD")
 admin_qr = os.getenv("ADMIN_QR")
 
+supervisor_username = os.getenv("SUPERVISOR_USERNAME")
+supervisor_password = os.getenv("SUPERVISOR_PASSWORD")
+supervisor_qr = os.getenv("SUPERVISOR_QR")
+
+testuser_username = os.getenv("TESTUSER_USERNAME")
+testuser_password = os.getenv("TESTUSER_PASSWORD")
+testuser_qr = os.getenv("TESTUSER_QR")
+
 
 def create_initial_data(app):
     with app.app_context():
@@ -107,6 +115,9 @@ def create_initial_data(app):
         if not User.query.filter_by(username=admin_username).first():
             admin_user = User(
                 username=admin_username,
+                first_name="Admin",
+                last_name="Admin",
+                company_name="Administration",
                 password=generate_password_hash(admin_password),
                 qr_code=admin_qr,
                 role_id=role_objs["admin"].id,
@@ -117,3 +128,39 @@ def create_initial_data(app):
             print(f"Admin-Benutzer '{admin_username}' wurde erstellt.")
         else:
             print("Admin-Benutzer existiert bereits.")
+
+        # Supervisor-User anlegen (nur wenn noch keiner vorhanden)
+        if not User.query.filter_by(username=supervisor_username).first():
+            supervisor_user = User(
+                username=supervisor_username,
+                first_name="Supervisor",
+                last_name="Supervisor",
+                company_name="Administration",
+                password=generate_password_hash(supervisor_password),
+                qr_code=supervisor_qr,
+                role_id=role_objs["supervisor"].id,
+                created_at=datetime.utcnow(),
+            )
+            db.session.add(supervisor_user)
+            db.session.commit()
+            print(f"Supervisor-Benutzer '{supervisor_username}' wurde erstellt.")
+        else:
+            print("Supervisor-Benutzer existiert bereits.")
+
+        # Testuser anlegen (nur wenn noch keiner vorhanden)
+        if not User.query.filter_by(username=testuser_username).first():
+            test_user = User(
+                username=testuser_username,
+                first_name="Test",
+                last_name="User",
+                company_name="Administration",
+                password=generate_password_hash(testuser_password),
+                qr_code=testuser_qr,
+                role_id=role_objs["user"].id,
+                created_at=datetime.utcnow(),
+            )
+            db.session.add(test_user)
+            db.session.commit()
+            print(f"Test-Benutzer '{testuser_username}' wurde erstellt.")
+        else:
+            print("Test-Benutzer existiert bereits.")
