@@ -1,0 +1,237 @@
+/* === Werkzeugverwaltung === */
+
+.tools-page {
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+}
+
+.tools-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.tools-title {
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.tools-back-button {
+  background-color: #f2f2f2;
+  color: #333;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: background-color 0.2s ease;
+}
+.tools-back-button:hover {
+  background-color: #ddd;
+}
+
+.tools-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tools-add-button,
+.tools-export-button {
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.tools-add-button:hover,
+.tools-export-button:hover {
+  background-color: #155aa8;
+}
+
+.tools-search {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex-grow: 1;
+  max-width: 300px;
+}
+
+.tools-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+.tools-table th,
+.tools-table td {
+  border: 1px solid #e0e0e0;
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+}
+.tools-table th {
+  background-color: #f9f9f9;
+  cursor: pointer;
+  user-select: none;
+}
+.tools-table th.sorted {
+  background-color: #e3f2fd;
+  font-weight: bold;
+}
+
+.sort-icon {
+  display: inline-block;
+  width: 1ch;
+  text-align: center;
+  opacity: 0.5;
+  font-size: 0.9rem;
+  margin-left: 0.3rem;
+}
+.sorted .sort-icon {
+  opacity: 1;
+}
+
+/* Statuschip */
+.tools-status {
+  font-weight: bold;
+}
+.tools-status.available {
+  color: green;
+}
+.tools-status.borrowed {
+  color: orange;
+}
+
+/* Action-Buttons */
+.tools-edit-button,
+.tools-delete-button,
+.tools-qr-button {
+  margin-top: 0.1rem;
+  margin-bottom: 0.1rem;
+  margin-right: 0.3rem;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.tools-edit-button {
+  background-color: #1976d2;
+  color: white;
+}
+.tools-delete-button {
+  background-color: #d32f2f;
+  color: white;
+}
+.tools-qr-button {
+  background-color: #f2f2f2;
+  color: #333;
+}
+.tools-edit-button:hover {
+  background-color: #155aa8;
+}
+.tools-delete-button:hover {
+  background-color: #aa1e1e;
+}
+.tools-qr-button:hover {
+  background-color: #ddd;
+}
+
+/* Fehler/Ladezustand */
+.tools-error {
+  color: red;
+  margin-bottom: 1rem;
+}
+.tools-loading {
+  font-style: italic;
+}
+
+/* === Modal (Overlay + Container) === */
+.tools-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.tools-modal {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 500px;
+  /* Tippfehler behoben: */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* === Tool-Formular (wie user-form-Styles, nur mit tool-*) === */
+
+.tool-form-title {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.tool-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tool-form-label {
+  display: flex;
+  flex-direction: column;
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+.tool-form-input,
+.tool-form-select {
+  margin-top: 0.3rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tool-form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.tool-form-save-button {
+  background-color: #1976d2;
+  color: white;
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.tool-form-save-button:hover {
+  background-color: #155aa8;
+}
+
+.tool-form-cancel-button {
+  background-color: #ccc;
+  color: black;
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.tool-form-cancel-button:hover {
+  background-color: #bbb;
+}
