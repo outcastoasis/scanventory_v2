@@ -12,11 +12,17 @@ import os
 from setup import create_initial_data
 
 app = Flask(__name__)
+
 basedir = os.path.abspath(os.path.dirname(__file__))
+instance_dir = os.path.join(basedir, "instance")
+os.makedirs(instance_dir, exist_ok=True)
+
+
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     f"sqlite:///{os.path.join(basedir, 'instance', 'database.db')}"
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 
 db.init_app(app)
 CORS(
