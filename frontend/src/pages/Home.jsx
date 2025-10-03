@@ -298,7 +298,11 @@ function Home() {
                         </button>
                         <button
                           onClick={() =>
+<<<<<<< HEAD
                             (window.location.href = "/admin-tools")
+=======
+                            (window.location.href = "/permissions")
+>>>>>>> 5d17132 (UI für Werkzeuge und Rechte)
                           }
                         >
                           <FontAwesomeIcon icon={faKey} /> Rechte

@@ -129,8 +129,13 @@ npm run dev
   - Einzel-QR als PNG (inkl. Vorschau)
   - Massenexport (ZIP mit mehreren PNGs)
   - Dynamisches Canvas mit weißem Hintergrund, Textausrichtung und Schriftanpassung
+<<<<<<< HEAD
 - [ ] Werkzeugverwaltung UI (`/tools`)
 - [ ] Rechteverwaltung UI (`/admin-tools`)
+=======
+- [x] Werkzeugverwaltung UI (`/tools`)
+- [ ] Rechteverwaltung UI (`/permissions`)
+>>>>>>> 5d17132 (UI für Werkzeuge und Rechte)
 
 ---
 
