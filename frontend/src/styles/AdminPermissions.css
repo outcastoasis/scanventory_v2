@@ -1,4 +1,4 @@
-/* === Rechteverwaltung === */
+/* === Rechteverwaltung (identisch zu Users-Styles) === */
 
 .permissions-page {
   padding: 2rem;
@@ -67,7 +67,6 @@
   border: 1px solid #e0e0e0;
   padding: 0.6rem 0.8rem;
   text-align: left;
-  vertical-align: middle;
 }
 .permissions-table th {
   background-color: #f9f9f9;
@@ -91,23 +90,13 @@
   opacity: 1;
 }
 
-.permissions-cell-select {
-  width: 100%;
-  max-width: 140px;
-  padding: 0.35rem 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.permissions-actions-cell {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
+/* Action-Buttons wie bei Users */
 .permissions-edit-button,
 .permissions-delete-button,
 .permissions-qr-button {
-  margin: 0.25rem 0;
+  margin-top: 0.1rem;
+  margin-bottom: 0.1rem;
+  margin-right: 0.3rem;
   padding: 0.4rem 0.8rem;
   font-size: 0.9rem;
   border: none;
@@ -136,6 +125,19 @@
   background-color: #ddd;
 }
 
+/* Aktionen-Spalte: identisch zum Users-Layout */
+.permissions-actions-cell {
+  display: table-cell !important; /* zurück ins Tabellenlayout */
+  vertical-align: middle;
+  white-space: nowrap; /* Buttons bleiben in einer Reihe */
+}
+.permissions-actions-cell .permissions-edit-button,
+.permissions-actions-cell .permissions-delete-button,
+.permissions-actions-cell .permissions-qr-button {
+  display: inline-block;
+}
+
+/* Formular/Selects */
 .permissions-error {
   color: red;
   margin-bottom: 1rem;
@@ -166,7 +168,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Formular */
+/* Formular (entspricht user-form*) */
 .permission-form-title {
   margin-top: 0;
   margin-bottom: 1.5rem;
@@ -184,7 +186,9 @@
   font-weight: bold;
   font-size: 0.95rem;
 }
-.permission-form-input {
+.permission-form-input,
+.permission-form-select,
+.permissions-cell-select {
   margin-top: 0.3rem;
   padding: 0.5rem;
   border-radius: 4px;

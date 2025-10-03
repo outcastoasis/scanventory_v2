@@ -18,14 +18,14 @@ export default function AdminPermissions() {
   const [error, setError] = useState("");
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortKey, setSortKey] = useState("key");
+  const [sortKey, setSortKey] = useState("id"); // <-- Default jetzt ID
   const [sortDir, setSortDir] = useState("asc");
 
   const [showForm, setShowForm] = useState(false);
   const [editingPermission, setEditingPermission] = useState(null);
   const [qrPermission, setQrPermission] = useState(null);
 
-  // Seite sichtbar lassen; Backend regelt 401/403.
+  // Daten laden
   useEffect(() => {
     (async () => {
       try {
@@ -36,7 +36,6 @@ export default function AdminPermissions() {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
 
-        // Wenn 401/403, nicht weg-navigieren, sondern sauber erklären
         if (pRes.status === 401 || pRes.status === 403) {
           setError(
             "Kein Zugriff auf die Rechteverwaltung. Bitte als Admin/Supervisor anmelden und sicherstellen, dass das Recht 'access_admin_panel' existiert."
@@ -89,7 +88,13 @@ export default function AdminPermissions() {
     const list = !term
       ? permissions
       : permissions.filter((p) => p.key.toLowerCase().includes(term));
+
     return [...list].sort((a, b) => {
+      if (sortKey === "id") {
+        const A = Number(a.id) || 0;
+        const B = Number(b.id) || 0;
+        return sortDir === "asc" ? A - B : B - A;
+      }
       const A = (a[sortKey] ?? "").toString().toLowerCase();
       const B = (b[sortKey] ?? "").toString().toLowerCase();
       if (A < B) return sortDir === "asc" ? -1 : 1;
@@ -197,6 +202,17 @@ export default function AdminPermissions() {
             <thead>
               <tr>
                 <th
+                  onClick={() => toggleSort("id")}
+                  className={sortKey === "id" ? "sorted" : ""}
+                  style={{ minWidth: 80 }}
+                >
+                  ID{" "}
+                  <span className="sort-icon">
+                    {sortKey === "id" ? (sortDir === "asc" ? "▲" : "▼") : "▲"}
+                  </span>
+                </th>
+
+                <th
                   onClick={() => toggleSort("key")}
                   className={sortKey === "key" ? "sorted" : ""}
                   style={{ minWidth: 180 }}
@@ -206,6 +222,7 @@ export default function AdminPermissions() {
                     {sortKey === "key" ? (sortDir === "asc" ? "▲" : "▼") : "▲"}
                   </span>
                 </th>
+
                 {roles.map((r) => (
                   <th key={r.id} style={{ minWidth: 150 }}>
                     {r.name}
@@ -214,10 +231,13 @@ export default function AdminPermissions() {
                 <th style={{ minWidth: 200 }}>Aktionen</th>
               </tr>
             </thead>
+
             <tbody>
               {filtered.map((perm) => (
                 <tr key={perm.id}>
+                  <td>{perm.id}</td>
                   <td>{perm.key}</td>
+
                   {roles.map((r) => {
                     const val = matrix[perm.key]?.[r.name] ?? "false";
                     return (
@@ -236,6 +256,7 @@ export default function AdminPermissions() {
                       </td>
                     );
                   })}
+
                   <td className="permissions-actions-cell">
                     <button
                       className="permissions-edit-button"
