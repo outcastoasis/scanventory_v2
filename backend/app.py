@@ -6,11 +6,8 @@ from models import db
 from routes.reservations import reservation_bp
 from routes.auth import auth_bp
 from routes.users import users_bp
-<<<<<<< HEAD
-=======
 from routes.tools import tools_bp
 from routes.permissions import permissions_bp
->>>>>>> 5d17132 (UI für Werkzeuge und Rechte)
 import os
 from setup import create_initial_data
 
@@ -32,11 +29,8 @@ CORS(
 app.register_blueprint(reservation_bp, url_prefix="/api/reservations")
 app.register_blueprint(auth_bp, url_prefix="/api")
 app.register_blueprint(users_bp)
-<<<<<<< HEAD
-=======
 app.register_blueprint(tools_bp)
 app.register_blueprint(permissions_bp)
->>>>>>> 5d17132 (UI für Werkzeuge und Rechte)
 
 
 @app.route("/api/ping")
