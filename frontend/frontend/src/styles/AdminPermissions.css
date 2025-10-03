@@ -1,0 +1,221 @@
+/* === Rechteverwaltung === */
+
+.permissions-page {
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+}
+
+.permissions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.permissions-title {
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.permissions-back-button {
+  background-color: #f2f2f2;
+  color: #333;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: background-color 0.2s ease;
+}
+.permissions-back-button:hover {
+  background-color: #ddd;
+}
+
+.permissions-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.permissions-add-button {
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.permissions-add-button:hover {
+  background-color: #155aa8;
+}
+.permissions-search {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex-grow: 1;
+  max-width: 300px;
+}
+
+.permissions-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+.permissions-table th,
+.permissions-table td {
+  border: 1px solid #e0e0e0;
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  vertical-align: middle;
+}
+.permissions-table th {
+  background-color: #f9f9f9;
+  cursor: pointer;
+  user-select: none;
+}
+.permissions-table th.sorted {
+  background-color: #e3f2fd;
+  font-weight: bold;
+}
+
+.sort-icon {
+  display: inline-block;
+  width: 1ch;
+  text-align: center;
+  opacity: 0.5;
+  font-size: 0.9rem;
+  margin-left: 0.3rem;
+}
+.sorted .sort-icon {
+  opacity: 1;
+}
+
+.permissions-cell-select {
+  width: 100%;
+  max-width: 140px;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.permissions-actions-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.permissions-edit-button,
+.permissions-delete-button,
+.permissions-qr-button {
+  margin: 0.25rem 0;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.permissions-edit-button {
+  background-color: #1976d2;
+  color: white;
+}
+.permissions-delete-button {
+  background-color: #d32f2f;
+  color: white;
+}
+.permissions-qr-button {
+  background-color: #f2f2f2;
+  color: #333;
+}
+.permissions-edit-button:hover {
+  background-color: #155aa8;
+}
+.permissions-delete-button:hover {
+  background-color: #aa1e1e;
+}
+.permissions-qr-button:hover {
+  background-color: #ddd;
+}
+
+.permissions-error {
+  color: red;
+  margin-bottom: 1rem;
+}
+.permissions-loading {
+  font-style: italic;
+}
+
+/* Modal */
+.permissions-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.permissions-modal {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Formular */
+.permission-form-title {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  text-align: center;
+}
+.permission-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.permission-form-label {
+  display: flex;
+  flex-direction: column;
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+.permission-form-input {
+  margin-top: 0.3rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+}
+.permission-form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+.permission-form-save-button {
+  background-color: #1976d2;
+  color: white;
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.permission-form-save-button:hover {
+  background-color: #155aa8;
+}
+.permission-form-cancel-button {
+  background-color: #ccc;
+  color: black;
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.permission-form-cancel-button:hover {
+  background-color: #bbb;
+}

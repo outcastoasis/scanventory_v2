@@ -11,9 +11,9 @@ const getToken = () => localStorage.getItem("token");
 export default function AdminPermissions() {
   const navigate = useNavigate();
 
-  const [roles, setRoles] = useState([]); // [{id,name}]
-  const [permissions, setPermissions] = useState([]); // [{id,key}]
-  const [matrix, setMatrix] = useState({}); // { permKey: { roleName: "true|false|self_only" } }
+  const [roles, setRoles] = useState([]);
+  const [permissions, setPermissions] = useState([]);
+  const [matrix, setMatrix] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -25,52 +25,59 @@ export default function AdminPermissions() {
   const [editingPermission, setEditingPermission] = useState(null);
   const [qrPermission, setQrPermission] = useState(null);
 
-  // Seite sichtbar lassen; Backend regelt 401/403.
+  // Access check
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/me`, {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        });
+        if (!res.ok) throw new Error("Nicht autorisiert");
+        const data = await res.json();
+        if (data.permissions?.access_admin_panel !== "true") {
+          navigate("/");
+        }
+      } catch {
+        navigate("/");
+      }
+    })();
+  }, []);
+
+  // load data
   useEffect(() => {
     (async () => {
       try {
         setLoading(true);
+        const [rRoles, rPerms, rMap] = await Promise.all([
+          fetch(`${API_URL}/api/roles`, {
+            headers: { Authorization: `Bearer ${getToken()}` },
+          }),
+          fetch(`${API_URL}/api/permissions`, {
+            headers: { Authorization: `Bearer ${getToken()}` },
+          }),
+          fetch(`${API_URL}/api/role-permissions`, {
+            headers: { Authorization: `Bearer ${getToken()}` },
+          }),
+        ]);
+        if (!rRoles.ok || !rPerms.ok || !rMap.ok) throw new Error();
 
-        // 1) Permissions laden
-        const pRes = await fetch(`${API_URL}/api/permissions`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        });
-
-        // Wenn 401/403, nicht weg-navigieren, sondern sauber erklären
-        if (pRes.status === 401 || pRes.status === 403) {
-          setError(
-            "Kein Zugriff auf die Rechteverwaltung. Bitte als Admin/Supervisor anmelden und sicherstellen, dass das Recht 'access_admin_panel' existiert."
-          );
-          setLoading(false);
-          return;
-        }
-        if (!pRes.ok) throw new Error("Permissions-Load fehlgeschlagen");
-
-        const permsData = await pRes.json();
+        const [rolesData, permsData, mapData] = await Promise.all([
+          rRoles.json(),
+          rPerms.json(),
+          rMap.json(),
+        ]);
+        setRoles(rolesData);
         setPermissions(permsData);
 
-        // 2) Matrix laden
-        const mRes = await fetch(`${API_URL}/api/role-permissions`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        });
-        if (!mRes.ok) throw new Error("Matrix-Load fehlgeschlagen");
-
-        const rows = await mRes.json(); // [{role, permissions:{key:value}}]
-
-        // Rollen aus Matrix ableiten
-        const roleNames = Array.from(new Set(rows.map((r) => r.role)));
-        setRoles(roleNames.map((n) => ({ id: n, name: n })));
-
-        // Matrix-Objekt aufbauen
+        // Matrix bauen: default "false", dann vorhandene Mappings überschreiben
         const m = {};
         for (const p of permsData) {
           m[p.key] = {};
-          for (const rn of roleNames) m[p.key][rn] = "false";
+          for (const r of rolesData) m[p.key][r.name] = "false";
         }
-        for (const row of rows) {
-          for (const [k, v] of Object.entries(row.permissions || {})) {
-            if (!m[k]) m[k] = {};
-            m[k][row.role] = v;
+        for (const it of mapData) {
+          if (m[it.permission] && m[it.permission][it.role] !== undefined) {
+            m[it.permission][it.role] = it.value;
           }
         }
         setMatrix(m);
@@ -106,14 +113,11 @@ export default function AdminPermissions() {
     }
   };
 
-  // Einzel-Zellen-Update
   const updateCell = async (roleName, permKey, value) => {
-    const prev = matrix[permKey]?.[roleName];
-    setMatrix((old) => ({
-      ...old,
-      [permKey]: { ...(old[permKey] || {}), [roleName]: value },
+    setMatrix((prev) => ({
+      ...prev,
+      [permKey]: { ...(prev[permKey] || {}), [roleName]: value },
     }));
-
     try {
       const res = await fetch(`${API_URL}/api/role-permissions`, {
         method: "PATCH",
@@ -123,17 +127,13 @@ export default function AdminPermissions() {
         },
         body: JSON.stringify({ role: roleName, permission: permKey, value }),
       });
-      if (!res.ok) {
-        const js = await res.json().catch(() => ({}));
-        throw new Error(js.error || "Speichern fehlgeschlagen");
-      }
+      if (!res.ok)
+        throw new Error(
+          (await res.json().catch(() => ({}))).error ||
+            "Speichern fehlgeschlagen"
+        );
     } catch (e) {
       alert(e.message);
-      // Rollback
-      setMatrix((old) => ({
-        ...old,
-        [permKey]: { ...(old[permKey] || {}), [roleName]: prev },
-      }));
     }
   };
 
