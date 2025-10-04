@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/AdminPermissions.css";
 import PermissionForm from "../components/PermissionForm";
-import QrModal from "../components/QrModal";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const getToken = () => localStorage.getItem("token");
@@ -18,12 +17,11 @@ export default function AdminPermissions() {
   const [error, setError] = useState("");
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortKey, setSortKey] = useState("id"); // <-- Default jetzt ID
+  const [sortKey, setSortKey] = useState("id"); // "id" | "key"
   const [sortDir, setSortDir] = useState("asc");
 
   const [showForm, setShowForm] = useState(false);
   const [editingPermission, setEditingPermission] = useState(null);
-  const [qrPermission, setQrPermission] = useState(null);
 
   // Daten laden
   useEffect(() => {
@@ -31,11 +29,10 @@ export default function AdminPermissions() {
       try {
         setLoading(true);
 
-        // 1) Permissions laden
+        // 1) Permissions
         const pRes = await fetch(`${API_URL}/api/permissions`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
-
         if (pRes.status === 401 || pRes.status === 403) {
           setError(
             "Kein Zugriff auf die Rechteverwaltung. Bitte als Admin/Supervisor anmelden und sicherstellen, dass das Recht 'access_admin_panel' existiert."
@@ -44,23 +41,19 @@ export default function AdminPermissions() {
           return;
         }
         if (!pRes.ok) throw new Error("Permissions-Load fehlgeschlagen");
-
         const permsData = await pRes.json();
         setPermissions(permsData);
 
-        // 2) Matrix laden
+        // 2) Matrix
         const mRes = await fetch(`${API_URL}/api/role-permissions`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
         if (!mRes.ok) throw new Error("Matrix-Load fehlgeschlagen");
-
         const rows = await mRes.json(); // [{role, permissions:{key:value}}]
 
-        // Rollen aus Matrix ableiten
         const roleNames = Array.from(new Set(rows.map((r) => r.role)));
         setRoles(roleNames.map((n) => ({ id: n, name: n })));
 
-        // Matrix-Objekt aufbauen
         const m = {};
         for (const p of permsData) {
           m[p.key] = {};
@@ -111,7 +104,6 @@ export default function AdminPermissions() {
     }
   };
 
-  // Einzel-Zellen-Update
   const updateCell = async (roleName, permKey, value) => {
     const prev = matrix[permKey]?.[roleName];
     setMatrix((old) => ({
@@ -273,24 +265,11 @@ export default function AdminPermissions() {
                     >
                       Löschen
                     </button>
-                    <button
-                      className="permissions-qr-button"
-                      onClick={() => setQrPermission(perm)}
-                    >
-                      QR anzeigen
-                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-
-          {qrPermission && (
-            <QrModal
-              permission={qrPermission}
-              onClose={() => setQrPermission(null)}
-            />
-          )}
         </>
       )}
 

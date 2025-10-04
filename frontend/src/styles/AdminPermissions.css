@@ -38,6 +38,7 @@
   gap: 1rem;
   margin-bottom: 1rem;
 }
+
 .permissions-add-button {
   background-color: #1976d2;
   color: white;
@@ -49,6 +50,7 @@
 .permissions-add-button:hover {
   background-color: #155aa8;
 }
+
 .permissions-search {
   padding: 0.5rem;
   border: 1px solid #ccc;
@@ -90,10 +92,18 @@
   opacity: 1;
 }
 
+/* Select in Matrixzellen */
+.permissions-cell-select {
+  width: 100%;
+  max-width: 140px;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
 /* Action-Buttons wie bei Users */
 .permissions-edit-button,
-.permissions-delete-button,
-.permissions-qr-button {
+.permissions-delete-button {
   margin-top: 0.1rem;
   margin-bottom: 0.1rem;
   margin-right: 0.3rem;
@@ -111,33 +121,14 @@
   background-color: #d32f2f;
   color: white;
 }
-.permissions-qr-button {
-  background-color: #f2f2f2;
-  color: #333;
-}
 .permissions-edit-button:hover {
   background-color: #155aa8;
 }
 .permissions-delete-button:hover {
   background-color: #aa1e1e;
 }
-.permissions-qr-button:hover {
-  background-color: #ddd;
-}
 
-/* Aktionen-Spalte: identisch zum Users-Layout */
-.permissions-actions-cell {
-  display: table-cell !important; /* zurück ins Tabellenlayout */
-  vertical-align: middle;
-  white-space: nowrap; /* Buttons bleiben in einer Reihe */
-}
-.permissions-actions-cell .permissions-edit-button,
-.permissions-actions-cell .permissions-delete-button,
-.permissions-actions-cell .permissions-qr-button {
-  display: inline-block;
-}
-
-/* Formular/Selects */
+/* Fehler/Ladezustand */
 .permissions-error {
   color: red;
   margin-bottom: 1rem;
@@ -146,7 +137,7 @@
   font-style: italic;
 }
 
-/* Modal */
+/* === Modal === */
 .permissions-modal-overlay {
   position: fixed;
   top: 0;
@@ -168,7 +159,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Formular (entspricht user-form*) */
+/* === Formular (entspricht user-form*) === */
 .permission-form-title {
   margin-top: 0;
   margin-bottom: 1.5rem;

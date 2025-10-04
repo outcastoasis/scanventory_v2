@@ -27,7 +27,34 @@
     - Firma (Dropdown-Auswahl: Administration, RTS, RSS, RTC, PZM)
     - Rolle & Erstellungsdatum
 - `.env`-basierte Konfiguration im Backend **und im Frontend**
-
+- **Werkzeugverwaltung im Adminbereich:**
+  - Werkzeugliste mit Filter & Sortierfunktion
+  - Erstellen, Bearbeiten, Löschen von Werkzeugen
+  - Visuelle Sortieranzeige (▲▼)
+  - QR-ID-Vergabe mit nächster freier `tool000X`-ID
+  - Zugriff nur mit `manage_tools = true`
+  - Anzeige von:
+    - ID
+    - Name
+    - QR-Code
+    - Kategorie
+    - Status
+    - Erstellungsdatum
+- `.env`-basierte Konfiguration im Backend **und im Frontend**
+- **Rechteverwaltung im Adminbereich:**
+  - Rechteliste mit Filter & Sortierfunktion
+  - Erstellen, Bearbeiten, Löschen von Rechten
+  - Visuelle Sortieranzeige (▲▼)
+  - QR-ID-Vergabe mit nächster freier `permission000X`-ID
+  - Zugriff nur mit `manage_permission = true`
+  - Anzeige von:
+    - ID
+    - Permission-Key
+    - admin
+    - guest
+    - supervisor
+    - user
+- `.env`-basierte Konfiguration im Backend **und im Frontend**
 ---
 
 ## 🔧 Setup
@@ -130,7 +157,7 @@ npm run dev
   - Massenexport (ZIP mit mehreren PNGs)
   - Dynamisches Canvas mit weißem Hintergrund, Textausrichtung und Schriftanpassung
 - [x] Werkzeugverwaltung UI (`/tools`)
-- [ ] Rechteverwaltung UI (`/permissions`)
+- [X] Rechteverwaltung UI (`/permissions`)
 
 ---
 
