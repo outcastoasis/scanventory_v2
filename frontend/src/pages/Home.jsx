@@ -132,24 +132,23 @@ function Home() {
       }
 
       if (scanState.user) {
-        fetchWithAuth(`${API_URL}/api/tools`)
-          .then((res) => res.json())
-          .then((tools) => {
-            const foundTool = tools.find(
-              (t) => t.code.toLowerCase() === toolCode
-            );
-            if (foundTool) {
-              setScanState((prev) => ({ ...prev, tool: toolCode }));
-              setScannedTool(foundTool);
-              setMessage(
-                `Werkzeug erkannt: ${foundTool.name}, ${foundTool.code}`
-              );
-            } else {
-              setMessage(`❌ Werkzeug nicht gefunden: ${toolCode}`);
+        fetch(`${API_URL}/api/tools/qr/${toolCode}`)
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error("Werkzeug nicht gefunden");
             }
+            return res.json();
           })
-          .catch(() => {
-            setMessage("❌ Fehler beim Laden der Werkzeuge");
+          .then((foundTool) => {
+            setScanState((prev) => ({ ...prev, tool: toolCode }));
+            setScannedTool(foundTool);
+            setMessage(
+              `Werkzeug erkannt: ${foundTool.name}, ${foundTool.qr_code}`
+            );
+          })
+          .catch((err) => {
+            console.error(err);
+            setMessage(`❌ Werkzeug nicht gefunden: ${toolCode}`);
           });
       } else {
         setMessage("Bitte zuerst Benutzer scannen");

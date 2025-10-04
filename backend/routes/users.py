@@ -45,9 +45,6 @@ def get_user_by_qr(qr_code):
     )
 
 
-
-
-
 # POST new user
 @users_bp.route("/api/users", methods=["POST"])
 @requires_permission("manage_users")

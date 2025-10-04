@@ -23,6 +23,24 @@ def list_tools():
         for t in tools
     ])
 
+# GET /api/tools/qr/<qr_code> → Werkzeug via QR-Code abrufen (ohne Auth)
+@tools_bp.route("/api/tools/qr/<qr_code>", methods=["GET"])
+def get_tool_by_qr(qr_code):
+    tool = Tool.query.filter(Tool.qr_code.ilike(qr_code)).first()
+    if not tool:
+        return jsonify({"error": "Werkzeug nicht gefunden"}), 404
+
+    return jsonify({
+        "id": tool.id,
+        "name": tool.name,
+        "qr_code": tool.qr_code,
+        "category": getattr(tool, "category", None),
+        "status": getattr(tool, "status", None),
+        "is_borrowed": getattr(tool, "is_borrowed", False),
+        "created_at": tool.created_at.isoformat() if getattr(tool, "created_at", None) else None,
+    })
+
+
 # Neues Tool
 @tools_bp.route("/api/tools", methods=["POST"])
 @requires_permission("manage_tools")
