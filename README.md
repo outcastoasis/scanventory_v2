@@ -15,46 +15,50 @@
 - Adminmenü mit Dropdown (Werkzeuge, Benutzer, Rechte, Reservation)
 - Rechte-Logik vollständig datenbankgesteuert
 - Rückgabe auch ohne Login möglich
-- **Benutzerverwaltung im Adminbereich:**
-  - Benutzerliste mit Filter & Sortierfunktion
-  - Erstellen, Bearbeiten, Löschen von Benutzern
-  - Visuelle Sortieranzeige (▲▼)
-  - QR-ID-Vergabe mit nächster freier `usr000X`-ID
-  - Zugriff nur mit `manage_users = true`
-  - Anzeige von:
-    - Benutzername
-    - Vorname, Nachname
-    - Firma (Dropdown-Auswahl: Administration, RTS, RSS, RTC, PZM)
-    - Rolle & Erstellungsdatum
-- `.env`-basierte Konfiguration im Backend **und im Frontend**
-- **Werkzeugverwaltung im Adminbereich:**
-  - Werkzeugliste mit Filter & Sortierfunktion
-  - Erstellen, Bearbeiten, Löschen von Werkzeugen
-  - Visuelle Sortieranzeige (▲▼)
-  - QR-ID-Vergabe mit nächster freier `tool000X`-ID
-  - Zugriff nur mit `manage_tools = true`
-  - Anzeige von:
-    - ID
-    - Name
-    - QR-Code
-    - Kategorie
-    - Status
-    - Erstellungsdatum
-- `.env`-basierte Konfiguration im Backend **und im Frontend**
-- **Rechteverwaltung im Adminbereich:**
-  - Rechteliste mit Filter & Sortierfunktion
-  - Erstellen, Bearbeiten, Löschen von Rechten
-  - Visuelle Sortieranzeige (▲▼)
-  - QR-ID-Vergabe mit nächster freier `permission000X`-ID
-  - Zugriff nur mit `manage_permission = true`
-  - Anzeige von:
-    - ID
-    - Permission-Key
-    - admin
-    - guest
-    - supervisor
-    - user
-- `.env`-basierte Konfiguration im Backend **und im Frontend**
+
+### **Benutzerverwaltung im Adminbereich**
+
+- Benutzerliste mit Filter & Sortierfunktion
+- Erstellen, Bearbeiten, Löschen von Benutzern
+- Visuelle Sortieranzeige (▲▼)
+- QR-ID-Vergabe mit nächster freier `usr000X`-ID
+- Zugriff nur mit `manage_users = true`
+- Anzeige von:
+  - Benutzername
+  - Vorname, Nachname
+  - Firma (Dropdown-Auswahl: Administration, RTS, RSS, RTC, PZM)
+  - Rolle & Erstellungsdatum
+
+### **Werkzeugverwaltung im Adminbereich**
+
+- Werkzeugliste mit Filter & Sortierfunktion
+- Erstellen, Bearbeiten, Löschen von Werkzeugen
+- Visuelle Sortieranzeige (▲▼)
+- QR-ID-Vergabe mit nächster freier `tool000X`-ID
+- Zugriff nur mit `manage_tools = true`
+- Anzeige von:
+  - ID
+  - Name
+  - QR-Code
+  - Kategorie
+  - Status
+  - Erstellungsdatum
+
+### **Rechteverwaltung im Adminbereich**
+
+- Rechteliste mit Filter & Sortierfunktion
+- Erstellen, Bearbeiten, Löschen von Rechten
+- Visuelle Sortieranzeige (▲▼)
+- QR-ID-Vergabe mit nächster freier `permission000X`-ID
+- Zugriff nur mit `manage_permission = true`
+- Anzeige von:
+  - ID
+  - Permission-Key
+  - admin
+  - guest
+  - supervisor
+  - user
+
 ---
 
 ## 🔧 Setup
@@ -93,17 +97,6 @@ Starten:
 python app.py
 ```
 
----
-
-#### ⚙️ .env Struktur im Frontend (neu erforderlich)
-
-```ini
-# frontend/.env
-VITE_API_URL=http://localhost:5050
-```
-
-Diese Variable wird benötigt, damit alle API-Calls (z. B. `/api/users`) an das Backend weitergeleitet werden. Ohne diese Konfiguration funktionieren keine Admin-Funktionen.
-
 ### 🔹 Frontend (React + Vite)
 
 ```bash
@@ -111,6 +104,15 @@ cd frontend
 npm install
 npm run dev
 ```
+
+#### ⚙️ .env Struktur im Frontend
+
+```ini
+# frontend/.env
+VITE_API_URL=http://localhost:5050
+```
+
+Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das Backend weitergeleitet werden. Ohne diese Konfiguration funktionieren keine Admin-Funktionen.
 
 ---
 
@@ -147,34 +149,36 @@ npm run dev
 
 - [x] Admin-Menü als Icon-Dropdown (⚙️)
 - [x] Benutzerverwaltung UI (`/users`)
-  - Suche über alle Spalten
-  - Sortierbare Spalten mit Icons (▲▼)
-  - QR-ID-Vergabe automatisch (`usr000X`)
-  - Modal-Fenster für neue Benutzer
-  - Admin kann sich nicht selbst löschen
-- [x] QR-Code-Exportfunktion in /users
+- [x] Werkzeugverwaltung UI (`/tools`)
+- [x] Rechteverwaltung UI (`/permissions`)
+- [x] QR-Code-Exportfunktion in `/users`
   - Einzel-QR als PNG (inkl. Vorschau)
   - Massenexport (ZIP mit mehreren PNGs)
   - Dynamisches Canvas mit weißem Hintergrund, Textausrichtung und Schriftanpassung
-- [x] Werkzeugverwaltung UI (`/tools`)
-- [X] Rechteverwaltung UI (`/permissions`)
 
 ---
 
 ## ✅ Weitere Features in Arbeit
 
-- [ ] Manuelle Reservation per UI (statt QR)
-- [ ] Bearbeitungsfunktion für eigene Einträge
-- [ ] Logging von Aktionen (auditierbar)
-- [ ] Sondercodes wie reload, cancel, return
-- [ ] CSV-/QR-Code-Export für Werkzeuge
+- [ ] `export_data` und `export_qr_codes` müssen in Exportlogik integriert werden (Berechtigungsprüfung)
+- [ ] Entfernen der Bearbeitungsfunktion einzelner Permission-Keys (nicht sinnvoll)
+- [ ] Admin-Panel für:
+  - Kategorienpflege bei Werkzeugen
+  - Firmenpflege bei Benutzern (nicht hardcoded)
+- [ ] Darstellung von Reservationen auf der Startseite als: `Start – Ende | Werkzeug – Nachname Vorname`
+- [ ] Kalenderhöhe dynamisch anpassen je nach Eintragsanzahl pro Tag
+- [ ] Klickbare Reservationen für alle sichtbar, Bearbeitung nur wenn berechtigt (`edit_reservations: true` oder `self_only`)
+- [ ] Seite zur manuellen Reservation für eingeloggte Benutzer (`create_reservations = self_only/true`)
+- [ ] Rückgabe-QR-Code (`return`) auf Startseite anzeigen
+- [ ] QR-Code für Dauerwahl (`dur1`, `dur2`, `dur3`) nach erfolgreichem Scan von `usrXXXX` und `toolXXXX` anzeigen
 
 ---
 
-## 🔲 Zusatzfunktionen
+## 🧠 Weitere geplante Verbesserungen
 
-- Offline-Hilfe für Admins und Nutzer
-- Tool-Kategorien & Einschränkungen nach Rollen (geplant)
+- [ ] Audit-Log-Ansicht (basierend auf `logs`-Tabelle)
+- [ ] Eigene Komponente für System-Statusmeldungen (z.B. Fehler, Erfolg)
+- [ ] Offline-Hilfe für Admins und Nutzer
 
 ---
 
