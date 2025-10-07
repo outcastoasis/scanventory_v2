@@ -20,6 +20,7 @@ function AdminUsers() {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [currentUserId, setCurrentUserId] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [permissions, setPermissions] = useState({});
 
   const getToken = () => localStorage.getItem("token");
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ function AdminUsers() {
           navigate("/");
         } else {
           setCurrentUserId(data.user_id);
+          setPermissions(data.permissions || {});
         }
       } catch (err) {
         navigate("/");
@@ -238,7 +240,16 @@ function AdminUsers() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button className="users-export-button" onClick={handleExportAllQR}>
+            <button
+              className="users-export-button"
+              onClick={handleExportAllQR}
+              disabled={permissions.export_qr_codes !== "true"}
+              title={
+                permissions.export_qr_codes === "true"
+                  ? "QR-Codes exportieren"
+                  : "Keine Berechtigung für Export"
+              }
+            >
               QR-Massenexport
             </button>
           </div>
@@ -395,6 +406,7 @@ function AdminUsers() {
             <QrModal
               user={selectedUser}
               onClose={() => setSelectedUser(null)}
+              canDownload={permissions.export_qr_codes === "true"}
             />
           )}
         </>

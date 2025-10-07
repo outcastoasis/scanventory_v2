@@ -21,6 +21,8 @@ export default function AdminTools() {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [currentUserId, setCurrentUserId] = useState(null);
   const [qrTool, setQrTool] = useState(null);
+  const [permissions, setPermissions] = useState({});
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,6 +35,7 @@ export default function AdminTools() {
         const me = await res.json();
         if (me.permissions?.manage_tools !== "true") return navigate("/");
         setCurrentUserId(me.user_id);
+        setPermissions(me.permissions || {});
       } catch {
         navigate("/");
       }
@@ -61,8 +64,14 @@ export default function AdminTools() {
       });
   }, [currentUserId]);
 
-  const handleCreate = () => { setEditingTool(null); setShowForm(true); };
-  const handleEdit   = (tool) => { setEditingTool(tool); setShowForm(true); };
+  const handleCreate = () => {
+    setEditingTool(null);
+    setShowForm(true);
+  };
+  const handleEdit = (tool) => {
+    setEditingTool(tool);
+    setShowForm(true);
+  };
   const handleDelete = (id) => {
     if (!confirm("Werkzeug wirklich löschen?")) return;
     fetch(`${API_URL}/api/tools/${id}`, {
@@ -79,7 +88,8 @@ export default function AdminTools() {
 
   const handleSort = (key) => {
     let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") direction = "desc";
+    if (sortConfig.key === key && sortConfig.direction === "asc")
+      direction = "desc";
     setSortConfig({ key, direction });
   };
 
@@ -109,7 +119,8 @@ export default function AdminTools() {
     for (const tool of sorted) {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      const qrSize = 200, padding = 20;
+      const qrSize = 200,
+        padding = 20;
 
       ctx.font = "bold 25px Arial";
       const name = tool.name || "";
@@ -117,22 +128,29 @@ export default function AdminTools() {
 
       ctx.font = "20px Arial";
       const codeWidth = ctx.measureText(tool.qr_code || "").width;
-      const catWidth  = tool.category ? ctx.measureText(tool.category).width : 0;
+      const catWidth = tool.category ? ctx.measureText(tool.category).width : 0;
 
       const maxTextWidth = Math.max(codeWidth, nameWidth, catWidth);
       const canvasWidth = qrSize + padding * 3 + maxTextWidth;
       const canvasHeight = 250;
-      canvas.width = canvasWidth; canvas.height = canvasHeight;
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
 
       ctx.fillStyle = "white";
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
       const qrCanvas = document.createElement("canvas");
-      await QRCode.toCanvas(qrCanvas, tool.qr_code || "", { width: qrSize, margin: 1 });
+      await QRCode.toCanvas(qrCanvas, tool.qr_code || "", {
+        width: qrSize,
+        margin: 1,
+      });
       ctx.drawImage(qrCanvas, padding, 20);
 
-      const textX = qrSize + padding * 2, textY = 100;
-      const boxPadding = 12, textBoxWidth = maxTextWidth + boxPadding * 2, textBoxHeight = 90;
+      const textX = qrSize + padding * 2,
+        textY = 100;
+      const boxPadding = 12,
+        textBoxWidth = maxTextWidth + boxPadding * 2,
+        textBoxHeight = 90;
       ctx.fillStyle = "white";
       ctx.fillRect(textX - boxPadding, textY - 40, textBoxWidth, textBoxHeight);
 
@@ -146,7 +164,10 @@ export default function AdminTools() {
 
       const dataUrl = canvas.toDataURL("image/png");
       const base64 = dataUrl.split(",")[1];
-      const filename = `${tool.qr_code || "tool"}_${name.replace(/\s+/g, "_")}.png`;
+      const filename = `${tool.qr_code || "tool"}_${name.replace(
+        /\s+/g,
+        "_"
+      )}.png`;
       zip.file(filename, base64, { base64: true });
     }
     const content = await zip.generateAsync({ type: "blob" });
@@ -178,7 +199,16 @@ export default function AdminTools() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button className="tools-export-button" onClick={handleExportAllQR}>
+            <button
+              className="tools-export-button"
+              onClick={handleExportAllQR}
+              disabled={permissions.export_qr_codes !== "true"}
+              title={
+                permissions.export_qr_codes === "true"
+                  ? "QR-Codes exportieren"
+                  : "Keine Berechtigung für Export"
+              }
+            >
               QR-Massenexport
             </button>
           </div>
@@ -186,23 +216,83 @@ export default function AdminTools() {
           <table className="tools-table">
             <thead>
               <tr>
-                <th onClick={() => handleSort("id")} className={sortConfig.key === "id" ? "sorted" : ""}>
-                  ID <span className="sort-icon">{sortConfig.key === "id" ? (sortConfig.direction === "asc" ? "▲" : "▼") : "▲"}</span>
+                <th
+                  onClick={() => handleSort("id")}
+                  className={sortConfig.key === "id" ? "sorted" : ""}
+                >
+                  ID{" "}
+                  <span className="sort-icon">
+                    {sortConfig.key === "id"
+                      ? sortConfig.direction === "asc"
+                        ? "▲"
+                        : "▼"
+                      : "▲"}
+                  </span>
                 </th>
-                <th onClick={() => handleSort("name")} className={sortConfig.key === "name" ? "sorted" : ""}>
-                  Name <span className="sort-icon">{sortConfig.key === "name" ? (sortConfig.direction === "asc" ? "▲" : "▼") : "▲"}</span>
+                <th
+                  onClick={() => handleSort("name")}
+                  className={sortConfig.key === "name" ? "sorted" : ""}
+                >
+                  Name{" "}
+                  <span className="sort-icon">
+                    {sortConfig.key === "name"
+                      ? sortConfig.direction === "asc"
+                        ? "▲"
+                        : "▼"
+                      : "▲"}
+                  </span>
                 </th>
-                <th onClick={() => handleSort("qr_code")} className={sortConfig.key === "qr_code" ? "sorted" : ""}>
-                  QR-Code <span className="sort-icon">{sortConfig.key === "qr_code" ? (sortConfig.direction === "asc" ? "▲" : "▼") : "▲"}</span>
+                <th
+                  onClick={() => handleSort("qr_code")}
+                  className={sortConfig.key === "qr_code" ? "sorted" : ""}
+                >
+                  QR-Code{" "}
+                  <span className="sort-icon">
+                    {sortConfig.key === "qr_code"
+                      ? sortConfig.direction === "asc"
+                        ? "▲"
+                        : "▼"
+                      : "▲"}
+                  </span>
                 </th>
-                <th onClick={() => handleSort("category")} className={sortConfig.key === "category" ? "sorted" : ""}>
-                  Kategorie <span className="sort-icon">{sortConfig.key === "category" ? (sortConfig.direction === "asc" ? "▲" : "▼") : "▲"}</span>
+                <th
+                  onClick={() => handleSort("category")}
+                  className={sortConfig.key === "category" ? "sorted" : ""}
+                >
+                  Kategorie{" "}
+                  <span className="sort-icon">
+                    {sortConfig.key === "category"
+                      ? sortConfig.direction === "asc"
+                        ? "▲"
+                        : "▼"
+                      : "▲"}
+                  </span>
                 </th>
-                <th onClick={() => handleSort("status")} className={sortConfig.key === "status" ? "sorted" : ""}>
-                  Status <span className="sort-icon">{sortConfig.key === "status" ? (sortConfig.direction === "asc" ? "▲" : "▼") : "▲"}</span>
+                <th
+                  onClick={() => handleSort("status")}
+                  className={sortConfig.key === "status" ? "sorted" : ""}
+                >
+                  Status{" "}
+                  <span className="sort-icon">
+                    {sortConfig.key === "status"
+                      ? sortConfig.direction === "asc"
+                        ? "▲"
+                        : "▼"
+                      : "▲"}
+                  </span>
                 </th>
-                <th onClick={() => handleSort("created_at")} className={sortConfig.key === "created_at" ? "sorted" : ""}>
-                  Erstellt <span className="sort-icon">{sortConfig.key === "created_at" ? (sortConfig.direction === "asc" ? "▲" : "▼") : "▲"}</span>
+                <th
+                  onClick={() => handleSort("created_at")}
+                  className={sortConfig.key === "created_at" ? "sorted" : ""}
+                >
+                  Erstellt{" "}
+                  <span className="sort-icon">
+                    {sortConfig.key === "created_at"
+                      ? sortConfig.direction === "asc"
+                        ? "▲"
+                        : "▼"
+                      : "▲"}
+                  </span>
                 </th>
                 <th>Aktionen</th>
               </tr>
@@ -214,22 +304,46 @@ export default function AdminTools() {
                   <td>{t.name}</td>
                   <td>{t.qr_code}</td>
                   <td>{t.category || "-"}</td>
-                  <td className={`tools-status ${t.is_borrowed ? "borrowed" : "available"}`}>
-                    {t.is_borrowed ? "ausgeliehen" : (t.status || "available")}
+                  <td
+                    className={`tools-status ${
+                      t.is_borrowed ? "borrowed" : "available"
+                    }`}
+                  >
+                    {t.is_borrowed ? "ausgeliehen" : t.status || "available"}
                   </td>
                   <td>{t.created_at?.slice(0, 10) || "-"}</td>
                   <td>
-                    <button className="tools-edit-button" onClick={() => handleEdit(t)}>Bearbeiten</button>
-                    <button className="tools-delete-button" onClick={() => handleDelete(t.id)}>Löschen</button>
-                    <button className="tools-qr-button" onClick={() => setQrTool(t)}>QR anzeigen</button>
+                    <button
+                      className="tools-edit-button"
+                      onClick={() => handleEdit(t)}
+                    >
+                      Bearbeiten
+                    </button>
+                    <button
+                      className="tools-delete-button"
+                      onClick={() => handleDelete(t.id)}
+                    >
+                      Löschen
+                    </button>
+                    <button
+                      className="tools-qr-button"
+                      onClick={() => setQrTool(t)}
+                    >
+                      QR anzeigen
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
 
-          {/* Generisches QR-Modal verwenden */}
-          {qrTool && <QrModal tool={qrTool} onClose={() => setQrTool(null)} />}
+          {qrTool && (
+            <QrModal
+              tool={qrTool}
+              onClose={() => setQrTool(null)}
+              canDownload={permissions.export_qr_codes === "true"}
+            />
+          )}
         </>
       )}
 
@@ -242,7 +356,9 @@ export default function AdminTools() {
               onSave={(saved) => {
                 setShowForm(false);
                 setTools((prev) =>
-                  editingTool ? prev.map((t) => (t.id === saved.id ? saved : t)) : [...prev, saved]
+                  editingTool
+                    ? prev.map((t) => (t.id === saved.id ? saved : t))
+                    : [...prev, saved]
                 );
               }}
             />

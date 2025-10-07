@@ -3,14 +3,7 @@ import { useEffect, useRef } from "react";
 import QRCode from "qrcode";
 import "../styles/QrModal.css";
 
-/**
- * Unterstützt NUR user oder tool (kein permission).
- * Props:
- *  - user: { first_name, last_name, company_name, qr_code }
- *  - tool: { name, category, qr_code }
- *  - onClose: function
- */
-function QrModal({ user, tool, onClose }) {
+function QrModal({ user, tool, onClose, canDownload = false }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -97,7 +90,17 @@ function QrModal({ user, tool, onClose }) {
         <h3>{title}</h3>
         <canvas ref={canvasRef} className="qr-canvas" />
         <div className="qr-actions">
-          <button onClick={handleDownload}>Herunterladen</button>
+          <button
+            onClick={handleDownload}
+            disabled={!canDownload}
+            title={
+              canDownload
+                ? "QR-Code herunterladen"
+                : "Keine Berechtigung zum Herunterladen"
+            }
+          >
+            Herunterladen
+          </button>
           <button onClick={onClose}>Schließen</button>
         </div>
       </div>

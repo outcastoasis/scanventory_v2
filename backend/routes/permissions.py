@@ -9,6 +9,7 @@ permissions_bp = Blueprint("permissions", __name__)
 
 # -------- Permissions: Keys anlegen / listen / löschen --------
 
+
 @permissions_bp.route("/api/permissions", methods=["GET"])
 @cross_origin(origins="http://localhost:5173", supports_credentials=True)
 @requires_permission("access_admin_panel")
@@ -51,6 +52,7 @@ def delete_permission(perm_id):
 
 # -------- Role ↔ Permission Matrix lesen / setzen --------
 
+
 @permissions_bp.route("/api/role-permissions", methods=["GET"])
 @cross_origin(origins="http://localhost:5173", supports_credentials=True)
 @requires_permission("access_admin_panel")
@@ -61,7 +63,9 @@ def get_role_permissions():
     for r in roles:
         row = {"role": r.name, "permissions": {}}
         for p in perms:
-            rp = RolePermission.query.filter_by(role_id=r.id, permission_id=p.id).first()
+            rp = RolePermission.query.filter_by(
+                role_id=r.id, permission_id=p.id
+            ).first()
             row["permissions"][p.key] = rp.value if rp else "false"
         matrix.append(row)
     return jsonify(matrix)
@@ -77,8 +81,8 @@ def set_role_permission():
     """
     data = request.get_json() or {}
     role_name = data.get("role")
-    perm_key  = data.get("permission")
-    value     = data.get("value")
+    perm_key = data.get("permission")
+    value = data.get("value")
 
     if value not in {"true", "false", "self_only"}:
         return jsonify({"error": "Ungültiger value"}), 400
@@ -95,7 +99,9 @@ def set_role_permission():
     if rp:
         rp.value = value
     else:
-        db.session.add(RolePermission(role_id=role.id, permission_id=perm.id, value=value))
+        db.session.add(
+            RolePermission(role_id=role.id, permission_id=perm.id, value=value)
+        )
 
     db.session.commit()
     return jsonify({"message": "Gespeichert"}), 200
@@ -132,13 +138,13 @@ def patch_role_permissions():
 
     # Cache für schnellere Zuordnung
     roles_by_name = {r.name: r for r in Role.query.all()}
-    perms_by_key  = {p.key: p for p in Permission.query.all()}
+    perms_by_key = {p.key: p for p in Permission.query.all()}
 
     updated = 0
     for ch in changes:
         role_name = ch.get("role")
-        perm_key  = ch.get("permission")
-        value     = ch.get("value")
+        perm_key = ch.get("permission")
+        value = ch.get("value")
 
         if not role_name or not perm_key or value not in allowed:
             continue
@@ -148,14 +154,23 @@ def patch_role_permissions():
         if not role or not perm:
             continue
 
-        rp = RolePermission.query.filter_by(role_id=role.id, permission_id=perm.id).first()
+        rp = RolePermission.query.filter_by(
+            role_id=role.id, permission_id=perm.id
+        ).first()
         if rp:
             if rp.value != value:
                 rp.value = value
                 updated += 1
         else:
-            db.session.add(RolePermission(role_id=role.id, permission_id=perm.id, value=value))
+            db.session.add(
+                RolePermission(role_id=role.id, permission_id=perm.id, value=value)
+            )
             updated += 1
 
     db.session.commit()
     return jsonify({"updated": updated}), 200
+
+
+@permissions_bp.route("/api/permissions/<int:perm_id>", methods=["PATCH"])
+def permission_patch_blocked(perm_id):
+    return jsonify({"error": "Bearbeiten von Permission-Keys ist nicht erlaubt."}), 405

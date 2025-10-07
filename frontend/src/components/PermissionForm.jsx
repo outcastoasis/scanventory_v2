@@ -6,7 +6,6 @@ const API_URL = import.meta.env.VITE_API_URL;
 const getToken = () => localStorage.getItem("token");
 
 export default function PermissionForm({ permission, onClose, onSave }) {
-  const isEditing = !!permission?.id;
   const [keyVal, setKeyVal] = useState(permission?.key || "");
   const [saving, setSaving] = useState(false);
 
@@ -22,10 +21,9 @@ export default function PermissionForm({ permission, onClose, onSave }) {
     }
     setSaving(true);
     try {
-      const url = isEditing
-        ? `${API_URL}/api/permissions/${permission.id}`
-        : `${API_URL}/api/permissions`;
-      const method = isEditing ? "PATCH" : "POST";
+      const url = `${API_URL}/api/permissions`;
+      const method = "POST";
+
       const res = await fetch(url, {
         method,
         headers: {
@@ -46,9 +44,8 @@ export default function PermissionForm({ permission, onClose, onSave }) {
 
   return (
     <form className="permission-form" onSubmit={handleSubmit}>
-      <h3 className="permission-form-title">
-        {isEditing ? "Recht bearbeiten" : "Neues Recht"}
-      </h3>
+      <h3 className="permission-form-title">Neues Recht</h3>
+
       <label className="permission-form-label">
         Permission-Key*
         <input

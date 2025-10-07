@@ -251,15 +251,6 @@ export default function AdminPermissions() {
 
                   <td className="permissions-actions-cell">
                     <button
-                      className="permissions-edit-button"
-                      onClick={() => {
-                        setEditingPermission(perm);
-                        setShowForm(true);
-                      }}
-                    >
-                      Bearbeiten
-                    </button>
-                    <button
                       className="permissions-delete-button"
                       onClick={() => removePermission(perm)}
                     >

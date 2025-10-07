@@ -77,3 +77,11 @@
 .qr-actions button:hover {
   filter: brightness(1.1);
 }
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #ccc !important;
+  color: #666 !important;
+  border-color: #aaa !important;
+}
