@@ -252,7 +252,15 @@ function Home() {
         localStorage.removeItem("token");
       }
     }
-    fetchReservations();
+
+    fetchReservations(); // Initial laden
+
+    // 🕒 Polling alle 30 Sekunden
+    const interval = setInterval(() => {
+      fetchReservations();
+    }, 30000); // 30_000 ms = 30 Sekunden
+
+    return () => clearInterval(interval); // Cleanup
   }, []);
 
   return (
