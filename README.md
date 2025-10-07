@@ -6,7 +6,7 @@
 
 ## 📆 Aktueller Stand (Oktober 2025)
 
-- QR-Scan per Tastaturemulation (User, Werkzeug, Dauer)
+- QR-Scan per Tastaturemulation (User, Werkzeug, Dauer) -> Bei aktuellen oder in Zukunft vorhandenen Reservationen = Fail
 - Werkzeugreservierungen mit Start-/Endzeitpunkt (UTC)
 - Rückgabe per QR-Scan oder Login
 - Kalenderansicht mit allen Einträgen (öffentlich sichtbar)
@@ -179,6 +179,8 @@ Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das B
 - [ ] Audit-Log-Ansicht (basierend auf `logs`-Tabelle)
 - [ ] Eigene Komponente für System-Statusmeldungen (z.B. Fehler, Erfolg)
 - [ ] Offline-Hilfe für Admins und Nutzer
+- [x] Automatischer Reset von `is_borrowed` per Scheduler im Backend
+- [x] Automatisches Polling der Kalenderdaten alle 30 Sekunden (Live-Update bei Scannerverwendung)
 
 ---
 
