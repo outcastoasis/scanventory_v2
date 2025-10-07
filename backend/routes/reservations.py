@@ -56,14 +56,23 @@ def create_reservation():
         db.session.add(tool)
         db.session.flush()
 
-    if tool.is_borrowed:
-        return jsonify({"error": "Werkzeug ist bereits ausgeliehen"}), 400
+    # ⏱️ Zeit prüfen – keine aktive oder zukünftige Reservation erlaubt
+    now_utc = datetime.utcnow()
+    conflict = Reservation.query.filter(
+        Reservation.tool_id == tool.id,
+        Reservation.end_time >= now_utc,  # noch aktiv oder geplant
+    ).first()
 
+    if conflict:
+        return jsonify({"error": "Werkzeug ist aktuell oder bald reserviert"}), 400
+
+    # Reservation berechnen (lokal → UTC)
     zurich = timezone("Europe/Zurich")
     now_local = datetime.now(zurich)
     end_local = now_local.replace(
         hour=23, minute=59, second=0, microsecond=0
     ) + timedelta(days=duration - 1)
+
     start_time = now_local.astimezone(pytz.utc)
     end_time = end_local.astimezone(pytz.utc)
 
@@ -105,8 +114,8 @@ def get_reservations():
         result.append(
             {
                 "id": res.id,
-                "user": res.user.qr_code,
-                "tool": res.tool.qr_code,
+                "user": f"{res.user.last_name or ''} {res.user.first_name or ''}".strip(),
+                "tool": res.tool.name or res.tool.qr_code,
                 "start": start_local.strftime("%Y-%m-%d %H:%M"),
                 "end": end_local.strftime("%Y-%m-%d %H:%M"),
             }

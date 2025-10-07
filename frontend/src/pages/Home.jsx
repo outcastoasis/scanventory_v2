@@ -173,15 +173,23 @@ function Home() {
             duration: newState.duration,
           }),
         })
-          .then((res) => res.json())
-          .then(() => {
-            resetScan("✅Reservation gespeichert");
+          .then(async (res) => {
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+              // Fehler vom Backend (z. B. Werkzeug reserviert, Berechtigung, etc.)
+              const errorMsg = data.error || "Reservation fehlgeschlagen";
+              throw new Error(errorMsg);
+            }
+
+            resetScan("✅ Reservation gespeichert");
             fetchReservations();
           })
           .catch((err) => {
             console.error("Fehler beim Speichern:", err);
-            resetScan("❌ Fehler bei der Reservation");
+            resetScan(`❌ ${err.message}`);
           });
+
         return;
       }
     }

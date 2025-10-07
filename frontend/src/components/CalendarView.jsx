@@ -21,11 +21,19 @@ function CalendarView({ reservations }) {
   const [currentView, setCurrentView] = useState("month");
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  const events = reservations.map((res) => ({
-    title: `${res.tool} - ${res.user}`,
-    start: new Date(res.start),
-    end: new Date(res.end),
-  }));
+  const formatTime = (date) => format(new Date(date), "HH:mm", { locale: de });
+
+  const events = reservations.map((res) => {
+    const start = new Date(res.start);
+    const end = new Date(res.end);
+    const timeRange = `${formatTime(start)} – ${formatTime(end)}`;
+    const title = `${timeRange} | ${res.tool} – ${res.user}`;
+    return {
+      title,
+      start,
+      end,
+    };
+  });
 
   return (
     <div style={{ height: 600 }}>
