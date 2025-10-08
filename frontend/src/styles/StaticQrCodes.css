@@ -1,0 +1,9 @@
+.static-qr-wrapper {
+  border: 1px solid #e5e7eb;
+  background-color: #ffffff;
+  padding: 10px;
+  border-radius: 8px;
+  width: fit-content;
+  height: fit-content;
+  min-height: 150px;
+}

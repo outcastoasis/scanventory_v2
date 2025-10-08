@@ -3,6 +3,7 @@ import ScannerHandler from "../components/ScannerHandler";
 import "../styles/Home.css";
 import CalendarView from "../components/CalendarView";
 import { jwtDecode } from "jwt-decode";
+import StaticQrCodes from "../components/StaticQrCodes";
 
 // Font Awesome Imports
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -336,7 +337,10 @@ function Home() {
 
       <section className="home-scanner">
         <h2>Scan-Status</h2>
-        <div className="scan-box">{message}</div>
+        <div className="home-scanner-row">
+          <div className="scan-box">{message}</div>
+          <StaticQrCodes />
+        </div>
         <ScannerHandler onScan={handleScan} />
       </section>
 

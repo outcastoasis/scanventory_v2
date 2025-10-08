@@ -46,7 +46,7 @@
 /* Scanner + Kalender */
 .home-scanner,
 .home-calendar {
-  margin-bottom: 2rem;
+  margin-bottom: 0.5rem;
 }
 .home-scanner h2,
 .home-calendar h2 {
@@ -55,12 +55,15 @@
   margin-bottom: 0.5rem;
 }
 .scan-box {
-  padding: 2rem;
+  flex-grow: 1;
   background-color: #f3f4f6;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
+  padding: 1.5rem;
   font-size: 1rem;
   color: #111827;
+  min-height: 150px;
+  word-wrap: break-word;
 }
 
 /* Admin Dropdown */
@@ -119,4 +122,11 @@
     font-size: 0.95rem;
     padding: 0.75rem;
   }
+}
+
+.home-scanner-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
 }
