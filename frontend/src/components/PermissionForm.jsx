@@ -9,10 +9,6 @@ export default function PermissionForm({ permission, onClose, onSave }) {
   const [keyVal, setKeyVal] = useState(permission?.key || "");
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!isEditing) setKeyVal("");
-  }, [isEditing]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!keyVal.trim()) {
