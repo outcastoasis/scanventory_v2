@@ -171,20 +171,26 @@ Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das B
 - [ ] Seite zur manuellen Reservation für eingeloggte Benutzer (`create_reservations = self_only/true`)
 - [ ] Import von CSV für Benutzer und Werkzeuglisten mit automatischer QR Code ID vergabe (Vorhandene Überspringen)
 - [x] Rückgabe-QR-Code (`return`) auf Startseite anzeigen
-- [x] Rückgabe QR Code Benennen/Beschreiben
 - [ ] QR-Code für Dauerwahl (`dur1`, `dur2`, `dur3`) nach erfolgreichem Scan von `usrXXXX` und `toolXXXX` anzeigen
 
 ---
 
 ## 🧠 Weitere geplante Verbesserungen
 
-- [ ] Audit-Log-Ansicht (basierend auf `logs`-Tabelle)
-- [ ] Eigene Komponente für System-Statusmeldungen (z.B. Fehler, Erfolg)
-- [ ] Wenn tool zuerst gescannt, info der aktuellen Reservation und über werkzeug anzeigen
+- [ ] Wenn Tool zuerst gescannt, info der aktuellen Reservation und des werkzeuges anzeigen
 - [ ] Offline-Hilfe für Admins und Nutzer
-- [ ] bessere visuelle bestätigung bei reservationen per Scanner
 - [x] Automatischer Reset von `is_borrowed` per Scheduler im Backend
 - [x] Automatisches Polling der Kalenderdaten alle 30 Sekunden (Live-Update bei Scannerverwendung)
+
+## 🧠 Quality of Life
+
+- [ ] bessere visuelle bestätigung bei reservationen per Scanner
+- [ ] Audit-Log-Ansicht (basierend auf `logs`-Tabelle)
+- [ ] Eigene Komponente für System-Statusmeldungen (z.B. Fehler, Erfolg)
+- [ ] Rückgabe QR Code auf Startseite benennen/beschreiben/Titel hinzufügen
+- [ ] Responsivness verbessern von aktueller Seite (Hochformat priorisieren)
+- [ ] Kalendersprache auf Deutsch stellen (October, Wed, 7:57 PM, etc)
+
 
 ---
 
