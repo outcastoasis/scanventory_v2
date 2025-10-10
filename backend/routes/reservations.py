@@ -8,8 +8,28 @@ from utils.permissions import get_token_payload
 
 reservation_bp = Blueprint("reservations", __name__)
 
+
+# -----------------------------
+# Hilfsfunktionen
+# -----------------------------
+def _recompute_tool_borrowed(tool_id: int):
+    """Setzt Tool.is_borrowed basierend auf aktiver Reservation (Stand: jetzt) neu."""
+    if not tool_id:
+        return
+    now_utc = datetime.utcnow()
+    tool = Tool.query.get(tool_id)
+    if not tool:
+        return
+    active = Reservation.query.filter(
+        Reservation.tool_id == tool_id,
+        Reservation.start_time <= now_utc,
+        Reservation.end_time >= now_utc,
+    ).first()
+    tool.is_borrowed = bool(active)
+
+
 def _role_value_for(user_id, perm_key):
-    """Gibt 'true' | 'self_only' | 'false' (oder None) für eine Permission zurück."""
+    """Gibt 'true' | 'self_only' | 'false' für eine Permission zurück."""
     if not user_id:
         return "false"
     perm = Permission.query.filter_by(key=perm_key).first()
@@ -18,6 +38,27 @@ def _role_value_for(user_id, perm_key):
         return "false"
     rp = RolePermission.query.filter_by(role_id=user.role_id, permission_id=perm.id).first()
     return rp.value if rp else "false"
+
+
+def _parse_to_utc(val):
+    """Akzeptiert ISO (mit/ohne Z) oder 'YYYY-mm-dd HH:MM' (lokal) und liefert naive UTC-datetime."""
+    zurich = timezone("Europe/Zurich")
+    try:
+        # ISO?
+        dt = datetime.fromisoformat(str(val).replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            # als lokal interpretieren
+            dt = zurich.localize(dt)
+        return dt.astimezone(pytz.utc).replace(tzinfo=None)
+    except Exception:
+        # Fallback: "YYYY-mm-dd HH:MM"
+        try:
+            dt = datetime.strptime(val, "%Y-%m-%d %H:%M")
+            dt = zurich.localize(dt)
+            return dt.astimezone(pytz.utc).replace(tzinfo=None)
+        except Exception:
+            raise
+
 
 # -----------------------------
 # Reservation anlegen
@@ -35,7 +76,6 @@ def create_reservation():
     # Prüfe Token
     payload = get_token_payload()
     user_id = payload["user_id"] if payload else None
-    role = payload["role"] if payload else "guest"
 
     if user_id:
         # Muss create_reservations >= true haben
@@ -59,7 +99,7 @@ def create_reservation():
         db.session.add(tool)
         db.session.flush()
 
-    # Zeitkonflikt prüfen
+    # Zeitkonflikt prüfen: keine aktive oder zukünftige Reservation zulassen
     now_utc = datetime.utcnow()
     conflict = Reservation.query.filter(
         Reservation.tool_id == tool.id,
@@ -78,7 +118,10 @@ def create_reservation():
 
     reservation = Reservation(user=user, tool=tool, start_time=start_time, end_time=end_time)
     db.session.add(reservation)
-    tool.is_borrowed = True
+
+    # Konsistenten Status setzen
+    db.session.flush()
+    _recompute_tool_borrowed(tool.id)
     db.session.commit()
 
     return jsonify({"message": "Reservation saved"}), 201
@@ -94,10 +137,8 @@ def get_reservations():
     try:
         payload = get_token_payload()
         user_id = payload["user_id"] if payload else None
-        role = payload["role"] if payload else "guest"
-    except:
+    except Exception:
         user_id = None
-        role = "guest"
 
     reservations = Reservation.query.order_by(Reservation.start_time.desc()).all()
     result = []
@@ -123,7 +164,10 @@ def get_reservations():
                 },
             }
         )
-    return jsonify(result), 200
+    resp = jsonify(result)
+    # Browser/Proxy sollen nicht cachen
+    resp.headers["Cache-Control"] = "no-store"
+    return resp, 200
 
 
 # -----------------------------
@@ -134,7 +178,6 @@ def update_reservation(res_id):
     data = request.get_json() or {}
     payload = get_token_payload()
     user_id = payload["user_id"] if payload else None
-    role = payload["role"] if payload else "guest"
 
     res = Reservation.query.get_or_404(res_id)
 
@@ -154,7 +197,7 @@ def update_reservation(res_id):
             if new_start and res.start_time != new_start:
                 res.start_time = new_start
                 changed = True
-        except:
+        except Exception:
             return jsonify({"error": "Invalid start_time"}), 400
 
     if "end_time" in data and data["end_time"]:
@@ -163,7 +206,7 @@ def update_reservation(res_id):
             if new_end and res.end_time != new_end:
                 res.end_time = new_end
                 changed = True
-        except:
+        except Exception:
             return jsonify({"error": "Invalid end_time"}), 400
 
     if "note" in data:
@@ -174,34 +217,47 @@ def update_reservation(res_id):
     if not changed:
         return jsonify({"message": "Keine Änderungen"}), 200
 
+    # Konsistenz: Tool-Status neu berechnen
+    db.session.flush()
+    _recompute_tool_borrowed(res.tool_id)
     db.session.commit()
 
-    return jsonify({
-        "id": res.id,
-        "start_time": res.start_time.replace(tzinfo=pytz.utc).isoformat(),
-        "end_time": res.end_time.replace(tzinfo=pytz.utc).isoformat(),
-        "note": getattr(res, "note", None),
-    }), 200
+    return jsonify(
+        {
+            "id": res.id,
+            "start_time": res.start_time.replace(tzinfo=pytz.utc).isoformat(),
+            "end_time": res.end_time.replace(tzinfo=pytz.utc).isoformat(),
+            "note": getattr(res, "note", None),
+        }
+    ), 200
 
 
-def _parse_to_utc(val):
-    """Akzeptiert ISO (mit/ohne Z) oder 'YYYY-mm-dd HH:MM' (lokal) und liefert UTC-datetime."""
-    zurich = timezone("Europe/Zurich")
-    try:
-        # ISO?
-        dt = datetime.fromisoformat(val.replace("Z", "+00:00"))
-        if dt.tzinfo is None:
-            # als lokal interpretieren
-            dt = zurich.localize(dt)
-        return dt.astimezone(pytz.utc).replace(tzinfo=None)
-    except:
-        # Fallback: "YYYY-mm-dd HH:MM"
-        try:
-            dt = datetime.strptime(val, "%Y-%m-%d %H:%M")
-            dt = zurich.localize(dt)
-            return dt.astimezone(pytz.utc).replace(tzinfo=None)
-        except:
-            raise
+# -----------------------------
+# Reservation löschen (DELETE)
+# -----------------------------
+@reservation_bp.route("/<int:res_id>", methods=["DELETE"])
+def delete_reservation(res_id):
+    """Reservation löschen – erlaubt wenn edit_reservations: true | self_only (nur eigene)."""
+    payload = get_token_payload()
+    user_id = payload["user_id"] if payload else None
+    if not user_id:
+        return jsonify({"error": "Keine Berechtigung"}), 403
+
+    res = Reservation.query.get_or_404(res_id)
+
+    val = _role_value_for(user_id, "edit_reservations")
+    if val == "false":
+        return jsonify({"error": "Keine Berechtigung"}), 403
+    if val == "self_only" and res.user_id != user_id:
+        return jsonify({"error": "Nur eigene Reservationen löschbar"}), 403
+
+    tool_id = res.tool_id
+    db.session.delete(res)
+    db.session.flush()
+    _recompute_tool_borrowed(tool_id)
+    db.session.commit()
+
+    return jsonify({"message": "Reservation gelöscht"}), 200
 
 
 # -----------------------------
@@ -214,10 +270,8 @@ def return_tool():
     try:
         payload = get_token_payload()
         user_id = payload["user_id"] if payload else None
-        role = payload["role"] if payload else "guest"
-    except:
+    except Exception:
         user_id = None
-        role = "guest"
 
     # JSON oder Form akzeptieren
     data = request.get_json(silent=True) or request.form or {}
@@ -237,15 +291,16 @@ def return_tool():
     if not reservation or reservation.end_time < datetime.utcnow():
         return jsonify({"error": "Keine aktive Ausleihe gefunden"}), 404
 
-    # Bei eingeloggten Benutzern mit self_only nur eigene Reservation zurückgeben
+    # Eingeloggte mit self_only dürfen nur eigene zurückgeben
     if user_id:
         val = _role_value_for(user_id, "edit_reservations")
         if val == "self_only" and reservation.user_id != user_id:
             return jsonify({"error": "Keine Berechtigung für fremde Reservationen"}), 403
 
-    # Rückgabe
+    # Rückgabe: Endzeit setzen, dann Tool-Status konsistent neu berechnen
     reservation.end_time = datetime.utcnow()
-    tool.is_borrowed = False
+    db.session.flush()
+    _recompute_tool_borrowed(tool.id)
     db.session.commit()
 
     return jsonify({"message": "Werkzeug zurückgegeben"}), 200
