@@ -224,6 +224,7 @@ function Home() {
       );
   };
 
+  // ⬇️ Angepasst: nach Login harter Reload, damit Modal/State/Token sicher neu initialisieren
   const handleLogin = () => {
     fetch(`${API_URL}/api/login`, {
       method: "POST",
@@ -235,20 +236,28 @@ function Home() {
         return res.json();
       })
       .then((data) => {
+        localStorage.setItem("token", data.token);
         setLoggedInUser(data.username);
         setRole(data.role);
-        localStorage.setItem("token", data.token);
         setLoginData({ username: "", password: "" });
-        fetchReservations();
+
+        // Harte Neuinitialisierung, damit alle Komponenten (inkl. Popups) den neuen Token/Role laden
+        setTimeout(() => {
+          window.location.reload();
+        }, 50);
       })
       .catch(() => alert("❌ Ungültiger Login"));
   };
 
+  // (Optional) Auch beim Logout hart neu laden
   const handleLogout = () => {
     setLoggedInUser(null);
     setRole(null);
     localStorage.removeItem("token");
-    fetchReservations();
+    // fetchReservations(); // nicht nötig, wir reloaden hart
+    setTimeout(() => {
+      window.location.reload();
+    }, 50);
   };
 
   // Initial-Load + Polling
