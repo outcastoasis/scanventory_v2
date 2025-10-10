@@ -54,6 +54,7 @@
   font-weight: 600;
   margin-bottom: 0.5rem;
 }
+
 .scan-box {
   flex-grow: 1;
   background-color: #f3f4f6;
@@ -64,6 +65,83 @@
   color: #111827;
   min-height: 150px;
   word-wrap: break-word;
+}
+
+/* --- Kalender: Lösung A + Responsive --- */
+
+/* RBC (react-big-calendar) soll nicht durch äußere Styles begrenzt werden */
+.home-calendar .rbc-calendar {
+  height: 100% !important; /* Höhe kommt vom umschließenden Div (dynamicHeight) */
+}
+
+/* Header/Labels etwas kompakter */
+.home-calendar .rbc-header {
+  padding: 6px 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* Eventliste pro Tag nicht beschneiden */
+.home-calendar .rbc-month-view .rbc-row-content {
+  overflow: visible !important;
+}
+
+/* Kompaktere Events, damit mehr Zeilen Platz haben */
+.home-calendar .rbc-row-segment {
+  padding: 0 2px; /* enger am Rand */
+}
+.home-calendar .rbc-event {
+  padding: 1px 4px;
+  line-height: 1.2;
+  font-size: 0.85rem;
+  border-radius: 4px;
+}
+
+/* Datumszelle dezenter, Zahl rechtsbündig mit etwas Luft */
+.home-calendar .rbc-date-cell {
+  padding: 2px 6px;
+  text-align: right;
+  font-weight: 600;
+}
+
+/* Toolbar darf umbrechen */
+.home-calendar .rbc-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+/* Buttons enger zusammenrücken */
+.home-calendar .rbc-toolbar .rbc-btn-group > button {
+  padding: 0.25rem 0.5rem;
+}
+
+/* Styling vom Calendar-Root (statt Inline-Style) */
+.home-calendar .rbc-scanventory {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+/* Agenda-View Mindesthöhe über Klasse steuern (nur falls Agenda manuell gewählt wird) */
+.home-calendar .rbc-scanventory.is-agenda {
+  min-height: 480px;
+}
+
+/* Responsiv: kleiner auf schmalen Geräten */
+@media (max-width: 540px) {
+  .home-calendar .rbc-header {
+    font-size: 0.85rem;
+    padding: 4px 2px;
+  }
+  .home-calendar .rbc-event {
+    font-size: 0.8rem;
+    padding: 1px 3px;
+    line-height: 1.15;
+  }
+  .home-calendar .rbc-toolbar {
+    font-size: 0.9rem;
+  }
 }
 
 /* Admin Dropdown */
@@ -107,7 +185,6 @@
   width: 100%;
   white-space: nowrap;
 }
-
 .admin-dropdown button:hover {
   background: #f3f4f6;
   font-weight: 500;

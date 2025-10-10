@@ -166,7 +166,7 @@ Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das B
   - Kategorienpflege bei Werkzeugen
   - Firmenpflege bei Benutzern (nicht hardcoded)
 - [x] Darstellung von Reservationen auf der Startseite als: `Start – Ende | Werkzeug – Nachname Vorname`
-- [ ] Kalenderhöhe dynamisch anpassen je nach Eintragsanzahl pro Tag
+- [x] Kalenderhöhe dynamisch anpassen je nach Eintragsanzahl pro Tag
 - [ ] Klickbare Reservationen für alle sichtbar, Bearbeitung nur wenn berechtigt (`edit_reservations: true` oder `self_only`)
 - [ ] Seite zur manuellen Reservation für eingeloggte Benutzer (`create_reservations = self_only/true`)
 - [ ] Import von CSV für Benutzer und Werkzeuglisten mit automatischer QR Code ID vergabe (Vorhandene Überspringen)
