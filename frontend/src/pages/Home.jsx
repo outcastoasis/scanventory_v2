@@ -33,24 +33,17 @@ function Home() {
   const [scannedUser, setScannedUser] = useState(null);
   const [scannedTool, setScannedTool] = useState(null);
 
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
 
   const fetchWithAuth = (url, options = {}) => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      return fetch(url, options);
-    }
-    return fetch(url, {
-      ...options,
-      headers: {
-        ...options.headers,
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const headers = { ...(options.headers || {}) };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return fetch(url, { ...options, headers });
   };
 
-  const handleScan = (scannedCode) => {
-    const code = scannedCode.toLowerCase();
+  const handleScan = async (scannedCode) => {
+    const code = String(scannedCode || "").toLowerCase();
     const allowedPrefixes = [
       "usr",
       "tool",
@@ -59,10 +52,7 @@ function Home() {
       "reload",
       "return",
     ];
-    const isValidPrefix = allowedPrefixes.some((prefix) =>
-      code.startsWith(prefix)
-    );
-    if (!isValidPrefix) return;
+    if (!allowedPrefixes.some((p) => code.startsWith(p))) return;
 
     if (code === "cancel") {
       setReturnMode(false);
@@ -83,114 +73,134 @@ function Home() {
 
     if (code.startsWith("usr")) {
       setReturnMode(false);
-
-      fetch(`${API_URL}/api/users/qr/${code}`)
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error("Benutzer nicht gefunden");
-          }
-          return res.json();
-        })
-        .then((foundUser) => {
-          setScanState({ user: code, tool: null, duration: null });
-          setScannedUser(foundUser); // Speichern für Anzeige
-          setMessage(
-            `Benutzer erkannt: ${foundUser.first_name} ${foundUser.last_name}, ${foundUser.qr_code}`
-          );
-        })
-        .catch((err) => {
-          console.error(err);
-          setMessage(`❌ Benutzer nicht gefunden: ${code}`);
-        });
-
+      try {
+        const res = await fetch(`${API_URL}/api/users/qr/${code}`);
+        if (!res.ok) throw new Error("Benutzer nicht gefunden");
+        const foundUser = await res.json();
+        setScanState({ user: code, tool: null, duration: null });
+        setScannedUser(foundUser);
+        setMessage(
+          `Benutzer erkannt: ${foundUser.first_name} ${foundUser.last_name}, ${foundUser.qr_code}`
+        );
+      } catch (err) {
+        console.error(err);
+        setMessage(`❌ Benutzer nicht gefunden: ${code}`);
+      }
       return;
     }
 
     if (code.startsWith("tool")) {
       const toolCode = code;
+
+      // ---- Rückgabe (robust) ----
       if (returnMode) {
-        fetchWithAuth(`${API_URL}/api/reservations/return-tool`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tool: toolCode }),
-        })
-          .then((res) => {
-            if (res.status === 200) return res.json();
-            throw new Error("Keine aktive Ausleihe gefunden");
-          })
-          .then(() => {
-            setMessage(`✅ Rückgabe abgeschlossen für ${toolCode}`);
-            setReturnMode(false);
-            resetScan();
-            fetchReservations();
-          })
-          .catch((err) => {
-            setMessage(`❌ Rückgabe fehlgeschlagen: ${err.message}`);
-            setReturnMode(false);
-            resetScan();
-          });
+        const body = JSON.stringify({ tool: toolCode });
+        try {
+          // 1) PATCH /return-tool
+          let res = await fetchWithAuth(
+            `${API_URL}/api/reservations/return-tool`,
+            {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body,
+            }
+          );
+
+          // 2) Fallback: POST /return-tool
+          if (res.status === 404 || res.status === 405) {
+            res = await fetchWithAuth(
+              `${API_URL}/api/reservations/return-tool`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body,
+              }
+            );
+          }
+
+          // 3) Fallback: Alias /return_tool
+          if (!res.ok) {
+            res = await fetchWithAuth(
+              `${API_URL}/api/reservations/return_tool`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body,
+              }
+            );
+          }
+
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || "Rückgabe fehlgeschlagen");
+          }
+
+          setMessage(`✅ Rückgabe abgeschlossen für ${toolCode}`);
+          setReturnMode(false);
+          resetScan();
+          fetchReservations();
+          window.dispatchEvent(
+            new CustomEvent("scanventory:reservations:refresh")
+          );
+        } catch (err) {
+          setMessage(`❌ Rückgabe fehlgeschlagen: ${err.message}`);
+          setReturnMode(false);
+          resetScan();
+        }
         return;
       }
 
+      // ---- normale Ausleihe (Werkzeug scannen) ----
       if (scanState.user) {
-        fetch(`${API_URL}/api/tools/qr/${toolCode}`)
-          .then((res) => {
-            if (!res.ok) {
-              throw new Error("Werkzeug nicht gefunden");
-            }
-            return res.json();
-          })
-          .then((foundTool) => {
-            setScanState((prev) => ({ ...prev, tool: toolCode }));
-            setScannedTool(foundTool);
-            setMessage(
-              `Werkzeug erkannt: ${foundTool.name}, ${foundTool.qr_code}`
-            );
-          })
-          .catch((err) => {
-            console.error(err);
-            setMessage(`❌ Werkzeug nicht gefunden: ${toolCode}`);
-          });
+        try {
+          const res = await fetch(`${API_URL}/api/tools/qr/${toolCode}`);
+          if (!res.ok) throw new Error("Werkzeug nicht gefunden");
+          const foundTool = await res.json();
+          setScanState((prev) => ({ ...prev, tool: toolCode }));
+          setScannedTool(foundTool);
+          setMessage(
+            `Werkzeug erkannt: ${foundTool.name}, ${foundTool.qr_code}`
+          );
+        } catch (err) {
+          console.error(err);
+          setMessage(`❌ Werkzeug nicht gefunden: ${toolCode}`);
+        }
       } else {
         setMessage("Bitte zuerst Benutzer scannen");
       }
-
       return;
     }
 
     if (code.startsWith("dur") && scanState.user && scanState.tool) {
-      const durationDays = parseInt(code.replace("dur", ""));
+      const durationDays = parseInt(code.replace("dur", ""), 10);
       if (!isNaN(durationDays)) {
         const newState = { ...scanState, duration: durationDays };
         setScanState(newState);
         setMessage(`Dauer erkannt: ${durationDays} Tag(e)`);
 
-        fetchWithAuth(`${API_URL}/api/reservations`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            user: newState.user,
-            tool: newState.tool,
-            duration: newState.duration,
-          }),
-        })
-          .then(async (res) => {
-            const data = await res.json().catch(() => ({}));
-
-            if (!res.ok) {
-              // Fehler vom Backend (z. B. Werkzeug reserviert, Berechtigung, etc.)
-              const errorMsg = data.error || "Reservation fehlgeschlagen";
-              throw new Error(errorMsg);
-            }
-
-            resetScan("✅ Reservation gespeichert");
-            fetchReservations();
-          })
-          .catch((err) => {
-            console.error("Fehler beim Speichern:", err);
-            resetScan(`❌ ${err.message}`);
+        try {
+          const res = await fetchWithAuth(`${API_URL}/api/reservations`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user: newState.user,
+              tool: newState.tool,
+              duration: newState.duration,
+            }),
           });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok)
+            throw new Error(data.error || "Reservation fehlgeschlagen");
 
+          resetScan("✅ Reservation gespeichert");
+          fetchReservations();
+          window.dispatchEvent(
+            new CustomEvent("scanventory:reservations:refresh")
+          );
+        } catch (err) {
+          console.error("Fehler beim Speichern:", err);
+          resetScan(`❌ ${err.message}`);
+        }
         return;
       }
     }
@@ -241,6 +251,7 @@ function Home() {
     fetchReservations();
   };
 
+  // Initial-Load + Polling
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -256,12 +267,16 @@ function Home() {
 
     fetchReservations(); // Initial laden
 
-    // 🕒 Polling alle 30 Sekunden
-    const interval = setInterval(() => {
-      fetchReservations();
-    }, 30000); // 30_000 ms = 30 Sekunden
+    const interval = setInterval(() => fetchReservations(), 30000);
+    return () => clearInterval(interval);
+  }, []);
 
-    return () => clearInterval(interval); // Cleanup
+  // 🔁 Auf Refresh-Event hören (von CalendarView nach Speichern/Rückgabe)
+  useEffect(() => {
+    const reload = () => fetchReservations();
+    window.addEventListener("scanventory:reservations:refresh", reload);
+    return () =>
+      window.removeEventListener("scanventory:reservations:refresh", reload);
   }, []);
 
   return (

@@ -55,6 +55,47 @@
   margin-bottom: 0.5rem;
 }
 
+/* Kalender-Events sollen klar klickbar sein */
+.home-calendar .clickable-event,
+.home-calendar .rbc-event {
+  cursor: pointer;
+}
+
+/* Modal*/
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.modal {
+  background: #fff; border-radius: 12px; padding: 16px; width: min(560px, 92vw);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.modal-row { margin: 8px 0; display: grid; grid-template-columns: 110px 1fr; gap: 8px; align-items: center; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+.btn-primary { background: #2563eb; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; }
+.btn-danger { background: #b91c1c; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; }
+
+/* Nur bei fehlender Berechtigung ausgrauen (nicht global) */
+/* Nur ausgrauen, wenn wirklich keine Berechtigung (via aria-disabled="true") */
+.modal .btn-primary[aria-disabled="true"],
+.modal .btn-danger[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  pointer-events: auto; /* Tooltip via title funktioniert weiterhin */
+}
+
+/* (optional) Busy-State optisch leicht abdunkeln */
+.modal .btn-primary.is-busy,
+.modal .btn-danger.is-busy {
+  opacity: 0.85;
+  cursor: progress;
+}
+/* Optional: Busy-State separat, ohne starkes Ausgrauen */
+button.is-busy {
+  opacity: 0.85; /* leicht gedimmt beim Speichern */
+  cursor: progress;
+}
+
 .scan-box {
   flex-grow: 1;
   background-color: #f3f4f6;
