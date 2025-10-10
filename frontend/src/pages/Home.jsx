@@ -359,19 +359,26 @@ function Home() {
         )}
       </header>
 
-      <section className="home-scanner">
-        <h2>Scan-Status</h2>
-        <div className="home-scanner-row">
-          <div className="scan-box">{message}</div>
-          <StaticQrCodes />
-        </div>
-        <ScannerHandler onScan={handleScan} />
-      </section>
+    <section className="home-scanner">
+  <div className="home-scanner-head">
+    <h2>Scan-Status</h2>
+    <h3 className="home-return-title">Rückgabe</h3>
+  </div>
 
-      <section className="home-calendar">
-        <h2>Kalender</h2>
-        <CalendarView reservations={reservations} />
-      </section>
+  <div className="home-scanner-row">
+    <div className="scan-box">{message}</div>
+    <div className="home-return">
+      <StaticQrCodes />
+    </div>
+  </div>
+
+  <ScannerHandler onScan={handleScan} />
+</section>
+
+<section className="home-calendar">
+  <h2>Kalender</h2>
+  <CalendarView reservations={reservations} />
+</section>
     </div>
   );
 }
