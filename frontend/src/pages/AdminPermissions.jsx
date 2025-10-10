@@ -172,6 +172,8 @@ export default function AdminPermissions() {
       ) : (
         <>
           <div className="permissions-actions">
+            {/* 
+            auskommentiert da das hinzufügen von neuen Rechten momentan noch nicht relevant ist
             <button
               className="permissions-add-button"
               onClick={() => {
@@ -181,6 +183,8 @@ export default function AdminPermissions() {
             >
               + Neues Recht
             </button>
+            */}
+
             <input
               className="permissions-search"
               type="text"
