@@ -187,7 +187,7 @@ Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das B
 - [ ] bessere visuelle bestätigung bei reservationen per Scanner
 - [ ] Audit-Log-Ansicht (basierend auf `logs`-Tabelle)
 - [ ] Eigene Komponente für System-Statusmeldungen (z.B. Fehler, Erfolg)
-- [ ] Rückgabe QR Code auf Startseite benennen/beschreiben/Titel hinzufügen
+- [x] Rückgabe QR Code auf Startseite benennen/beschreiben/Titel hinzufügen
 - [ ] Responsivness verbessern von aktueller Seite (Hochformat priorisieren)
 - [ ] Kalendersprache auf Deutsch stellen (October, Wed, 7:57 PM, etc)
 
