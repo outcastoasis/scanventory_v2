@@ -1,11 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import ScannerHandler from "../components/ScannerHandler";
-import "../styles/Home.css";
 import CalendarView from "../components/CalendarView";
-import { jwtDecode } from "jwt-decode";
 import StaticQrCodes from "../components/StaticQrCodes";
+import { jwtDecode } from "jwt-decode";
+import QRCode from "qrcode";
 
-// Font Awesome Imports
+// Styles
+import "../styles/Home.css";
+import "../styles/DurationPopUp.css";
+
+// Font Awesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCog,
@@ -30,8 +34,12 @@ function Home() {
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [role, setRole] = useState(null);
+
   const [scannedUser, setScannedUser] = useState(null);
   const [scannedTool, setScannedTool] = useState(null);
+
+  // NEU: Visibility für das Duration-Popup
+  const [showDurationModal, setShowDurationModal] = useState(false);
 
   const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
 
@@ -42,20 +50,45 @@ function Home() {
     return fetch(url, { ...options, headers });
   };
 
+  // ————— Duration-QR Kachel —————
+  function DurationQrTile({ days, onPick }) {
+    const id = useMemo(
+      () => `durqr-${days}-${Math.random().toString(36).slice(2)}`,
+      [days]
+    );
+
+    useEffect(() => {
+      const canvas = document.getElementById(id);
+      if (!canvas) return;
+      QRCode.toCanvas(canvas, `dur${days}`, { width: 140, margin: 1 }).catch(
+        () => {}
+      );
+    }, [id, days]);
+
+    return (
+      <button
+        className="duration-tile"
+        onClick={() => onPick(days)}
+        aria-label={`${days} Tag(e) auswählen`}
+        title={`${days} Tag(e) auswählen`}
+      >
+        <canvas id={id} />
+        <span className="duration-tile-label">
+          {days} Tag{days > 1 ? "e" : ""}
+        </span>
+      </button>
+    );
+  }
+
+  // ————— Scanner-Logik —————
   const handleScan = async (scannedCode) => {
     const code = String(scannedCode || "").toLowerCase();
-    const allowedPrefixes = [
-      "usr",
-      "tool",
-      "dur",
-      "cancel",
-      "reload",
-      "return",
-    ];
-    if (!allowedPrefixes.some((p) => code.startsWith(p))) return;
+    const allowed = ["usr", "tool", "dur", "cancel", "reload", "return"];
+    if (!allowed.some((p) => code.startsWith(p))) return;
 
     if (code === "cancel") {
       setReturnMode(false);
+      setShowDurationModal(false);
       resetScan("Vorgang abgebrochen.");
       return;
     }
@@ -67,12 +100,15 @@ function Home() {
 
     if (code === "return") {
       setReturnMode(true);
+      setShowDurationModal(false);
       resetScan("Rückgabemodus aktiviert – bitte Werkzeug scannen");
       return;
     }
 
+    // Benutzer scannen
     if (code.startsWith("usr")) {
       setReturnMode(false);
+      setShowDurationModal(false);
       try {
         const res = await fetch(`${API_URL}/api/users/qr/${code}`);
         if (!res.ok) throw new Error("Benutzer nicht gefunden");
@@ -82,21 +118,21 @@ function Home() {
         setMessage(
           `Benutzer erkannt: ${foundUser.first_name} ${foundUser.last_name}, ${foundUser.qr_code}`
         );
-      } catch (err) {
-        console.error(err);
+      } catch {
         setMessage(`❌ Benutzer nicht gefunden: ${code}`);
       }
       return;
     }
 
+    // Tool scannen
     if (code.startsWith("tool")) {
       const toolCode = code;
 
-      // ---- Rückgabe (robust) ----
+      // Rückgabe-Fluss
       if (returnMode) {
         const body = JSON.stringify({ tool: toolCode });
         try {
-          // 1) PATCH /return-tool
+          // PATCH
           let res = await fetchWithAuth(
             `${API_URL}/api/reservations/return-tool`,
             {
@@ -106,7 +142,7 @@ function Home() {
             }
           );
 
-          // 2) Fallback: POST /return-tool
+          // Fallback POST
           if (res.status === 404 || res.status === 405) {
             res = await fetchWithAuth(
               `${API_URL}/api/reservations/return-tool`,
@@ -118,7 +154,7 @@ function Home() {
             );
           }
 
-          // 3) Fallback: Alias /return_tool
+          // Fallback Alias
           if (!res.ok) {
             res = await fetchWithAuth(
               `${API_URL}/api/reservations/return_tool`,
@@ -137,6 +173,7 @@ function Home() {
 
           setMessage(`✅ Rückgabe abgeschlossen für ${toolCode}`);
           setReturnMode(false);
+          setShowDurationModal(false);
           resetScan();
           fetchReservations();
           window.dispatchEvent(
@@ -145,24 +182,26 @@ function Home() {
         } catch (err) {
           setMessage(`❌ Rückgabe fehlgeschlagen: ${err.message}`);
           setReturnMode(false);
+          setShowDurationModal(false);
           resetScan();
         }
         return;
       }
 
-      // ---- normale Ausleihe (Werkzeug scannen) ----
+      // Ausleihe-Fluss
       if (scanState.user) {
         try {
           const res = await fetch(`${API_URL}/api/tools/qr/${toolCode}`);
           if (!res.ok) throw new Error("Werkzeug nicht gefunden");
           const foundTool = await res.json();
+
           setScanState((prev) => ({ ...prev, tool: toolCode }));
           setScannedTool(foundTool);
-          setMessage(
-            `Werkzeug erkannt: ${foundTool.name}, ${foundTool.qr_code}`
-          );
-        } catch (err) {
-          console.error(err);
+          setMessage(`Werkzeug erkannt: ${foundTool.name}, ${foundTool.qr_code}`);
+
+          // ⬇️ NACH Tool-Scan: Duration-Popup öffnen
+          setShowDurationModal(true);
+        } catch {
           setMessage(`❌ Werkzeug nicht gefunden: ${toolCode}`);
         }
       } else {
@@ -171,6 +210,7 @@ function Home() {
       return;
     }
 
+    // Dauer wählen (dur1..dur5)
     if (code.startsWith("dur") && scanState.user && scanState.tool) {
       const durationDays = parseInt(code.replace("dur", ""), 10);
       if (!isNaN(durationDays)) {
@@ -192,13 +232,14 @@ function Home() {
           if (!res.ok)
             throw new Error(data.error || "Reservation fehlgeschlagen");
 
+          setShowDurationModal(false);
           resetScan("✅ Reservation gespeichert");
           fetchReservations();
           window.dispatchEvent(
             new CustomEvent("scanventory:reservations:refresh")
           );
         } catch (err) {
-          console.error("Fehler beim Speichern:", err);
+          setShowDurationModal(false);
           resetScan(`❌ ${err.message}`);
         }
         return;
@@ -207,6 +248,8 @@ function Home() {
 
     setMessage(`Ungültiger Scan oder falsche Reihenfolge: ${scannedCode}`);
   };
+
+  const pickDuration = (days) => handleScan(`dur${days}`);
 
   const resetScan = (msg = "") => {
     setScanState({ user: null, tool: null, duration: null });
@@ -219,12 +262,11 @@ function Home() {
     fetchWithAuth(`${API_URL}/api/reservations`)
       .then((res) => res.json())
       .then((data) => setReservations(data))
-      .catch((err) =>
-        console.error("Fehler beim Laden der Reservationen:", err)
+      .catch(() =>
+        console.error("Fehler beim Laden der Reservationen")
       );
   };
 
-  // ⬇️ Angepasst: nach Login harter Reload, damit Modal/State/Token sicher neu initialisieren
   const handleLogin = () => {
     fetch(`${API_URL}/api/login`, {
       method: "POST",
@@ -240,27 +282,19 @@ function Home() {
         setLoggedInUser(data.username);
         setRole(data.role);
         setLoginData({ username: "", password: "" });
-
-        // Harte Neuinitialisierung, damit alle Komponenten (inkl. Popups) den neuen Token/Role laden
-        setTimeout(() => {
-          window.location.reload();
-        }, 50);
+        setTimeout(() => window.location.reload(), 50);
       })
       .catch(() => alert("❌ Ungültiger Login"));
   };
 
-  // (Optional) Auch beim Logout hart neu laden
   const handleLogout = () => {
     setLoggedInUser(null);
     setRole(null);
     localStorage.removeItem("token");
-    // fetchReservations(); // nicht nötig, wir reloaden hart
-    setTimeout(() => {
-      window.location.reload();
-    }, 50);
+    setTimeout(() => window.location.reload(), 50);
   };
 
-  // Initial-Load + Polling
+  // Init + Polling
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -268,19 +302,16 @@ function Home() {
         const decoded = jwtDecode(token);
         setLoggedInUser(decoded.username || "");
         setRole(decoded.role);
-      } catch (err) {
-        console.error("Ungültiger Token:", err);
+      } catch {
         localStorage.removeItem("token");
       }
     }
-
-    fetchReservations(); // Initial laden
-
-    const interval = setInterval(() => fetchReservations(), 30000);
+    fetchReservations();
+    const interval = setInterval(fetchReservations, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  // 🔁 Auf Refresh-Event hören (von CalendarView nach Speichern/Rückgabe)
+  // Kalender triggert Refresh (Rückgabe/Speichern)
   useEffect(() => {
     const reload = () => fetchReservations();
     window.addEventListener("scanventory:reservations:refresh", reload);
@@ -319,8 +350,7 @@ function Home() {
               Angemeldet als: <strong>{loggedInUser}</strong> ({role})
             </div>
             <div className="login-actions">
-              {/* Admin Dropdown */}
-              {loggedInUser && (role === "admin" || role === "supervisor") && (
+              {(role === "admin" || role === "supervisor") && (
                 <div className="admin-menu-wrapper">
                   <button className="admin-toggle">
                     <FontAwesomeIcon icon={faCog} />
@@ -359,26 +389,54 @@ function Home() {
         )}
       </header>
 
-    <section className="home-scanner">
-  <div className="home-scanner-head">
-    <h2>Scan-Status</h2>
-    <h3 className="home-return-title">Rückgabe</h3>
-  </div>
+      <section className="home-scanner">
+        <div className="home-scanner-head">
+          <h2>Scan-Status</h2>
+          <h3 className="home-return-title">Rückgabe</h3>
+        </div>
 
-  <div className="home-scanner-row">
-    <div className="scan-box">{message}</div>
-    <div className="home-return">
-      <StaticQrCodes />
-    </div>
-  </div>
+        <div className="home-scanner-row">
+          <div className="scan-box">{message}</div>
+          <div className="home-return">
+            <StaticQrCodes />
+          </div>
+        </div>
 
-  <ScannerHandler onScan={handleScan} />
-</section>
+        <ScannerHandler onScan={handleScan} />
+      </section>
 
-<section className="home-calendar">
-  <h2>Kalender</h2>
-  <CalendarView reservations={reservations} />
-</section>
+      <section className="home-calendar">
+        <h2>Kalender</h2>
+        <CalendarView reservations={reservations} />
+      </section>
+
+      {/* Duration Popup */}
+      {showDurationModal && (
+        <div
+          className="duration-overlay"
+          onClick={(e) => {
+            if (e.target.classList.contains("duration-overlay")) {
+              setShowDurationModal(false);
+            }
+          }}
+        >
+          <div className="duration-modal">
+            
+
+            <div className="duration-grid">
+              {[1, 2, 3, 4, 5].map((d) => (
+                <DurationQrTile key={d} days={d} onPick={pickDuration} />
+              ))}
+            </div>
+
+            <div className="duration-actions">
+              <button onClick={() => setShowDurationModal(false)}>
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

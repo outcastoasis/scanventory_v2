@@ -1,0 +1,82 @@
+/* Overlay + Modal */
+.duration-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+
+.duration-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  width: min(560px, 92vw);
+  box-shadow: 0 10px 30px rgba(0,0,0,.2);
+}
+
+/* Grid mit 1–5 Kacheln, responsiv */
+.duration-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 60px;
+}
+
+/* Kachel mit QR-Code (Canvas) */
+.duration-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.duration-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
+}
+
+/* QR Größe konsistent halten */
+.duration-tile canvas {
+  width: 140px !important;
+  height: 140px !important;
+}
+
+.duration-tile-label {
+  font-weight: 600;
+  font-size: .95rem;
+}
+
+/* Buttonleiste unten */
+.duration-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.duration-actions button {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.duration-actions button:hover {
+  background: #f9fafb;
+}
+
+/* Responsive*/
+@media (max-width: 540px) {
+  .duration-modal { padding: 14px; }
+  .duration-grid { gap: 10px; }
+  .duration-tile-label { font-size: .9rem; }
+}
