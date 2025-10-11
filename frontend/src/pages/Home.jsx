@@ -352,7 +352,7 @@ function Home() {
         ) : (
           <div className="login-info">
             <div className="user-label">
-              Angemeldet als: <strong>{loggedInUser}</strong> ({role})
+              Angemeldet als: <strong>{loggedInUser}</strong>
             </div>
             <div className="login-actions">
               {(role === "admin" || role === "supervisor") && (
