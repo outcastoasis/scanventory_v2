@@ -40,27 +40,18 @@ function Home() {
 
   // Für Heute Reserviert Ansicht
   const todayReservations = useMemo(() => {
-    // Hilfen
     const toLocalDate = (s) => new Date(String(s).replace(" ", "T"));
 
     const computeUserLabel = (u) => {
       if (!u) return "Unbekannt";
       const first = (u.first_name || "").trim();
       const last = (u.last_name || "").trim();
-
-      // Wenn Vor- und Nachname vorhanden sind und identisch (z.B. "admin admin") → einmal anzeigen
       if (first && last) {
         if (first.toLowerCase() === last.toLowerCase()) return first;
         return `${first} ${last}`;
       }
-
-      // Fallbacks
       let label = (u.display_name || u.username || "").trim();
-
-      // Entferne angehängte Rollen/Infos in Klammern oder nach Bindestrich am Ende
-      // Beispiele: "Max Muster (Admin)", "Max Muster - Admin"
       label = label.replace(/\s*(?:\(|-|–|—)\s*[^)]*\)?\s*$/i, "");
-
       return label || "Unbekannt";
     };
 
@@ -88,11 +79,9 @@ function Home() {
       .filter((r) => {
         const start = toLocalDate(r.start);
         const end = toLocalDate(r.end);
-        // Überlappt heute?
         return start <= endOfToday && end >= startOfToday;
       })
       .sort((a, b) => {
-        // Frühere Endzeiten zuerst, dann Name
         const ae = toLocalDate(a.end) - toLocalDate(b.end);
         if (ae !== 0) return ae;
         return (a.tool?.name || "").localeCompare(b.tool?.name || "");
@@ -106,10 +95,9 @@ function Home() {
 
   const formatEnd = (s) => {
     const d = new Date(String(s).replace(" ", "T"));
-    // Nur Datum (keine Zeit) im CH-Format
     return d.toLocaleDateString("de-CH");
   };
-  // Duration-Popup sichtbar?
+
   const [showDurationModal, setShowDurationModal] = useState(false);
 
   const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
@@ -121,7 +109,6 @@ function Home() {
     return fetch(url, { ...options, headers });
   };
 
-  // ————— Duration-QR Kachel —————
   function DurationQrTile({ days, onPick }) {
     const id = useMemo(
       () => `durqr-${days}-${Math.random().toString(36).slice(2)}`,
@@ -151,7 +138,6 @@ function Home() {
     );
   }
 
-  // ————— Hilfsfunktionen —————
   const resetScan = (msg = "") => {
     setScanState({ user: null, tool: null, duration: null });
     setScannedUser(null);
@@ -159,7 +145,6 @@ function Home() {
     if (msg) setMessage(msg);
   };
 
-  // Abbrechen im Popup → kompletter Reset (User MUSS neu gescannt werden)
   const cancelDurationSelection = () => {
     setShowDurationModal(false);
     setReturnMode(false);
@@ -175,7 +160,6 @@ function Home() {
       .catch(() => console.error("Fehler beim Laden der Reservationen"));
   };
 
-  // ————— Auth —————
   const handleLogin = () => {
     fetch(`${API_URL}/api/login`, {
       method: "POST",
@@ -203,14 +187,12 @@ function Home() {
     setTimeout(() => window.location.reload(), 50);
   };
 
-  // ————— Scanner-Logik —————
   const handleScan = async (scannedCode) => {
     const code = String(scannedCode || "").toLowerCase();
     const allowed = ["usr", "tool", "dur", "cancel", "reload", "return"];
     if (!allowed.some((p) => code.startsWith(p))) return;
 
     if (code === "cancel") {
-      // globaler cancel → kompletter Reset
       cancelDurationSelection();
       return;
     }
@@ -227,7 +209,6 @@ function Home() {
       return;
     }
 
-    // Benutzer scannen
     if (code.startsWith("usr")) {
       setReturnMode(false);
       setShowDurationModal(false);
@@ -246,15 +227,12 @@ function Home() {
       return;
     }
 
-    // Tool scannen
     if (code.startsWith("tool")) {
       const toolCode = code;
 
-      // Rückgabe-Fluss
       if (returnMode) {
         const body = JSON.stringify({ tool: toolCode });
         try {
-          // PATCH
           let res = await fetchWithAuth(
             `${API_URL}/api/reservations/return-tool`,
             {
@@ -264,7 +242,6 @@ function Home() {
             }
           );
 
-          // Fallback POST
           if (res.status === 404 || res.status === 405) {
             res = await fetchWithAuth(
               `${API_URL}/api/reservations/return-tool`,
@@ -276,7 +253,6 @@ function Home() {
             );
           }
 
-          // Fallback Alias
           if (!res.ok) {
             res = await fetchWithAuth(
               `${API_URL}/api/reservations/return_tool`,
@@ -310,7 +286,6 @@ function Home() {
         return;
       }
 
-      // Ausleihe-Fluss
       if (scanState.user) {
         try {
           const res = await fetch(`${API_URL}/api/tools/qr/${toolCode}`);
@@ -323,7 +298,6 @@ function Home() {
             `Werkzeug erkannt: ${foundTool.name}, ${foundTool.qr_code}`
           );
 
-          // Nach Tool-Scan: Duration-Popup öffnen
           setShowDurationModal(true);
         } catch {
           setMessage(`❌ Werkzeug nicht gefunden: ${toolCode}`);
@@ -334,7 +308,6 @@ function Home() {
       return;
     }
 
-    // Dauer wählen (dur1..dur5)
     if (code.startsWith("dur") && scanState.user && scanState.tool) {
       const durationDays = parseInt(code.replace("dur", ""), 10);
       if (!isNaN(durationDays)) {
@@ -373,7 +346,6 @@ function Home() {
     setMessage(`Ungültiger Scan oder falsche Reihenfolge: ${scannedCode}`);
   };
 
-  // ————— Effects —————
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -453,7 +425,12 @@ function Home() {
                         </button>
                       </>
                     )}
-                    <button onClick={() => alert("Manuelle Reservation folgt")}>
+                    {/* HIER angepasst: statt Alert → Navigation */}
+                    <button
+                      onClick={() =>
+                        (window.location.href = "/reservations/manual")
+                      }
+                    >
                       <FontAwesomeIcon icon={faPlus} /> Reservation
                     </button>
                   </div>
@@ -488,7 +465,6 @@ function Home() {
         <CalendarView reservations={reservations} />
       </section>
 
-      {/* Heute Reserviert-Liste*/}
       <section className="home-scanner-head">
         <h2>Heute reserviert</h2>
       </section>
@@ -509,12 +485,6 @@ function Home() {
                 {todayReservations.map((r) => {
                   const toolLabel =
                     r.tool?.name || r.tool?.qr_code || "Unbekannt";
-                  const userLabel =
-                    [r.user?.first_name, r.user?.last_name]
-                      .filter(Boolean)
-                      .join(" ") ||
-                    r.user?.username ||
-                    "Unbekannt";
                   return (
                     <tr key={r.id}>
                       <td className="c-tool" title={toolLabel}>
@@ -531,13 +501,11 @@ function Home() {
         )}
       </section>
 
-      {/* Duration Popup */}
       {showDurationModal && (
         <div
           className="duration-overlay"
           onClick={(e) => {
             if (e.target.classList.contains("duration-overlay")) {
-              // Overlay-Klick → kompletter Reset, User neu scannen
               cancelDurationSelection();
             }
           }}

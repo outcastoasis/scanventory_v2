@@ -1,0 +1,148 @@
+/* Lehnt sich an Home.css an */
+
+.manualres-controls {
+  margin-bottom: 1rem;
+}
+
+.manualres-searchrow {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.manualres-searchrow input.manualres-search {
+  flex: 1 1 280px;
+  min-width: 220px;
+  padding: 8px;
+}
+
+.manualres-message {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: #f3f6ff;
+  border: 1px solid #d8e1ff;
+  border-radius: 8px;
+}
+
+.manualres-tablewrap {
+  overflow: auto;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  background: #fff;
+}
+
+.manualres-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.manualres-table th,
+.manualres-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.manualres-table thead th {
+  background: #fafbff;
+  font-weight: 600;
+}
+
+.manualres-table .tcenter {
+  text-align: center;
+}
+
+.manualres-table .status.free {
+  color: #1a7f37;
+  font-weight: 600;
+}
+.manualres-table .status.busy {
+  color: #b42318;
+  font-weight: 600;
+}
+.manualres-table tr.row-busy {
+  opacity: 0.7;
+}
+
+.manualres-table button {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #f7f7f7;
+  cursor: pointer;
+}
+.manualres-table button:hover:not(:disabled) {
+  background: #efefef;
+}
+.manualres-table button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Modal nutzt bereits vorhandene Duration-Klassen aus Home.css (DurationPopUp.css) */
+.duration-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+}
+.duration-modal {
+  background: #fff;
+  width: min(560px, 92vw);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+.duration-title {
+  margin: 0 0 12px 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.duration-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(80px, 1fr));
+  gap: 10px;
+  margin: 12px 0 16px 0;
+}
+.duration-tile {
+  padding: 16px 8px;
+  border-radius: 12px;
+  border: 1px solid #e6e6e6;
+  background: #fafafa;
+  cursor: pointer;
+}
+.duration-tile:hover {
+  background: #f1f1f1;
+}
+.duration-tile-label {
+  display: block;
+  text-align: center;
+  font-weight: 600;
+}
+.duration-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.duration-actions button {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: #f7f7f7;
+  cursor: pointer;
+}
+.duration-actions button:hover {
+  background: #efefef;
+}
+
+/* Responsive */
+@media (max-width: 680px) {
+  .duration-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

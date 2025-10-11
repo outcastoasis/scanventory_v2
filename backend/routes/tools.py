@@ -5,7 +5,40 @@ from utils.permissions import requires_permission
 
 tools_bp = Blueprint("tools", __name__)
 
-# Alle Tools
+# NEU: Öffentliche Tool-Suche/Liste für manuelle Reservation (nur lesen)
+@tools_bp.route("/api/tools/public", methods=["GET"])
+def list_tools_public():
+    q = (request.args.get("query") or "").strip()
+    limit = min(int(request.args.get("limit", 100)), 200)
+
+    query = Tool.query
+    if q:
+        like = f"%{q}%"
+        # Name, QR-Code, Kategorie durchsuchen
+        query = query.filter(
+            db.or_(
+                Tool.name.ilike(like),
+                Tool.qr_code.ilike(like),
+                Tool.category.ilike(like),
+            )
+        )
+
+    tools = query.order_by(Tool.name.asc()).limit(limit).all()
+
+    return jsonify([
+        {
+            "id": t.id,
+            "name": t.name,
+            "qr_code": t.qr_code,
+            "category": t.category,
+            "status": t.status,
+            "is_borrowed": t.is_borrowed,
+            "created_at": t.created_at.isoformat() if t.created_at else None,
+        }
+        for t in tools
+    ])
+
+# Alle Tools (ADMIN/SUPERVISOR)
 @tools_bp.route("/api/tools", methods=["GET"])
 @requires_permission("manage_tools")
 def list_tools():
@@ -39,7 +72,6 @@ def get_tool_by_qr(qr_code):
         "is_borrowed": getattr(tool, "is_borrowed", False),
         "created_at": tool.created_at.isoformat() if getattr(tool, "created_at", None) else None,
     })
-
 
 # Neues Tool
 @tools_bp.route("/api/tools", methods=["POST"])
@@ -95,8 +127,7 @@ def update_tool(tool_id):
     if "category" in data:
         tool.category = data["category"]
 
-    # status/is_borrowed lässt du über den Ausleih-Flow steuern,
-    # nicht im Admin-Form – darum hier absichtlich NICHT setzbar.
+    # status/is_borrowed via Ausleih-Flow steuern
 
     db.session.commit()
 
@@ -125,7 +156,7 @@ def delete_tool(tool_id):
     db.session.commit()
     return jsonify({"message": "Werkzeug gelöscht"}), 200
 
-# nächste freie tool-ID -> tool0001, tool0002, ...
+# Nächste freie tool-ID -> tool0001, tool0002, ...
 @tools_bp.route("/api/tools/next-id", methods=["GET"])
 @requires_permission("manage_tools")
 def next_tool_qr():
