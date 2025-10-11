@@ -38,7 +38,7 @@ function Home() {
   const [scannedUser, setScannedUser] = useState(null);
   const [scannedTool, setScannedTool] = useState(null);
 
-  // NEU: Visibility für das Duration-Popup
+  // Duration-Popup sichtbar?
   const [showDurationModal, setShowDurationModal] = useState(false);
 
   const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
@@ -80,6 +80,58 @@ function Home() {
     );
   }
 
+  // ————— Hilfsfunktionen —————
+  const resetScan = (msg = "") => {
+    setScanState({ user: null, tool: null, duration: null });
+    setScannedUser(null);
+    setScannedTool(null);
+    if (msg) setMessage(msg);
+  };
+
+  // Abbrechen im Popup → kompletter Reset (User MUSS neu gescannt werden)
+  const cancelDurationSelection = () => {
+    setShowDurationModal(false);
+    setReturnMode(false);
+    resetScan("Vorgang abgebrochen. Bitte Benutzer scannen");
+  };
+
+  const pickDuration = (days) => handleScan(`dur${days}`);
+
+  const fetchReservations = () => {
+    fetchWithAuth(`${API_URL}/api/reservations`)
+      .then((res) => res.json())
+      .then((data) => setReservations(data))
+      .catch(() => console.error("Fehler beim Laden der Reservationen"));
+  };
+
+  // ————— Auth —————
+  const handleLogin = () => {
+    fetch(`${API_URL}/api/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(loginData),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Login fehlgeschlagen");
+        return res.json();
+      })
+      .then((data) => {
+        localStorage.setItem("token", data.token);
+        setLoggedInUser(data.username);
+        setRole(data.role);
+        setLoginData({ username: "", password: "" });
+        setTimeout(() => window.location.reload(), 50);
+      })
+      .catch(() => alert("❌ Ungültiger Login"));
+  };
+
+  const handleLogout = () => {
+    setLoggedInUser(null);
+    setRole(null);
+    localStorage.removeItem("token");
+    setTimeout(() => window.location.reload(), 50);
+  };
+
   // ————— Scanner-Logik —————
   const handleScan = async (scannedCode) => {
     const code = String(scannedCode || "").toLowerCase();
@@ -87,9 +139,8 @@ function Home() {
     if (!allowed.some((p) => code.startsWith(p))) return;
 
     if (code === "cancel") {
-      setReturnMode(false);
-      setShowDurationModal(false);
-      resetScan("Vorgang abgebrochen.");
+      // globaler cancel → kompletter Reset
+      cancelDurationSelection();
       return;
     }
 
@@ -199,7 +250,7 @@ function Home() {
           setScannedTool(foundTool);
           setMessage(`Werkzeug erkannt: ${foundTool.name}, ${foundTool.qr_code}`);
 
-          // ⬇️ NACH Tool-Scan: Duration-Popup öffnen
+          // Nach Tool-Scan: Duration-Popup öffnen
           setShowDurationModal(true);
         } catch {
           setMessage(`❌ Werkzeug nicht gefunden: ${toolCode}`);
@@ -249,52 +300,7 @@ function Home() {
     setMessage(`Ungültiger Scan oder falsche Reihenfolge: ${scannedCode}`);
   };
 
-  const pickDuration = (days) => handleScan(`dur${days}`);
-
-  const resetScan = (msg = "") => {
-    setScanState({ user: null, tool: null, duration: null });
-    setScannedUser(null);
-    setScannedTool(null);
-    if (msg) setMessage(msg);
-  };
-
-  const fetchReservations = () => {
-    fetchWithAuth(`${API_URL}/api/reservations`)
-      .then((res) => res.json())
-      .then((data) => setReservations(data))
-      .catch(() =>
-        console.error("Fehler beim Laden der Reservationen")
-      );
-  };
-
-  const handleLogin = () => {
-    fetch(`${API_URL}/api/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(loginData),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Login fehlgeschlagen");
-        return res.json();
-      })
-      .then((data) => {
-        localStorage.setItem("token", data.token);
-        setLoggedInUser(data.username);
-        setRole(data.role);
-        setLoginData({ username: "", password: "" });
-        setTimeout(() => window.location.reload(), 50);
-      })
-      .catch(() => alert("❌ Ungültiger Login"));
-  };
-
-  const handleLogout = () => {
-    setLoggedInUser(null);
-    setRole(null);
-    localStorage.removeItem("token");
-    setTimeout(() => window.location.reload(), 50);
-  };
-
-  // Init + Polling
+  // ————— Effects —————
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -311,7 +317,6 @@ function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // Kalender triggert Refresh (Rückgabe/Speichern)
   useEffect(() => {
     const reload = () => fetchReservations();
     window.addEventListener("scanventory:reservations:refresh", reload);
@@ -416,12 +421,14 @@ function Home() {
           className="duration-overlay"
           onClick={(e) => {
             if (e.target.classList.contains("duration-overlay")) {
-              setShowDurationModal(false);
+              // Overlay-Klick → kompletter Reset, User neu scannen
+              cancelDurationSelection();
             }
           }}
         >
           <div className="duration-modal">
-            
+            <h3 className="duration-title">
+            </h3>
 
             <div className="duration-grid">
               {[1, 2, 3, 4, 5].map((d) => (
@@ -430,9 +437,7 @@ function Home() {
             </div>
 
             <div className="duration-actions">
-              <button onClick={() => setShowDurationModal(false)}>
-                Abbrechen
-              </button>
+              <button onClick={cancelDurationSelection}>Reservation abbrechen</button>
             </div>
           </div>
         </div>
