@@ -38,6 +38,77 @@ function Home() {
   const [scannedUser, setScannedUser] = useState(null);
   const [scannedTool, setScannedTool] = useState(null);
 
+  // Für Heute Reserviert Ansicht
+  const todayReservations = useMemo(() => {
+    // Hilfen
+    const toLocalDate = (s) => new Date(String(s).replace(" ", "T"));
+
+    const computeUserLabel = (u) => {
+      if (!u) return "Unbekannt";
+      const first = (u.first_name || "").trim();
+      const last = (u.last_name || "").trim();
+
+      // Wenn Vor- und Nachname vorhanden sind und identisch (z.B. "admin admin") → einmal anzeigen
+      if (first && last) {
+        if (first.toLowerCase() === last.toLowerCase()) return first;
+        return `${first} ${last}`;
+      }
+
+      // Fallbacks
+      let label = (u.display_name || u.username || "").trim();
+
+      // Entferne angehängte Rollen/Infos in Klammern oder nach Bindestrich am Ende
+      // Beispiele: "Max Muster (Admin)", "Max Muster - Admin"
+      label = label.replace(/\s*(?:\(|-|–|—)\s*[^)]*\)?\s*$/i, "");
+
+      return label || "Unbekannt";
+    };
+
+    const now = new Date();
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      0,
+      0,
+      0,
+      0
+    );
+    const endOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      23,
+      59,
+      59,
+      999
+    );
+
+    return (reservations || [])
+      .filter((r) => {
+        const start = toLocalDate(r.start);
+        const end = toLocalDate(r.end);
+        // Überlappt heute?
+        return start <= endOfToday && end >= startOfToday;
+      })
+      .sort((a, b) => {
+        // Frühere Endzeiten zuerst, dann Name
+        const ae = toLocalDate(a.end) - toLocalDate(b.end);
+        if (ae !== 0) return ae;
+        return (a.tool?.name || "").localeCompare(b.tool?.name || "");
+      })
+      .map((r) => ({
+        ...r,
+        _userLabel: computeUserLabel(r.user),
+        _toolLabel: r.tool?.name || r.tool?.qr_code || "Unbekannt",
+      }));
+  }, [reservations]);
+
+  const formatEnd = (s) => {
+    const d = new Date(String(s).replace(" ", "T"));
+    // Nur Datum (keine Zeit) im CH-Format
+    return d.toLocaleDateString("de-CH");
+  };
   // Duration-Popup sichtbar?
   const [showDurationModal, setShowDurationModal] = useState(false);
 
@@ -248,7 +319,9 @@ function Home() {
 
           setScanState((prev) => ({ ...prev, tool: toolCode }));
           setScannedTool(foundTool);
-          setMessage(`Werkzeug erkannt: ${foundTool.name}, ${foundTool.qr_code}`);
+          setMessage(
+            `Werkzeug erkannt: ${foundTool.name}, ${foundTool.qr_code}`
+          );
 
           // Nach Tool-Scan: Duration-Popup öffnen
           setShowDurationModal(true);
@@ -415,6 +488,49 @@ function Home() {
         <CalendarView reservations={reservations} />
       </section>
 
+      {/* Heute Reserviert-Liste*/}
+      <section className="home-scanner-head">
+        <h2>Heute reserviert</h2>
+      </section>
+      <section className="home-today">
+        {todayReservations.length === 0 ? (
+          <div className="today-empty">Keine heutigen Reservationen.</div>
+        ) : (
+          <div className="today-table-wrap">
+            <table className="today-table">
+              <thead>
+                <tr>
+                  <th>Werkzeug</th>
+                  <th>Reserviert von</th>
+                  <th>Rückgabe am</th>
+                </tr>
+              </thead>
+              <tbody>
+                {todayReservations.map((r) => {
+                  const toolLabel =
+                    r.tool?.name || r.tool?.qr_code || "Unbekannt";
+                  const userLabel =
+                    [r.user?.first_name, r.user?.last_name]
+                      .filter(Boolean)
+                      .join(" ") ||
+                    r.user?.username ||
+                    "Unbekannt";
+                  return (
+                    <tr key={r.id}>
+                      <td className="c-tool" title={toolLabel}>
+                        {toolLabel}
+                      </td>
+                      <td className="c-user">{r._userLabel}</td>
+                      <td className="c-until">{formatEnd(r.end)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
       {/* Duration Popup */}
       {showDurationModal && (
         <div
@@ -427,8 +543,7 @@ function Home() {
           }}
         >
           <div className="duration-modal">
-            <h3 className="duration-title">
-            </h3>
+            <h3 className="duration-title"></h3>
 
             <div className="duration-grid">
               {[1, 2, 3, 4, 5].map((d) => (
@@ -437,7 +552,9 @@ function Home() {
             </div>
 
             <div className="duration-actions">
-              <button onClick={cancelDurationSelection}>Reservation abbrechen</button>
+              <button onClick={cancelDurationSelection}>
+                Reservation abbrechen
+              </button>
             </div>
           </div>
         </div>
