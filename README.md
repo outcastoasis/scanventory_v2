@@ -171,7 +171,7 @@ Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das B
 - [ ] Seite zur manuellen Reservation für eingeloggte Benutzer (`create_reservations = self_only/true`)
 - [ ] Import von CSV für Benutzer und Werkzeuglisten mit automatischer QR Code ID vergabe (Vorhandene Überspringen)
 - [x] Rückgabe-QR-Code (`return`) auf Startseite anzeigen
-- [ ] QR-Code für Dauerwahl (`dur1`, `dur2`, `dur3`) nach erfolgreichem Scan von `usrXXXX` und `toolXXXX` anzeigen
+- [x] QR-Code für Dauerwahl (`dur1`, `dur2`, `dur3`) nach erfolgreichem Scan von `usrXXXX` und `toolXXXX` anzeigen
 
 ---
 
