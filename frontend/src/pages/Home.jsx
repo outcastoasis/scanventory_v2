@@ -4,6 +4,12 @@ import CalendarView from "../components/CalendarView";
 import StaticQrCodes from "../components/StaticQrCodes";
 import { jwtDecode } from "jwt-decode";
 import QRCode from "qrcode";
+import {
+  getToken,
+  setToken,
+  clearToken,
+  isTokenExpired,
+} from "../utils/authUtils";
 
 // Styles
 import "../styles/Home.css";
@@ -34,6 +40,7 @@ function Home() {
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [role, setRole] = useState(null);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const [scannedUser, setScannedUser] = useState(null);
   const [scannedTool, setScannedTool] = useState(null);
@@ -103,7 +110,7 @@ function Home() {
   const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
 
   const fetchWithAuth = (url, options = {}) => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     const headers = { ...(options.headers || {}) };
     if (token) headers.Authorization = `Bearer ${token}`;
     return fetch(url, { ...options, headers });
@@ -171,7 +178,7 @@ function Home() {
         return res.json();
       })
       .then((data) => {
-        localStorage.setItem("token", data.token);
+        setToken(data.token, rememberMe);
         setLoggedInUser(data.username);
         setRole(data.role);
         setLoginData({ username: "", password: "" });
@@ -183,7 +190,7 @@ function Home() {
   const handleLogout = () => {
     setLoggedInUser(null);
     setRole(null);
-    localStorage.removeItem("token");
+    clearToken();
     setTimeout(() => window.location.reload(), 50);
   };
 
@@ -347,16 +354,33 @@ function Home() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        setLoggedInUser(decoded.username || "");
-        setRole(decoded.role);
+        const now = Math.floor(Date.now() / 1000);
+
+        if (decoded.exp && decoded.exp > now) {
+          setLoggedInUser(decoded.username || "");
+          setRole(decoded.role);
+
+          const timeout = decoded.exp * 1000 - Date.now();
+          const logoutTimer = setTimeout(() => {
+            clearToken();
+            setLoggedInUser(null);
+            setRole(null);
+            alert("⏳ Deine Sitzung ist abgelaufen.");
+            window.location.reload();
+          }, timeout);
+          return () => clearTimeout(logoutTimer);
+        } else {
+          clearToken();
+        }
       } catch {
-        localStorage.removeItem("token");
+        clearToken();
       }
     }
+
     fetchReservations();
     const interval = setInterval(fetchReservations, 30000);
     return () => clearInterval(interval);
@@ -372,27 +396,42 @@ function Home() {
   return (
     <div className="home-container">
       <header className="home-header">
-        <h1>Scanventory</h1>
+        <div className="header-title">
+          <h1 className="home-title">Scanventory</h1>
+        </div>
 
         {!loggedInUser ? (
-          <div className="login-box">
-            <input
-              type="text"
-              placeholder="Benutzername"
-              value={loginData.username}
-              onChange={(e) =>
-                setLoginData({ ...loginData, username: e.target.value })
-              }
-            />
-            <input
-              type="password"
-              placeholder="Passwort"
-              value={loginData.password}
-              onChange={(e) =>
-                setLoginData({ ...loginData, password: e.target.value })
-              }
-            />
-            <button onClick={handleLogin}>Login</button>
+          <div className="login-wrapper">
+            <div className="login-box">
+              <input
+                type="text"
+                placeholder="Benutzername"
+                value={loginData.username}
+                onChange={(e) =>
+                  setLoginData({ ...loginData, username: e.target.value })
+                }
+              />
+              <input
+                type="password"
+                placeholder="Passwort"
+                value={loginData.password}
+                onChange={(e) =>
+                  setLoginData({ ...loginData, password: e.target.value })
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleLogin();
+                }}
+              />
+              <label className="remember-me">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={() => setRememberMe(!rememberMe)}
+                />
+                Login merken
+              </label>
+              <button onClick={handleLogin}>Login</button>
+            </div>
           </div>
         ) : (
           <div className="login-info">

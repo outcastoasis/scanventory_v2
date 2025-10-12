@@ -9,8 +9,10 @@
 .home-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
+  align-items: flex-start;
+  flex-wrap: nowrap; /* wichtig: kein Umbruch */
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .home-header h1 {
@@ -19,15 +21,72 @@
   margin: 0;
 }
 
+.header-title {
+  flex-shrink: 0;
+}
 
 /* Login */
-.login-box input {
-  margin: 4px;
-  padding: 6px;
+
+.login-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  flex-grow: 1;
+  min-width: 250px;
 }
+
+/* Login-Box */
+.login-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.login-box input {
+  padding: 6px 8px;
+  font-size: 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+}
+
 .login-box button {
-  margin-top: 4px;
   padding: 6px 12px;
+  border: none;
+  background-color: #2563eb;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.login-box button:hover {
+  background-color: #1e40af;
+}
+
+/* Login merken Checkbox */
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* Mobil: Login unter Titel, aber rechtsbündig */
+@media (max-width: 1015px) {
+  .login-box {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .login-box input,
+  .login-box button {
+    max-width: 280px;
+  }
+
+  .remember-me {
+    align-self: flex-end;
+  }
 }
 
 .login-info {
@@ -51,7 +110,7 @@
   display: grid;
   grid-template-columns: 1fr 150px; /* linke Fläche | rechte QR-Spalte */
   column-gap: 1rem;
-  align-items: baseline;           /* gleiche Grundlinie */
+  align-items: baseline; /* gleiche Grundlinie */
   margin-bottom: 0.5rem;
 }
 
@@ -85,8 +144,6 @@
   gap: 0.5rem;
   min-width: 0; /* Grid regelt Breite, kein zusätzliches Minimum */
 }
-
-
 
 /* Kalender-Events sollen klar klickbar sein */
 .home-calendar .clickable-event,
@@ -268,7 +325,7 @@ button.is-busy {
 
 /* Tabelle */
 .today-table-wrap {
-  overflow-x: auto;               /* horizontales Scrollen auf kleinen Screens */
+  overflow-x: auto; /* horizontales Scrollen auf kleinen Screens */
 }
 .today-table {
   width: 100%;
@@ -366,10 +423,11 @@ button.is-busy {
   }
 }
 
-
-
-
 @media (max-width: 768px) {
-  .home-scanner-row { flex-direction: column; }
-  .home-return { min-width: 0; }
+  .home-scanner-row {
+    flex-direction: column;
+  }
+  .home-return {
+    min-width: 0;
+  }
 }
