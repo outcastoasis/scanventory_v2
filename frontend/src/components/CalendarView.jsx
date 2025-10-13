@@ -2,10 +2,18 @@ import { useMemo, useState, useEffect } from "react";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import {
-  format, parse, startOfWeek, getDay,
-  startOfMonth, endOfMonth,
-  startOfWeek as dfStartOfWeek, endOfWeek as dfEndOfWeek,
-  eachDayOfInterval, isAfter, isBefore, isEqual,
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek as dfStartOfWeek,
+  endOfWeek as dfEndOfWeek,
+  eachDayOfInterval,
+  isAfter,
+  isBefore,
+  isEqual,
   differenceInCalendarWeeks,
 } from "date-fns";
 import de from "date-fns/locale/de";
@@ -13,9 +21,11 @@ import { jwtDecode } from "jwt-decode";
 
 const locales = { de };
 const localizer = dateFnsLocalizer({
-  format, parse,
+  format,
+  parse,
   startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }),
-  getDay, locales,
+  getDay,
+  locales,
 });
 
 const stripTime = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -87,10 +97,14 @@ export default function CalendarView({ reservations }) {
         const end = new Date(res.end);
         const userLabel =
           res?.user?.username ||
-          [res?.user?.last_name, res?.user?.first_name].filter(Boolean).join(" ") ||
+          [res?.user?.last_name, res?.user?.first_name]
+            .filter(Boolean)
+            .join(" ") ||
           "";
         const toolLabel = res?.tool?.name || res?.tool || "";
-        const title = `${fmtTime(start)} – ${fmtTime(end)} | ${toolLabel} – ${userLabel}`;
+        const title = `${fmtTime(start)} – ${fmtTime(
+          end
+        )} | ${toolLabel} – ${userLabel}`;
         return { title, start, end, _res: res };
       }),
     [reservations]
@@ -103,10 +117,13 @@ export default function CalendarView({ reservations }) {
     }
     const firstOfMonth = startOfMonth(currentDate);
     const lastOfMonth = endOfMonth(currentDate);
-    const visibleStart = stripTime(dfStartOfWeek(firstOfMonth, { weekStartsOn: 1 }));
+    const visibleStart = stripTime(
+      dfStartOfWeek(firstOfMonth, { weekStartsOn: 1 })
+    );
     const visibleEnd = stripTime(dfEndOfWeek(lastOfMonth, { weekStartsOn: 1 }));
     const weeks =
-      differenceInCalendarWeeks(visibleEnd, visibleStart, { weekStartsOn: 1 }) + 1;
+      differenceInCalendarWeeks(visibleEnd, visibleStart, { weekStartsOn: 1 }) +
+      1;
 
     const counts = new Map();
     for (const ev of events) {
@@ -148,7 +165,10 @@ export default function CalendarView({ reservations }) {
     if (role === "admin" || role === "supervisor") return true;
     if (role === "user") {
       if (!username) return false;
-      return res.user.username && res.user.username.toLowerCase() === username.toLowerCase();
+      return (
+        res.user.username &&
+        res.user.username.toLowerCase() === username.toLowerCase()
+      );
     }
     return false;
   };
@@ -157,7 +177,10 @@ export default function CalendarView({ reservations }) {
   // ---- Fetch helper ----
   const fetchWithAuth = (url, options = {}) => {
     const token = localStorage.getItem("token");
-    const headers = { ...(options.headers || {}), "Content-Type": "application/json" };
+    const headers = {
+      ...(options.headers || {}),
+      "Content-Type": "application/json",
+    };
     if (token) headers.Authorization = `Bearer ${token}`;
     return fetch(url, { ...options, headers });
   };
@@ -184,22 +207,28 @@ export default function CalendarView({ reservations }) {
     if (!selectedRes || !canEdit(selectedRes)) return;
     setBusy(true);
     try {
-      const res = await fetchWithAuth(`${API_URL}/api/reservations/${selectedRes.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          start_time: editDraft.start_time,
-          end_time: editDraft.end_time,
-          note: editDraft.note || "",
-        }),
-      });
+      const res = await fetchWithAuth(
+        `${API_URL}/api/reservations/${selectedRes.id}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            start_time: editDraft.start_time,
+            end_time: editDraft.end_time,
+            note: editDraft.note || "",
+          }),
+        }
+      );
       if (!res.ok) throw new Error("Update fehlgeschlagen");
       const updated = await res.json();
-      setSelectedRes((prev) => prev && {
-        ...prev,
-        start: fromIsoUtcToLocal(updated.start_time),
-        end: fromIsoUtcToLocal(updated.end_time),
-        note: updated.note || "",
-      });
+      setSelectedRes(
+        (prev) =>
+          prev && {
+            ...prev,
+            start: fromIsoUtcToLocal(updated.start_time),
+            end: fromIsoUtcToLocal(updated.end_time),
+            note: updated.note || "",
+          }
+      );
       closeModal();
       window.dispatchEvent(new CustomEvent("scanventory:reservations:refresh"));
     } catch {
@@ -257,7 +286,8 @@ export default function CalendarView({ reservations }) {
   useEffect(() => {
     const handler = () => {};
     window.addEventListener("scanventory:reservations:refresh", handler);
-    return () => window.removeEventListener("scanventory:reservations:refresh", handler);
+    return () =>
+      window.removeEventListener("scanventory:reservations:refresh", handler);
   }, []);
 
   // ====== UI-Permissions für Buttons (immer sichtbar, ggf. disabled + Tooltip) ======
@@ -269,7 +299,9 @@ export default function CalendarView({ reservations }) {
     <div style={{ height: currentView === "month" ? dynamicHeight : "auto" }}>
       <Calendar
         key={`${currentView}-${dynamicHeight}`}
-        className={`rbc-scanventory ${currentView === "agenda" ? "is-agenda" : "is-month"}`}
+        className={`rbc-scanventory ${
+          currentView === "agenda" ? "is-agenda" : "is-month"
+        }`}
         localizer={localizer}
         events={events}
         startAccessor="start"
@@ -303,8 +335,13 @@ export default function CalendarView({ reservations }) {
             <div className="modal-row">
               <strong>Wer:</strong>
               <div>
-                {[selectedRes?.user?.first_name, selectedRes?.user?.last_name].filter(Boolean).join(" ") || selectedRes?.user?.username}
-                {selectedRes?.user?.username ? ` (${selectedRes.user.username})` : ""}
+                {(() => {
+                  const u = selectedRes?.user || {};
+                  const parts = [u.first_name, u.last_name]
+                    .map((v) => (typeof v === "string" ? v.trim() : v))
+                    .filter(Boolean);
+                  return parts.join(" ") || "–";
+                })()}
               </div>
             </div>
 
@@ -312,7 +349,9 @@ export default function CalendarView({ reservations }) {
               <strong>Was:</strong>
               <div>
                 {selectedRes?.tool?.name}
-                {selectedRes?.tool?.qr_code ? ` (${selectedRes.tool.qr_code})` : ""}
+                {selectedRes?.tool?.qr_code
+                  ? ` (${selectedRes.tool.qr_code})`
+                  : ""}
               </div>
             </div>
 
@@ -321,7 +360,12 @@ export default function CalendarView({ reservations }) {
               <input
                 type="datetime-local"
                 value={toLocalInput(fromIsoUtcToLocal(editDraft?.start_time))}
-                onChange={(e) => setEditDraft({ ...editDraft, start_time: toIsoUtcFromLocal(e.target.value) })}
+                onChange={(e) =>
+                  setEditDraft({
+                    ...editDraft,
+                    start_time: toIsoUtcFromLocal(e.target.value),
+                  })
+                }
                 disabled={!canEditSelected || busy}
               />
             </div>
@@ -331,7 +375,12 @@ export default function CalendarView({ reservations }) {
               <input
                 type="datetime-local"
                 value={toLocalInput(fromIsoUtcToLocal(editDraft?.end_time))}
-                onChange={(e) => setEditDraft({ ...editDraft, end_time: toIsoUtcFromLocal(e.target.value) })}
+                onChange={(e) =>
+                  setEditDraft({
+                    ...editDraft,
+                    end_time: toIsoUtcFromLocal(e.target.value),
+                  })
+                }
                 disabled={!canEditSelected || busy}
               />
             </div>
@@ -341,19 +390,25 @@ export default function CalendarView({ reservations }) {
               <input
                 type="text"
                 value={editDraft?.note || ""}
-                onChange={(e) => setEditDraft({ ...editDraft, note: e.target.value })}
+                onChange={(e) =>
+                  setEditDraft({ ...editDraft, note: e.target.value })
+                }
                 placeholder="Optional"
                 disabled={!canEditSelected || busy}
               />
             </div>
 
             <div className="modal-actions">
-              <button onClick={closeModal} disabled={busy}>Schliessen</button>
+              <button onClick={closeModal} disabled={busy}>
+                Schliessen
+              </button>
 
               {/* Rückgabe: immer zeigen, ggf. disabled + Tooltip über <span> */}
               <span title={!canReturnSelected ? denyText : undefined}>
                 <button
-                  className={`btn-danger ${!canReturnSelected ? "is-disabled" : ""}`}
+                  className={`btn-danger ${
+                    !canReturnSelected ? "is-disabled" : ""
+                  }`}
                   onClick={returnReservation}
                   disabled={busy || !canReturnSelected}
                   aria-disabled={!canReturnSelected}
@@ -365,7 +420,9 @@ export default function CalendarView({ reservations }) {
               {/* Speichern: immer zeigen, ggf. disabled + Tooltip über <span> */}
               <span title={!canEditSelected ? denyText : undefined}>
                 <button
-                  className={`btn-primary ${!canEditSelected ? "is-disabled" : ""}`}
+                  className={`btn-primary ${
+                    !canEditSelected ? "is-disabled" : ""
+                  }`}
                   onClick={saveReservation}
                   disabled={busy || !canEditSelected}
                   aria-disabled={!canEditSelected}
@@ -386,7 +443,9 @@ function toLocalInput(dateLike) {
   if (!dateLike) return "";
   const d = new Date(dateLike);
   const pad = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}`;
 }
 function toIsoUtcFromLocal(localStrOrDate) {
   if (!localStrOrDate) return null;
