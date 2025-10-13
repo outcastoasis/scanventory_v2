@@ -101,6 +101,7 @@ python app.py
 
 ```bash
 cd frontend
+npm i react-datepicker date-fns     #falls noch nicht gemacht
 npm install
 npm run dev
 ```

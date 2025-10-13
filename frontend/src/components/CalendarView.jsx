@@ -18,6 +18,11 @@ import {
 } from "date-fns";
 import de from "date-fns/locale/de";
 import { jwtDecode } from "jwt-decode";
+import DatePicker, { registerLocale, setDefaultLocale } from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
+registerLocale("de", de);
+setDefaultLocale("de"); // macht "de" global für alle DatePicker
 
 const locales = { de };
 const localizer = dateFnsLocalizer({
@@ -355,35 +360,51 @@ export default function CalendarView({ reservations }) {
               </div>
             </div>
 
-            <div className="modal-row">
-              <label>Von:</label>
-              <input
-                type="datetime-local"
-                value={toLocalInput(fromIsoUtcToLocal(editDraft?.start_time))}
-                onChange={(e) =>
-                  setEditDraft({
-                    ...editDraft,
-                    start_time: toIsoUtcFromLocal(e.target.value),
-                  })
-                }
-                disabled={!canEditSelected || busy}
-              />
-            </div>
+       {/* === Von === */}
+<div className="modal-row">
+  <label>Von:</label>
+  <DatePicker
+    selected={fromIsoUtcToLocal(editDraft?.start_time)}
+    onChange={(date) =>
+      setEditDraft({
+        ...editDraft,
+        start_time: toIsoUtcFromLocal(date),
+      })
+    }
+    showTimeSelect
+    timeIntervals={15}
+    timeCaption="Zeit"
+    dateFormat="dd.MM.yyyy HH:mm"
+    timeFormat="HH:mm"     // 24h im Zeit-Dropdown, kein AM/PM
+    locale="de"            // deutsche Labels
+    disabled={!canEditSelected || busy}
+    minTime={new Date(0, 0, 0, 0, 0)}
+    maxTime={new Date(0, 0, 0, 23, 45)}
+  />
+</div>
 
-            <div className="modal-row">
-              <label>Bis:</label>
-              <input
-                type="datetime-local"
-                value={toLocalInput(fromIsoUtcToLocal(editDraft?.end_time))}
-                onChange={(e) =>
-                  setEditDraft({
-                    ...editDraft,
-                    end_time: toIsoUtcFromLocal(e.target.value),
-                  })
-                }
-                disabled={!canEditSelected || busy}
-              />
-            </div>
+{/* === Bis === */}
+<div className="modal-row">
+  <label>Bis:</label>
+  <DatePicker
+    selected={fromIsoUtcToLocal(editDraft?.end_time)}
+    onChange={(date) =>
+      setEditDraft({
+        ...editDraft,
+        end_time: toIsoUtcFromLocal(date),
+      })
+    }
+    showTimeSelect
+    timeIntervals={15}
+    timeCaption="Zeit"
+    dateFormat="dd.MM.yyyy HH:mm"
+    timeFormat="HH:mm"     // 24h
+    locale="de"            // deutsch
+    disabled={!canEditSelected || busy}
+    minTime={new Date(0, 0, 0, 0, 0)}
+    maxTime={new Date(0, 0, 0, 23, 45)}
+  />
+</div>
 
             <div className="modal-row">
               <label>Notiz:</label>
@@ -438,6 +459,17 @@ export default function CalendarView({ reservations }) {
   );
 }
 
+/* ==== 15-Minuten-Snap ==== */
+function snapToQuarterHour(dateLike) {
+  if (!dateLike) return null;
+  const d = new Date(dateLike);
+  d.setSeconds(0, 0);
+  const m = d.getMinutes();
+  const snapped = Math.round(m / 15) * 15; // nächste Viertelstunde
+  d.setMinutes(snapped);
+  return d;
+}
+
 /* ==== Zeit-Helper ==== */
 function toLocalInput(dateLike) {
   if (!dateLike) return "";
@@ -455,4 +487,41 @@ function toIsoUtcFromLocal(localStrOrDate) {
 function fromIsoUtcToLocal(isoUtc) {
   if (!isoUtc) return null;
   return new Date(isoUtc);
+}
+
+/* ==== Local <-> ISO UTC Helpers für getrennte Date/Time-Inputs ==== */
+function toLocalDateInput(dateLike) {
+  if (!dateLike) return "";
+  const d = new Date(dateLike);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+function getLocalHour(dateLike) {
+  if (!dateLike) return "00";
+  const d = new Date(dateLike);
+  return String(d.getHours()).padStart(2, "0");
+}
+function getLocalQuarterMinute(dateLike) {
+  if (!dateLike) return "00";
+  const d = new Date(dateLike);
+  const m = d.getMinutes();
+  const quarters = [0, 15, 30, 45];
+  // auf nächstliegende Viertelminute mappen (falls alte Daten krumm sind)
+  const nearest = quarters.reduce(
+    (a, b) => (Math.abs(b - m) < Math.abs(a - m) ? b : a),
+    0
+  );
+  return String(nearest).padStart(2, "0");
+}
+/** Baut aus lokalem Datum (YYYY-MM-DD), Stunde ("00"-"23") und Minute ("00","15","30","45") ein ISO-UTC */
+function composeIsoUtcFromLocal(dateStr, hourStr, minuteStr) {
+  if (!dateStr) return null;
+  const [y, m, d] = dateStr.split("-").map((v) => parseInt(v, 10));
+  const hh = parseInt(hourStr || "0", 10);
+  const mm = parseInt(minuteStr || "0", 10);
+  const local = new Date(y, (m || 1) - 1, d || 1, hh, mm, 0, 0); // lokale Zeit
+  // nach UTC-ISO konvertieren
+  return new Date(
+    local.getTime() - local.getTimezoneOffset() * 60000
+  ).toISOString();
 }
