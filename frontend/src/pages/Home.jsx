@@ -262,7 +262,7 @@ function Home() {
 
           if (!res.ok) {
             res = await fetchWithAuth(
-              `${API_URL}/api/reservations/return_tool`,
+              `${API_URL}/api/reservations/return-tool`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

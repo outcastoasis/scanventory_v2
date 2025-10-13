@@ -354,7 +354,6 @@ def delete_reservation(res_id):
 # Werkzeug zurückgeben
 # -----------------------------
 @reservation_bp.route("/return-tool", methods=["PATCH", "POST"])
-@reservation_bp.route("/return_tool", methods=["PATCH", "POST"])  # Alias
 def return_tool():
     """Werkzeug zurückgeben – setzt Endzeit auf jetzt, aber nur wenn aktuell ausgeliehen."""
     try:
