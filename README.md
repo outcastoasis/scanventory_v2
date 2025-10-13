@@ -190,7 +190,7 @@ Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das B
 - [ ] Eigene Komponente für System-Statusmeldungen (z.B. Fehler, Erfolg)
 - [x] Rückgabe QR Code auf Startseite benennen/beschreiben/Titel hinzufügen
 - [ ] Responsivness verbessern von aktueller Seite (Hochformat priorisieren)
-- [ ] Kalendersprache auf Deutsch stellen (October, Wed, 7:57 PM, etc)
+- [x] Kalendersprache auf Deutsch stellen (October, Wed, 7:57 PM, etc)
 - [x] Heute Reserviert Liste unterhalb vom Kalender
 
 

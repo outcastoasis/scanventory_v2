@@ -300,6 +300,59 @@ export default function CalendarView({ reservations }) {
   const canReturnSelected = selectedRes ? canReturn(selectedRes) : false;
   const denyText = "keine Berechtigung";
 
+  const messagesDe = {
+    month: "Monat",
+    week: "Woche",
+    day: "Tag",
+    agenda: "Agenda",
+    today: "Heute",
+    previous: "Zurück",
+    next: "Weiter",
+    allDay: "Ganztägig",
+    noEventsInRange: "Keine Ereignisse in diesem Zeitraum",
+    showMore: (total) => `+${total} mehr`,
+  };
+
+  const formats = {
+    // Kleine Datumskästchen im Monat
+    dateFormat: "d",
+
+    // Kopfzeilen & Wochentage
+    weekdayFormat: (date) => format(date, "EEE", { locale: de }), // Mo, Di, …
+    monthHeaderFormat: (date) => format(date, "LLLL yyyy", { locale: de }), // Oktober 2025
+    dayHeaderFormat: (date) =>
+      format(date, "EEEE, dd. MMMM yyyy", { locale: de }),
+    dayRangeHeaderFormat: ({ start, end }) =>
+      `${format(start, "dd.MM.yyyy", { locale: de })} – ${format(
+        end,
+        "dd.MM.yyyy",
+        { locale: de }
+      )}`,
+
+    // Monat/Zelle: Datum + Kurz-Tag
+    dayFormat: (date) => format(date, "EEE dd.MM.", { locale: de }),
+
+    // Zeiten (24h, kein AM/PM)
+    timeGutterFormat: (date) => format(date, "HH:mm", { locale: de }),
+    eventTimeRangeFormat: ({ start, end }) =>
+      `${format(start, "HH:mm", { locale: de })} – ${format(end, "HH:mm", {
+        locale: de,
+      })}`,
+
+    // Agenda-Ansicht
+    agendaHeaderFormat: ({ start, end }) =>
+      `${format(start, "dd.MM.yyyy", { locale: de })} – ${format(
+        end,
+        "dd.MM.yyyy",
+        { locale: de }
+      )}`,
+    agendaDateFormat: (date) => format(date, "dd.MM.yyyy", { locale: de }),
+    agendaTimeRangeFormat: ({ start, end }) =>
+      `${format(start, "HH:mm", { locale: de })} – ${format(end, "HH:mm", {
+        locale: de,
+      })}`,
+  };
+
   return (
     <div style={{ height: currentView === "month" ? dynamicHeight : "auto" }}>
       <Calendar
@@ -320,15 +373,8 @@ export default function CalendarView({ reservations }) {
         popup={false}
         selectable={false}
         onSelectEvent={openModal}
-        messages={{
-          month: "Monat",
-          week: "Woche",
-          day: "Tag",
-          agenda: "Agenda",
-          today: "Heute",
-          previous: "Zurück",
-          next: "Weiter",
-        }}
+        messages={messagesDe} // <— neu
+        formats={formats} // <— neu (24h & deutsche Ausgabe)
         eventPropGetter={() => ({ className: "clickable-event" })}
       />
 
@@ -360,51 +406,51 @@ export default function CalendarView({ reservations }) {
               </div>
             </div>
 
-       {/* === Von === */}
-<div className="modal-row">
-  <label>Von:</label>
-  <DatePicker
-    selected={fromIsoUtcToLocal(editDraft?.start_time)}
-    onChange={(date) =>
-      setEditDraft({
-        ...editDraft,
-        start_time: toIsoUtcFromLocal(date),
-      })
-    }
-    showTimeSelect
-    timeIntervals={15}
-    timeCaption="Zeit"
-    dateFormat="dd.MM.yyyy HH:mm"
-    timeFormat="HH:mm"     // 24h im Zeit-Dropdown, kein AM/PM
-    locale="de"            // deutsche Labels
-    disabled={!canEditSelected || busy}
-    minTime={new Date(0, 0, 0, 0, 0)}
-    maxTime={new Date(0, 0, 0, 23, 45)}
-  />
-</div>
+            {/* === Von === */}
+            <div className="modal-row">
+              <label>Von:</label>
+              <DatePicker
+                selected={fromIsoUtcToLocal(editDraft?.start_time)}
+                onChange={(date) =>
+                  setEditDraft({
+                    ...editDraft,
+                    start_time: toIsoUtcFromLocal(date),
+                  })
+                }
+                showTimeSelect
+                timeIntervals={15}
+                timeCaption="Zeit"
+                dateFormat="dd.MM.yyyy HH:mm"
+                timeFormat="HH:mm" // 24h im Zeit-Dropdown, kein AM/PM
+                locale="de" // deutsche Labels
+                disabled={!canEditSelected || busy}
+                minTime={new Date(0, 0, 0, 0, 0)}
+                maxTime={new Date(0, 0, 0, 23, 45)}
+              />
+            </div>
 
-{/* === Bis === */}
-<div className="modal-row">
-  <label>Bis:</label>
-  <DatePicker
-    selected={fromIsoUtcToLocal(editDraft?.end_time)}
-    onChange={(date) =>
-      setEditDraft({
-        ...editDraft,
-        end_time: toIsoUtcFromLocal(date),
-      })
-    }
-    showTimeSelect
-    timeIntervals={15}
-    timeCaption="Zeit"
-    dateFormat="dd.MM.yyyy HH:mm"
-    timeFormat="HH:mm"     // 24h
-    locale="de"            // deutsch
-    disabled={!canEditSelected || busy}
-    minTime={new Date(0, 0, 0, 0, 0)}
-    maxTime={new Date(0, 0, 0, 23, 45)}
-  />
-</div>
+            {/* === Bis === */}
+            <div className="modal-row">
+              <label>Bis:</label>
+              <DatePicker
+                selected={fromIsoUtcToLocal(editDraft?.end_time)}
+                onChange={(date) =>
+                  setEditDraft({
+                    ...editDraft,
+                    end_time: toIsoUtcFromLocal(date),
+                  })
+                }
+                showTimeSelect
+                timeIntervals={15}
+                timeCaption="Zeit"
+                dateFormat="dd.MM.yyyy HH:mm"
+                timeFormat="HH:mm" // 24h
+                locale="de" // deutsch
+                disabled={!canEditSelected || busy}
+                minTime={new Date(0, 0, 0, 0, 0)}
+                maxTime={new Date(0, 0, 0, 23, 45)}
+              />
+            </div>
 
             <div className="modal-row">
               <label>Notiz:</label>
@@ -506,7 +552,7 @@ function getLocalQuarterMinute(dateLike) {
   const d = new Date(dateLike);
   const m = d.getMinutes();
   const quarters = [0, 15, 30, 45];
-  // auf nächstliegende Viertelminute mappen (falls alte Daten krumm sind)
+  // auf nächstliegende Viertelminute mappen (falls alte Daten falsch sind)
   const nearest = quarters.reduce(
     (a, b) => (Math.abs(b - m) < Math.abs(a - m) ? b : a),
     0
