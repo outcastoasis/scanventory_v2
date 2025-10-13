@@ -7,9 +7,9 @@ import { saveAs } from "file-saver";
 import QRCode from "qrcode";
 import QrModal from "../components/QrModal";
 import "../styles/AdminTools.css";
+import { getToken } from "../utils/authUtils";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const getToken = () => localStorage.getItem("token");
 
 export default function AdminTools() {
   const [tools, setTools] = useState([]);

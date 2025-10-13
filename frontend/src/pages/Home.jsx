@@ -359,7 +359,6 @@ function Home() {
       try {
         const decoded = jwtDecode(token);
         const now = Math.floor(Date.now() / 1000);
-
         if (decoded.exp && decoded.exp > now) {
           setLoggedInUser(decoded.username || "");
           setRole(decoded.role);
@@ -372,6 +371,9 @@ function Home() {
             alert("⏳ Deine Sitzung ist abgelaufen.");
             window.location.reload();
           }, timeout);
+
+          fetchReservations(); // <-- Token ist gültig → jetzt laden!
+
           return () => clearTimeout(logoutTimer);
         } else {
           clearToken();
@@ -379,11 +381,9 @@ function Home() {
       } catch {
         clearToken();
       }
+    } else {
+      fetchReservations(); // <-- kein Token (Gast-Zugriff z. B.)
     }
-
-    fetchReservations();
-    const interval = setInterval(fetchReservations, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {

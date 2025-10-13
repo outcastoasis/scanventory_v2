@@ -1,6 +1,7 @@
 // frontend/src/components/UserForm.jsx
 import { useState, useEffect } from "react";
 import "../styles/AdminUsers.css";
+import { getToken } from "../utils/authUtils";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -21,7 +22,7 @@ function UserForm({ user, onClose, onSave }) {
   useEffect(() => {
     fetch(`${API_URL}/api/me`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${getToken()}`,
       },
     })
       .then((res) => res.json())
@@ -32,7 +33,7 @@ function UserForm({ user, onClose, onSave }) {
   useEffect(() => {
     fetch(`${API_URL}/api/roles`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${getToken()}`,
       },
     })
       .then((res) => res.json())
@@ -44,7 +45,7 @@ function UserForm({ user, onClose, onSave }) {
     if (!isEditing) {
       fetch(`${API_URL}/api/users/next-id`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${getToken()}`,
         },
       })
         .then((res) => res.json())
@@ -80,7 +81,7 @@ function UserForm({ user, onClose, onSave }) {
       method,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${getToken()}`,
       },
       body: JSON.stringify(payload),
     });

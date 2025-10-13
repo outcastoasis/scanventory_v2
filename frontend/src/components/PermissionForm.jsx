@@ -1,9 +1,9 @@
 // frontend/src/components/PermissionForm.jsx
 import { useEffect, useState } from "react";
 import "../styles/AdminPermissions.css";
+import { getToken } from "../utils/authUtils";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const getToken = () => localStorage.getItem("token");
 
 export default function PermissionForm({ permission, onClose, onSave }) {
   const [keyVal, setKeyVal] = useState(permission?.key || "");

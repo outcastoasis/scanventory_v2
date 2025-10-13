@@ -7,6 +7,7 @@ import { saveAs } from "file-saver";
 import QRCode from "qrcode";
 import QrModal from "../components/QrModal";
 import "../styles/AdminUsers.css";
+import { getToken } from "../utils/authUtils";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -22,7 +23,6 @@ function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [permissions, setPermissions] = useState({});
 
-  const getToken = () => localStorage.getItem("token");
   const navigate = useNavigate();
 
   useEffect(() => {

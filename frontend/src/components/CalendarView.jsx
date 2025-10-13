@@ -20,6 +20,7 @@ import {
 import de from "date-fns/locale/de";
 import { jwtDecode } from "jwt-decode";
 import ReservationPopup from "./ReservationPopup"; // <— NEU: gemeinsames Popup
+import { getToken } from "../utils/authUtils";
 
 const locales = { de };
 const localizer = dateFnsLocalizer({
@@ -55,7 +56,7 @@ export default function CalendarView({ reservations }) {
 
   // Token → User
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (token) {
       try {
         const decoded = jwtDecode(token);
@@ -264,4 +265,3 @@ export default function CalendarView({ reservations }) {
     </div>
   );
 }
-

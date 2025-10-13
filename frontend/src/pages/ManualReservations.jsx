@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import ReservationPopup from "../components/ReservationPopup";
+import { getToken } from "../utils/authUtils";
 
 import "../styles/Home.css";
 import "../styles/ManualReservations.css";
@@ -18,14 +19,14 @@ function ManualReservations() {
   const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
 
   const fetchWithAuth = (url, options = {}) => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     const headers = { ...(options.headers || {}) };
     if (token) headers.Authorization = `Bearer ${token}`;
     return fetch(url, { ...options, headers });
   };
 
   const loggedInUser = useMemo(() => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) return null;
     try {
       return jwtDecode(token);
@@ -37,7 +38,11 @@ function ManualReservations() {
   const currentUser = useMemo(
     () =>
       loggedInUser
-        ? { id: loggedInUser.id, username: loggedInUser.username, role: loggedInUser.role }
+        ? {
+            id: loggedInUser.id,
+            username: loggedInUser.username,
+            role: loggedInUser.role,
+          }
         : { role: "guest" },
     [loggedInUser]
   );
@@ -45,7 +50,9 @@ function ManualReservations() {
   const loadTools = async (q = "") => {
     setLoading(true);
     try {
-      const url = `${API_URL}/api/tools/public?query=${encodeURIComponent(q)}&limit=200`;
+      const url = `${API_URL}/api/tools/public?query=${encodeURIComponent(
+        q
+      )}&limit=200`;
       const res = await fetch(url);
       if (!res.ok) throw new Error("Fehler beim Laden der Werkzeuge");
       const data = await res.json();

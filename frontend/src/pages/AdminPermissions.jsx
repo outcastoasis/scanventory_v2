@@ -3,9 +3,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/AdminPermissions.css";
 import PermissionForm from "../components/PermissionForm";
+import { getToken } from "../utils/authUtils";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const getToken = () => localStorage.getItem("token");
 
 export default function AdminPermissions() {
   const navigate = useNavigate();
