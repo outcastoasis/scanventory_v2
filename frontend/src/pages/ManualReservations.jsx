@@ -1,16 +1,19 @@
+//frontend/src/pages/ManualReservations
 import { useEffect, useMemo, useState } from "react";
 import { jwtDecode } from "jwt-decode";
+import ReservationPopup from "../components/ReservationPopup";
 
-// Styles im Look&Feel der bestehenden Seiten
 import "../styles/Home.css";
-import "../styles/ManualReservations.css"; // NEU
+import "../styles/ManualReservations.css";
 
-function ManuelReservations() {
+function ManualReservations() {
   const [query, setQuery] = useState("");
   const [tools, setTools] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedTool, setSelectedTool] = useState(null);
   const [message, setMessage] = useState("");
+
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [popupData, setPopupData] = useState(null);
 
   const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
 
@@ -30,6 +33,14 @@ function ManuelReservations() {
       return null;
     }
   }, []);
+
+  const currentUser = useMemo(
+    () =>
+      loggedInUser
+        ? { id: loggedInUser.id, username: loggedInUser.username, role: loggedInUser.role }
+        : { role: "guest" },
+    [loggedInUser]
+  );
 
   const loadTools = async (q = "") => {
     setLoading(true);
@@ -51,45 +62,25 @@ function ManuelReservations() {
     loadTools("");
   }, []);
 
-  const openDuration = (tool) => {
-    setSelectedTool(tool);
+  const openCreatePopup = (tool) => {
+    const start = new Date();
+    const end = new Date(Date.now() + 60 * 60 * 1000);
+    setPopupData({
+      user: currentUser,
+      tool,
+      start,
+      end,
+      note: "",
+    });
+    setPopupOpen(true);
   };
 
-  const closeDuration = () => {
-    setSelectedTool(null);
-  };
-
-  const createReservation = async (days) => {
-    if (!selectedTool) return;
-    const payload = {
-      tool: selectedTool.qr_code, // Tool kommt aus Tabelle
-      duration: days,
-      // Benutzer NICHT mitsenden → Backend soll per JWT (current user) ableiten
-      // Falls euer Backend das noch nicht kann, bitte im Reservations-POST ergänzen.
-    };
-
-    try {
-      const res = await fetchWithAuth(`${API_URL}/api/reservations`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.error || "Reservation fehlgeschlagen");
-      }
-
-      setMessage(`✅ Reservation erstellt: ${selectedTool.name} für ${days} Tag(e)`);
-      setSelectedTool(null);
-
-      // Nach Sync kurz Liste aktualisieren (z. B. falls Tool nun ausgeliehen ist)
-      loadTools(query);
-      // Optional: globaler Refresh-Event, falls Kalender auf anderer Seite offen
-      window.dispatchEvent(new CustomEvent("scanventory:reservations:refresh"));
-    } catch (e) {
-      setMessage(`❌ ${e.message}`);
-    }
+  const onSaved = () => {
+    setPopupOpen(false);
+    setPopupData(null);
+    loadTools(query);
+    window.dispatchEvent(new CustomEvent("scanventory:reservations:refresh"));
+    setMessage("✅ Reservation erstellt.");
   };
 
   const onSearchSubmit = (e) => {
@@ -184,11 +175,13 @@ function ManuelReservations() {
                     </td>
                     <td>
                       <button
-                        disabled={t.is_borrowed}
-                        onClick={() => openDuration(t)}
+                        disabled={t.is_borrowed || currentUser.role === "guest"}
+                        onClick={() => openCreatePopup(t)}
                         title={
                           t.is_borrowed
                             ? "Werkzeug ist aktuell ausgeliehen"
+                            : currentUser.role === "guest"
+                            ? "Bitte anmelden"
                             : "Reservieren"
                         }
                       >
@@ -203,43 +196,18 @@ function ManuelReservations() {
         </table>
       </section>
 
-      {/* Dauer-Auswahl (Modal) */}
-      {selectedTool && (
-        <div
-          className="duration-overlay"
-          onClick={(e) => {
-            if (e.target.classList.contains("duration-overlay")) {
-              closeDuration(); // Abbruch → zurück zur Tabelle
-            }
-          }}
-        >
-          <div className="duration-modal">
-            <h3 className="duration-title">
-              Dauer wählen – {selectedTool.name} ({selectedTool.qr_code})
-            </h3>
-
-            <div className="duration-grid">
-              {[1, 2, 3, 4, 5].map((d) => (
-                <button
-                  key={d}
-                  className="duration-tile"
-                  onClick={() => createReservation(d)}
-                >
-                  <span className="duration-tile-label">
-                    {d} Tag{d > 1 ? "e" : ""}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            <div className="duration-actions">
-              <button onClick={closeDuration}>Abbrechen</button>
-            </div>
-          </div>
-        </div>
+      {popupOpen && (
+        <ReservationPopup
+          isOpen
+          mode="create"
+          initialData={popupData}
+          currentUser={currentUser}
+          onClose={() => setPopupOpen(false)}
+          onSaved={onSaved}
+        />
       )}
     </div>
   );
 }
 
-export default ManuelReservations;
+export default ManualReservations;
