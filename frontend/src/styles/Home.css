@@ -117,7 +117,7 @@
 /* Scanner + Kalender Abstände */
 .home-scanner,
 .home-calendar {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 /* Titel auf eine Linie, ohne extra Margin */
@@ -370,4 +370,28 @@
   background-color: #e0e0e0 !important; /* hellgrauer Hintergrund */
   color: #555 !important; /* dezenter Text */
   font-style: italic;
+}
+
+.home-manual-button {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0 0.5rem;
+}
+
+.manual-reservation-button {
+  background-color: #0055aa;
+  color: white;
+  font-size: 1rem;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.manual-reservation-button:hover {
+  background-color: #004080;
 }

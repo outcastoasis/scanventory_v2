@@ -1,22 +1,21 @@
-//frontend/src/pages/ManualReservations
+// frontend/src/pages/ManualReservations.jsx
 import { useEffect, useMemo, useState } from "react";
 import { jwtDecode } from "jwt-decode";
-import ReservationPopup from "../components/ReservationPopup";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { getToken } from "../utils/authUtils";
 
-import "../styles/Home.css";
 import "../styles/ManualReservations.css";
 
 function ManualReservations() {
-  const [query, setQuery] = useState("");
+  const [start, setStart] = useState(null);
+  const [end, setEnd] = useState(null);
   const [tools, setTools] = useState([]);
+  const [selectedTools, setSelectedTools] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  const [popupOpen, setPopupOpen] = useState(false);
-  const [popupData, setPopupData] = useState(null);
-
-  const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+  const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$|^\/+/, "");
 
   const fetchWithAuth = (url, options = {}) => {
     const token = getToken();
@@ -39,7 +38,7 @@ function ManualReservations() {
     () =>
       loggedInUser
         ? {
-            id: loggedInUser.id,
+            id: loggedInUser.user_id, // ← HIER!
             username: loggedInUser.username,
             role: loggedInUser.role,
           }
@@ -47,97 +46,116 @@ function ManualReservations() {
     [loggedInUser]
   );
 
-  const loadTools = async (q = "") => {
+  const searchAvailableTools = async () => {
+    setTools([]);
+    setSelectedTools([]);
+    setMessage("");
+
+    if (!start || !end || start >= end) {
+      setMessage("Bitte gültigen Zeitraum wählen.");
+      return;
+    }
+
     setLoading(true);
     try {
-      const url = `${API_URL}/api/tools/public?query=${encodeURIComponent(
-        q
-      )}&limit=200`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("Fehler beim Laden der Werkzeuge");
+      const qs = `start=${start.toISOString()}&end=${end.toISOString()}`;
+      const res = await fetchWithAuth(`${API_URL}/api/tools/available?${qs}`);
+      if (!res.ok) throw new Error("Fehler beim Laden verfügbarer Werkzeuge");
       const data = await res.json();
-      setTools(Array.isArray(data) ? data : []);
-    } catch (e) {
-      setTools([]);
-      setMessage(`❌ ${e.message}`);
+      setTools(data);
+      if (data.length === 0)
+        setMessage("Keine Werkzeuge im gewählten Zeitraum verfügbar.");
+    } catch (err) {
+      setMessage(`❌ ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadTools("");
-  }, []);
-
-  const openCreatePopup = (tool) => {
-    const start = new Date();
-    const end = new Date(Date.now() + 60 * 60 * 1000);
-    setPopupData({
-      user: currentUser,
-      tool,
-      start,
-      end,
-      note: "",
-    });
-    setPopupOpen(true);
+  const toggleToolSelection = (toolId) => {
+    setSelectedTools((prev) =>
+      prev.includes(toolId)
+        ? prev.filter((id) => id !== toolId)
+        : [...prev, toolId]
+    );
   };
 
-  const onSaved = () => {
-    setPopupOpen(false);
-    setPopupData(null);
-    loadTools(query);
-    window.dispatchEvent(new CustomEvent("scanventory:reservations:refresh"));
-    setMessage("✅ Reservation erstellt.");
-  };
-
-  const onSearchSubmit = (e) => {
-    e.preventDefault();
-    loadTools(query.trim());
+  const reserveSelected = async () => {
+    if (!start || !end || selectedTools.length === 0) return;
+    setLoading(true);
+    try {
+      const promises = selectedTools.map((toolId) =>
+        fetchWithAuth(`${API_URL}/api/reservations`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: currentUser.id,
+            tool_id: toolId,
+            start_time: start.toISOString(),
+            end_time: end.toISOString(),
+          }),
+        })
+      );
+      const results = await Promise.all(promises);
+      const failed = results.filter((res) => !res.ok);
+      if (failed.length > 0)
+        throw new Error("Mindestens eine Reservation ist fehlgeschlagen.");
+      setMessage("✅ Reservation(en) erfolgreich gespeichert");
+      setTools([]);
+      setSelectedTools([]);
+    } catch (err) {
+      setMessage(`❌ ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="home-container">
-      <header className="home-header">
+    <div className="manualres-container">
+      <header className="manualres-header">
         <h1>Manuelle Reservation</h1>
-        <div className="login-info">
+        <div className="manualres-logininfo">
           {loggedInUser ? (
-            <div className="user-label">
+            <div className="manualres-user">
               Angemeldet als: <strong>{loggedInUser.username}</strong>
             </div>
           ) : (
-            <div className="user-label">
+            <div className="manualres-user">
               <strong>Nicht angemeldet</strong>
             </div>
           )}
-          <div className="login-actions">
+          <div className="manualres-actions">
             <button onClick={() => (window.location.href = "/")}>Zurück</button>
           </div>
         </div>
       </header>
 
       <section className="manualres-controls">
-        <form onSubmit={onSearchSubmit} className="manualres-searchrow">
-          <input
-            type="text"
-            className="manualres-search"
-            placeholder="Werkzeug suchen (Name, QR, Kategorie)"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+        <div className="manualres-row">
+          <label>Von:</label>
+          <DatePicker
+            selected={start}
+            onChange={(date) => setStart(date)}
+            showTimeSelect
+            timeFormat="HH:mm"
+            timeIntervals={15}
+            dateFormat="dd.MM.yyyy HH:mm"
           />
-          <button type="submit" disabled={loading}>
-            {loading ? "Laden…" : "Suchen"}
+
+          <label>Bis:</label>
+          <DatePicker
+            selected={end}
+            onChange={(date) => setEnd(date)}
+            showTimeSelect
+            timeFormat="HH:mm"
+            timeIntervals={15}
+            dateFormat="dd.MM.yyyy HH:mm"
+          />
+
+          <button onClick={searchAvailableTools} disabled={loading}>
+            Werkzeuge suchen
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setQuery("");
-              loadTools("");
-            }}
-            disabled={loading}
-          >
-            Reset
-          </button>
-        </form>
+        </div>
 
         {message && <div className="manualres-message">{message}</div>}
       </section>
@@ -146,73 +164,41 @@ function ManualReservations() {
         <table className="manualres-table">
           <thead>
             <tr>
+              <th>Auswahl</th>
               <th>Name</th>
               <th>QR-Code</th>
               <th>Kategorie</th>
-              <th>Status</th>
-              <th>Aktion</th>
             </tr>
           </thead>
           <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={5} className="tcenter">
-                  Lädt…
+            {tools.map((tool) => (
+              <tr key={tool.id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selectedTools.includes(tool.id)}
+                    onChange={() => toggleToolSelection(tool.id)}
+                  />
                 </td>
+                <td>{tool.name}</td>
+                <td>{tool.qr_code}</td>
+                <td>{tool.category || "-"}</td>
               </tr>
-            ) : tools.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="tcenter">
-                  Keine Werkzeuge gefunden.
-                </td>
-              </tr>
-            ) : (
-              tools.map((t) => {
-                const statusLabel = t.is_borrowed
-                  ? "ausgeliehen"
-                  : t.status || "verfügbar";
-
-                return (
-                  <tr key={t.id} className={t.is_borrowed ? "row-busy" : ""}>
-                    <td title={t.name}>{t.name}</td>
-                    <td>{t.qr_code}</td>
-                    <td>{t.category || "-"}</td>
-                    <td className={`status ${t.is_borrowed ? "busy" : "free"}`}>
-                      {statusLabel}
-                    </td>
-                    <td>
-                      <button
-                        disabled={t.is_borrowed || currentUser.role === "guest"}
-                        onClick={() => openCreatePopup(t)}
-                        title={
-                          t.is_borrowed
-                            ? "Werkzeug ist aktuell ausgeliehen"
-                            : currentUser.role === "guest"
-                            ? "Bitte anmelden"
-                            : "Reservieren"
-                        }
-                      >
-                        Reservieren
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
+            ))}
           </tbody>
         </table>
-      </section>
 
-      {popupOpen && (
-        <ReservationPopup
-          isOpen
-          mode="create"
-          initialData={popupData}
-          currentUser={currentUser}
-          onClose={() => setPopupOpen(false)}
-          onSaved={onSaved}
-        />
-      )}
+        {tools.length > 0 && (
+          <div className="manualres-reserve-button">
+            <button
+              onClick={reserveSelected}
+              disabled={loading || selectedTools.length === 0}
+            >
+              Ausgewählte reservieren
+            </button>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

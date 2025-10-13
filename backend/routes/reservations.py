@@ -81,15 +81,85 @@ def _purge_old_reservations():
 @reservation_bp.route("", methods=["POST"])
 def create_reservation():
     data = request.get_json() or {}
+    payload = get_token_payload()
+    user_id = payload["user_id"] if payload else None
+
+    # 1. Prüfen, ob QR-Modus (klassisch)
     user_code = data.get("user")
     tool_code = data.get("tool")
     duration = int(data.get("duration") or 0)
 
+    # 2. Oder manuelle Reservation
+    user_id_direct = data.get("user_id")
+    tool_id_direct = data.get("tool_id")
+    start_time_str = data.get("start_time")
+    end_time_str = data.get("end_time")
+
+    zurich = timezone("Europe/Zurich")
+
+    # -------------------------
+    # A) Manuelle Reservation
+    # -------------------------
+    if user_id_direct and tool_id_direct and start_time_str and end_time_str:
+        # Berechtigungsprüfung
+        if not user_id:
+            return jsonify({"error": "Login erforderlich"}), 401
+
+        val = _role_value_for(user_id, "create_reservations")
+        if val == "false":
+            return jsonify({"error": "Keine Berechtigung für Reservation"}), 403
+
+        try:
+            start_local = datetime.fromisoformat(start_time_str.replace("Z", "+00:00"))
+            end_local = datetime.fromisoformat(end_time_str.replace("Z", "+00:00"))
+            if start_local.tzinfo is None:
+                start_local = zurich.localize(start_local)
+            if end_local.tzinfo is None:
+                end_local = zurich.localize(end_local)
+            start_utc = start_local.astimezone(pytz.utc).replace(tzinfo=None)
+            end_utc = end_local.astimezone(pytz.utc).replace(tzinfo=None)
+        except Exception:
+            return jsonify({"error": "Ungültige Datumsangabe"}), 400
+
+        if start_utc >= end_utc:
+            return jsonify({"error": "Endzeit muss nach Startzeit liegen"}), 400
+
+        user = User.query.get(user_id_direct)
+        tool = Tool.query.get(tool_id_direct)
+        if not user or not tool:
+            return jsonify({"error": "Benutzer oder Werkzeug nicht gefunden"}), 404
+
+        # Überschneidungen prüfen
+        overlap = Reservation.query.filter(
+            Reservation.tool_id == tool.id,
+            Reservation.start_time < end_utc,
+            Reservation.end_time > start_utc,
+        ).first()
+        if overlap:
+            return (
+                jsonify(
+                    {
+                        "error": f"Werkzeug '{tool.name}' ist in diesem Zeitraum bereits reserviert."
+                    }
+                ),
+                400,
+            )
+
+        reservation = Reservation(
+            user=user, tool=tool, start_time=start_utc, end_time=end_utc, confirmed=True
+        )
+        db.session.add(reservation)
+        db.session.flush()
+        _recompute_tool_borrowed(tool.id)
+        db.session.commit()
+
+        return jsonify({"message": "Manuelle Reservation gespeichert"}), 201
+
+    # -------------------------
+    # B) QR-Modus
+    # -------------------------
     if not user_code or not tool_code or not duration:
         return jsonify({"error": "Missing fields"}), 400
-
-    payload = get_token_payload()
-    user_id = payload["user_id"] if payload else None
 
     if user_id:
         val = _role_value_for(user_id, "create_reservations")
@@ -113,12 +183,11 @@ def create_reservation():
     now_utc = datetime.utcnow()
     conflict = Reservation.query.filter(
         Reservation.tool_id == tool.id,
-        Reservation.end_time >= now_utc,  # aktiv oder geplant
+        Reservation.end_time >= now_utc,
     ).first()
     if conflict:
         return jsonify({"error": "Werkzeug ist aktuell oder bald reserviert"}), 400
 
-    zurich = timezone("Europe/Zurich")
     now_local = datetime.now(zurich)
     end_local = now_local.replace(
         hour=23, minute=59, second=0, microsecond=0
@@ -131,7 +200,6 @@ def create_reservation():
         user=user, tool=tool, start_time=start_time, end_time=end_time
     )
     db.session.add(reservation)
-
     db.session.flush()
     _recompute_tool_borrowed(tool.id)
     db.session.commit()
@@ -284,21 +352,20 @@ def delete_reservation(res_id):
 
 # -----------------------------
 # Werkzeug zurückgeben
-# - aktive Reservation wird GELÖSCHT (nicht nur gekürzt)
 # -----------------------------
 @reservation_bp.route("/return-tool", methods=["PATCH", "POST"])
 @reservation_bp.route("/return_tool", methods=["PATCH", "POST"])  # Alias
 def return_tool():
-    """Werkzeug zurückgeben – immer möglich (je nach Berechtigung), unabhängig vom Reservierungszeitpunkt."""
+    """Werkzeug zurückgeben – setzt Endzeit auf jetzt, aber nur wenn aktuell ausgeliehen."""
     try:
         payload = get_token_payload()
         user_id = payload["user_id"] if payload else None
     except Exception:
         user_id = None
 
-    # JSON oder Form akzeptieren
+    # Eingabedaten lesen (JSON oder Form)
     data = request.get_json(silent=True) or request.form or {}
-    tool_code = data.get("tool")
+    tool_code = data.get("tool", "").strip().lower()
     if not tool_code:
         return jsonify({"error": "Missing tool code"}), 400
 
@@ -306,50 +373,41 @@ def return_tool():
     if not tool:
         return jsonify({"error": "Tool not found"}), 404
 
-    # nicht nur "aktive jetzt", sondern "letzte bekannte Reservation"
-    last_res = (
-        Reservation.query.filter_by(tool_id=tool.id)
+    now_utc = datetime.utcnow()
+
+    # Aktive Reservation suchen
+    active_res = (
+        Reservation.query.filter(Reservation.tool_id == tool.id)
+        .filter(Reservation.start_time <= now_utc)
+        .filter(Reservation.end_time > now_utc)
         .order_by(Reservation.start_time.desc())
         .first()
     )
 
-    # Berechtigungen:
-    # - Gäste dürfen (wie zuvor)
-    # - Eingeloggte:
-    #     edit_reservations == false  -> 403
-    #     edit_reservations == self_only -> nur wenn letzte Res dem User gehört
+    # Berechtigungen prüfen (nur wenn eingeloggter User)
     if user_id:
         val = _role_value_for(user_id, "edit_reservations")
         if val == "false":
             return jsonify({"error": "Keine Berechtigung"}), 403
-        if val == "self_only" and last_res and last_res.user_id != user_id:
+        if val == "self_only" and active_res and active_res.user_id != user_id:
             return (
                 jsonify({"error": "Keine Berechtigung für fremde Reservationen"}),
                 403,
             )
 
-    # Aktion:
-    # - Tool-Status konsistent neu berechnen (falls es noch andere aktive Reservierungen gibt, bleibt borrowed=True)
-    if last_res:
-        tool_id = last_res.tool_id
-        now_utc = datetime.utcnow()
-        last_res.end_time = now_utc
+    if active_res:
+        # Rückgabe durchführen
+        active_res.end_time = now_utc
         db.session.flush()
-        _recompute_tool_borrowed(tool_id)
+        _recompute_tool_borrowed(tool.id)
         db.session.commit()
         return (
-            jsonify({"message": "Werkzeug zurückgegeben (Endzeit aktualisiert)"}),
+            jsonify({"message": "✅ Werkzeug zurückgegeben (Endzeit aktualisiert)"}),
             200,
         )
 
-    # Keine Reservation mehr vorhanden (z. B. bereits auto-gelöscht) -> idempotent:
-    # Stelle sicher, dass das Tool als verfügbar markiert ist.
-    db.session.flush()
-    _recompute_tool_borrowed(tool.id)
-    db.session.commit()
+    # Keine aktive Reservation – Rückgabe abbrechen
     return (
-        jsonify(
-            {"message": "Werkzeug war bereits verfügbar / keine Reservation vorhanden"}
-        ),
-        200,
+        jsonify({"error": "Dieses Werkzeug ist aktuell nicht ausgeliehen."}),
+        400,
     )

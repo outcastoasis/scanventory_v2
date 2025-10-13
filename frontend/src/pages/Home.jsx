@@ -499,6 +499,17 @@ function Home() {
         <ScannerHandler onScan={handleScan} />
       </section>
 
+      {role && role !== "guest" && (
+        <section className="home-manual-button">
+          <button
+            className="manual-reservation-button"
+            onClick={() => (window.location.href = "/reservations/manual")}
+          >
+            <FontAwesomeIcon icon={faPlus} /> Manuelle Reservation
+          </button>
+        </section>
+      )}
+
       <section className="home-calendar">
         <h2>Kalender</h2>
         <CalendarView reservations={reservations} />
