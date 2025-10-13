@@ -151,7 +151,6 @@
   cursor: pointer;
 }
 
-
 .scan-box {
   flex-grow: 1;
   background-color: #f3f4f6;
@@ -365,4 +364,10 @@
   .home-return {
     min-width: 0;
   }
+}
+
+.past-event {
+  background-color: #e0e0e0 !important; /* hellgrauer Hintergrund */
+  color: #555 !important; /* dezenter Text */
+  font-style: italic;
 }

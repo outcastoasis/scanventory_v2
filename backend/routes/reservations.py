@@ -8,6 +8,7 @@ from utils.permissions import get_token_payload
 
 reservation_bp = Blueprint("reservations", __name__)
 
+
 # -----------------------------
 # Helpers
 # -----------------------------
@@ -26,6 +27,7 @@ def _recompute_tool_borrowed(tool_id: int):
     ).first()
     tool.is_borrowed = bool(active)
 
+
 def _role_value_for(user_id, perm_key):
     """Gibt 'true' | 'self_only' | 'false' für eine Permission zurück."""
     if not user_id:
@@ -34,8 +36,11 @@ def _role_value_for(user_id, perm_key):
     user = User.query.get(user_id)
     if not perm or not user:
         return "false"
-    rp = RolePermission.query.filter_by(role_id=user.role_id, permission_id=perm.id).first()
+    rp = RolePermission.query.filter_by(
+        role_id=user.role_id, permission_id=perm.id
+    ).first()
     return rp.value if rp else "false"
+
 
 def _parse_to_utc(val):
     """Akzeptiert ISO (mit/ohne Z) oder 'YYYY-mm-dd HH:MM' (lokal) und liefert naive UTC-datetime."""
@@ -53,10 +58,11 @@ def _parse_to_utc(val):
         except Exception:
             raise
 
-def _purge_expired_reservations():
-    """Löscht alle Reservationen mit end_time < jetzt und setzt betroffene Tools korrekt."""
+
+def _purge_old_reservations():
     now_utc = datetime.utcnow()
-    expired = Reservation.query.filter(Reservation.end_time < now_utc).all()
+    threshold = now_utc - timedelta(days=90)
+    expired = Reservation.query.filter(Reservation.end_time < threshold).all()
     if not expired:
         return 0
     affected_tool_ids = set(r.tool_id for r in expired)
@@ -67,6 +73,7 @@ def _purge_expired_reservations():
         _recompute_tool_borrowed(tid)
     db.session.commit()
     return len(expired)
+
 
 # -----------------------------
 # Reservation anlegen
@@ -113,12 +120,16 @@ def create_reservation():
 
     zurich = timezone("Europe/Zurich")
     now_local = datetime.now(zurich)
-    end_local = now_local.replace(hour=23, minute=59, second=0, microsecond=0) + timedelta(days=duration - 1)
+    end_local = now_local.replace(
+        hour=23, minute=59, second=0, microsecond=0
+    ) + timedelta(days=duration - 1)
 
     start_time = now_local.astimezone(pytz.utc)
     end_time = end_local.astimezone(pytz.utc)
 
-    reservation = Reservation(user=user, tool=tool, start_time=start_time, end_time=end_time)
+    reservation = Reservation(
+        user=user, tool=tool, start_time=start_time, end_time=end_time
+    )
     db.session.add(reservation)
 
     db.session.flush()
@@ -127,6 +138,7 @@ def create_reservation():
 
     return jsonify({"message": "Reservation saved"}), 201
 
+
 # -----------------------------
 # Reservationen abfragen
 # → nur aktive/kommende zurückgeben
@@ -134,16 +146,12 @@ def create_reservation():
 # -----------------------------
 @reservation_bp.route("", methods=["GET"])
 def get_reservations():
-    # Aufräumen: abgelaufene löschen (damit “Auto-Delete nach Ablauf” greift)
-    _purge_expired_reservations()
+    _purge_old_reservations()
 
     to_zone = timezone("Europe/Zurich")
     now_utc = datetime.utcnow()
 
-    # Nur aktive/kommende Reservationen für den Kalender
-    reservations = Reservation.query.filter(
-        Reservation.end_time >= now_utc
-    ).order_by(Reservation.start_time.desc()).all()
+    reservations = Reservation.query.order_by(Reservation.start_time.desc()).all()
 
     result = []
     for res in reservations:
@@ -171,6 +179,7 @@ def get_reservations():
     resp = jsonify(result)
     resp.headers["Cache-Control"] = "no-store"
     return resp, 200
+
 
 # -----------------------------
 # Reservation bearbeiten (PATCH)
@@ -233,14 +242,18 @@ def update_reservation(res_id):
     _recompute_tool_borrowed(res.tool_id)
     db.session.commit()
 
-    return jsonify(
-        {
-            "id": res.id,
-            "start_time": res.start_time.replace(tzinfo=pytz.utc).isoformat(),
-            "end_time": res.end_time.replace(tzinfo=pytz.utc).isoformat(),
-            "note": getattr(res, "note", None),
-        }
-    ), 200
+    return (
+        jsonify(
+            {
+                "id": res.id,
+                "start_time": res.start_time.replace(tzinfo=pytz.utc).isoformat(),
+                "end_time": res.end_time.replace(tzinfo=pytz.utc).isoformat(),
+                "note": getattr(res, "note", None),
+            }
+        ),
+        200,
+    )
+
 
 # -----------------------------
 # Reservation löschen (DELETE)
@@ -267,6 +280,7 @@ def delete_reservation(res_id):
     db.session.commit()
 
     return jsonify({"message": "Reservation gelöscht"}), 200
+
 
 # -----------------------------
 # Werkzeug zurückgeben
@@ -309,22 +323,33 @@ def return_tool():
         if val == "false":
             return jsonify({"error": "Keine Berechtigung"}), 403
         if val == "self_only" and last_res and last_res.user_id != user_id:
-            return jsonify({"error": "Keine Berechtigung für fremde Reservationen"}), 403
+            return (
+                jsonify({"error": "Keine Berechtigung für fremde Reservationen"}),
+                403,
+            )
 
     # Aktion:
-    # - Falls es eine (letzte) Reservation gibt: löschen (damit verschwindet sie im Kalender)
     # - Tool-Status konsistent neu berechnen (falls es noch andere aktive Reservierungen gibt, bleibt borrowed=True)
     if last_res:
         tool_id = last_res.tool_id
-        db.session.delete(last_res)
+        now_utc = datetime.utcnow()
+        last_res.end_time = now_utc
         db.session.flush()
         _recompute_tool_borrowed(tool_id)
         db.session.commit()
-        return jsonify({"message": "Werkzeug zurückgegeben (Reservation entfernt)"}), 200
+        return (
+            jsonify({"message": "Werkzeug zurückgegeben (Endzeit aktualisiert)"}),
+            200,
+        )
 
     # Keine Reservation mehr vorhanden (z. B. bereits auto-gelöscht) -> idempotent:
     # Stelle sicher, dass das Tool als verfügbar markiert ist.
     db.session.flush()
     _recompute_tool_borrowed(tool.id)
     db.session.commit()
-    return jsonify({"message": "Werkzeug war bereits verfügbar / keine Reservation vorhanden"}), 200
+    return (
+        jsonify(
+            {"message": "Werkzeug war bereits verfügbar / keine Reservation vorhanden"}
+        ),
+        200,
+    )

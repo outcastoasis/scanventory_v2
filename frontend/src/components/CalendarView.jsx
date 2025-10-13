@@ -21,6 +21,7 @@ import de from "date-fns/locale/de";
 import { jwtDecode } from "jwt-decode";
 import ReservationPopup from "./ReservationPopup"; // <— NEU: gemeinsames Popup
 import { getToken } from "../utils/authUtils";
+import "../styles/Home.css";
 
 const locales = { de };
 const localizer = dateFnsLocalizer({
@@ -249,7 +250,14 @@ export default function CalendarView({ reservations }) {
         onSelectEvent={openEdit}
         messages={messagesDe}
         formats={formats}
-        eventPropGetter={() => ({ className: "clickable-event" })}
+        eventPropGetter={(event) => {
+          const now = new Date();
+          const isPast = new Date(event.end) < now;
+
+          return {
+            className: "clickable-event" + (isPast ? " past-event" : ""),
+          };
+        }}
       />
 
       {popupOpen && (
