@@ -13,6 +13,7 @@
 - Login-System mit JWT-Token
 - Rollenbasiertes Berechtigungssystem: `guest`, `user`, `supervisor`, `admin`
 - Adminmenü mit Dropdown (Werkzeuge, Benutzer, Rechte, Reservation)
+- Manuelle Reservation per Button auf Startseite nach Login
 - Rechte-Logik vollständig datenbankgesteuert
 - Rückgabe auch ohne Login möglich
 
@@ -101,7 +102,6 @@ python app.py
 
 ```bash
 cd frontend
-npm i react-datepicker date-fns     #falls noch nicht gemacht
 npm install
 npm run dev
 ```
@@ -144,7 +144,7 @@ Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das B
 
 - [x] Monats-/Wochenansicht mit Reservationen
 - [x] PopUps für Bearbeiten (eigene + adminfähig)
-- [x] Farbcodierung, Anzeige nach Rollen
+- [x] Farbcodierung, Anzeige nach Aktiven oder Vergangenen Einträgen
 
 ### ✅ Phase 5: Adminbereich
 
@@ -166,10 +166,13 @@ Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das B
 - [ ] Admin-Panel für:
   - Kategorienpflege bei Werkzeugen
   - Firmenpflege bei Benutzern (nicht hardcoded)
+  - Anzeige und Download von QR Codes wie: cancel, reload
+  - alle Reservationen auflisten, sortierbar und Suchbar machen (Wie bei Userliste/Toolliste) und löschen per Button
+  - Fehler Logs einbauen und hier auflisten
 - [x] Darstellung von Reservationen auf der Startseite als: `Start – Ende | Werkzeug – Nachname Vorname`
 - [x] Kalenderhöhe dynamisch anpassen je nach Eintragsanzahl pro Tag
 - [x] Klickbare Reservationen für alle sichtbar, Bearbeitung nur wenn berechtigt (`edit_reservations: true` oder `self_only`)
-- [ ] Seite zur manuellen Reservation für eingeloggte Benutzer (`create_reservations = self_only/true`)
+- [x] Seite zur manuellen Reservation für eingeloggte Benutzer (`create_reservations = self_only/true`)
 - [ ] Import von CSV für Benutzer und Werkzeuglisten mit automatischer QR Code ID vergabe (Vorhandene Überspringen)
 - [x] Rückgabe-QR-Code (`return`) auf Startseite anzeigen
 - [x] QR-Code für Dauerwahl (`dur1`, `dur2`, `dur3`) nach erfolgreichem Scan von `usrXXXX` und `toolXXXX` anzeigen
@@ -185,9 +188,9 @@ Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das B
 
 ## 🧠 Quality of Life
 
-- [ ] bessere visuelle bestätigung bei reservationen per Scanner
+- [ ] bessere visuelle bestätigung bei reservationen per Scanner (zB Scan Status Feld grün aufleuchten lassen kurz)
 - [ ] Audit-Log-Ansicht (basierend auf `logs`-Tabelle)
-- [ ] Eigene Komponente für System-Statusmeldungen (z.B. Fehler, Erfolg)
+- [ ] Eigene Komponente für System-Statusmeldungen (z.B. Fehler, Erfolg-popup)
 - [x] Rückgabe QR Code auf Startseite benennen/beschreiben/Titel hinzufügen
 - [ ] Responsivness verbessern von aktueller Seite (Hochformat priorisieren)
 - [x] Kalendersprache auf Deutsch stellen (October, Wed, 7:57 PM, etc)
