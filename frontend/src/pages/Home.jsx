@@ -332,7 +332,8 @@ function Home() {
               duration: newState.duration,
             }),
           });
-          const data = await res.json().catch(() => ({}));
+          const data = await res.json();
+          console.error("Reservation Error:", data); // Zeigt dir den exakten Fehler im Dev-Tool
           if (!res.ok)
             throw new Error(data.error || "Reservation fehlgeschlagen");
 

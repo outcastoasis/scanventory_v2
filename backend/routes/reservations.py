@@ -180,22 +180,25 @@ def create_reservation():
         db.session.add(tool)
         db.session.flush()
 
-    now_utc = datetime.utcnow()
-    conflict = Reservation.query.filter(
-        Reservation.tool_id == tool.id,
-        Reservation.end_time >= now_utc,
-    ).first()
-    if conflict:
-        return jsonify({"error": "Werkzeug ist aktuell oder bald reserviert"}), 400
-
     now_local = datetime.now(zurich)
+    start_local = now_local
     end_local = now_local.replace(
         hour=23, minute=59, second=0, microsecond=0
     ) + timedelta(days=duration - 1)
 
-    start_time = now_local.astimezone(pytz.utc)
-    end_time = end_local.astimezone(pytz.utc)
+    start_time = start_local.astimezone(pytz.utc).replace(tzinfo=None)
+    end_time = end_local.astimezone(pytz.utc).replace(tzinfo=None)
 
+    # >>> Konflikte prüfen
+    conflict = Reservation.query.filter(
+        Reservation.tool_id == tool.id,
+        Reservation.start_time < end_time,
+        Reservation.end_time > start_time,
+    ).first()
+    if conflict:
+        return jsonify({"error": "Werkzeug ist aktuell oder bald reserviert"}), 400
+
+    # >>> Reservation speichern
     reservation = Reservation(
         user=user, tool=tool, start_time=start_time, end_time=end_time
     )
@@ -204,7 +207,7 @@ def create_reservation():
     _recompute_tool_borrowed(tool.id)
     db.session.commit()
 
-    return jsonify({"message": "Reservation saved"}), 201
+    return jsonify({"message": "Reservation gespeichert"}), 201
 
 
 # -----------------------------
