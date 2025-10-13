@@ -2,6 +2,7 @@
 from flask import Blueprint, request, jsonify
 from models import db, User, Tool, Reservation, RolePermission, Permission
 from datetime import datetime, timedelta
+from dateutil.parser import isoparse
 from pytz import timezone
 import pytz
 from utils.permissions import get_token_payload
@@ -43,20 +44,16 @@ def _role_value_for(user_id, perm_key):
 
 
 def _parse_to_utc(val):
-    """Akzeptiert ISO (mit/ohne Z) oder 'YYYY-mm-dd HH:MM' (lokal) und liefert naive UTC-datetime."""
+    """Akzeptiert ISO (mit oder ohne Z) und liefert naive UTC-Datetime."""
     zurich = timezone("Europe/Zurich")
     try:
-        dt = datetime.fromisoformat(str(val).replace("Z", "+00:00"))
+        dt = isoparse(str(val))
         if dt.tzinfo is None:
+            # lokale Zeit (z. B. "2025-10-14 08:00")
             dt = zurich.localize(dt)
         return dt.astimezone(pytz.utc).replace(tzinfo=None)
     except Exception:
-        try:
-            dt = datetime.strptime(val, "%Y-%m-%d %H:%M")
-            dt = zurich.localize(dt)
-            return dt.astimezone(pytz.utc).replace(tzinfo=None)
-        except Exception:
-            raise
+        raise ValueError("Ungültiges Zeitformat")
 
 
 def _purge_old_reservations():
@@ -254,7 +251,6 @@ def get_reservations():
 
 # -----------------------------
 # Reservation bearbeiten (PATCH)
-# - bei Änderung ins Vergangene: löschen statt behalten
 # -----------------------------
 @reservation_bp.route("/<int:res_id>", methods=["PATCH"])
 def update_reservation(res_id):
@@ -297,16 +293,6 @@ def update_reservation(res_id):
 
     if not changed:
         return jsonify({"message": "Keine Änderungen"}), 200
-
-    # Wenn jetzt in der Vergangenheit: löschen
-    now_utc = datetime.utcnow()
-    if res.end_time < now_utc:
-        tool_id = res.tool_id
-        db.session.delete(res)
-        db.session.flush()
-        _recompute_tool_borrowed(tool_id)
-        db.session.commit()
-        return jsonify({"message": "Reservation beendet und gelöscht"}), 200
 
     # Sonst normal speichern + Tool-Status konsistent
     db.session.flush()

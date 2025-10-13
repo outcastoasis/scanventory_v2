@@ -84,8 +84,8 @@ export default function ReservationPopup({
         user_id: user.id,
         tool_id: tool.id ?? undefined,
         tool: tool.qr_code ?? undefined, // Fallback
-        start_time: toIsoUtc(start),
-        end_time: toIsoUtc(end),
+        start_time: start.toISOString(),
+        end_time: end.toISOString(),
         note: note || "",
       };
 
