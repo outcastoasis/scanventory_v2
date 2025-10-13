@@ -294,6 +294,20 @@ def update_reservation(res_id):
     if not changed:
         return jsonify({"message": "Keine Änderungen"}), 200
 
+    # Prüfen: Konflikt mit anderen Reservationen für dasselbe Werkzeug?
+    conflict = Reservation.query.filter(
+        Reservation.tool_id == res.tool_id,
+        Reservation.id != res.id,
+        Reservation.start_time < res.end_time,
+        Reservation.end_time > res.start_time,
+    ).first()
+
+    if conflict:
+        return (
+            jsonify({"error": "Werkzeug ist in diesem Zeitraum bereits reserviert."}),
+            400,
+        )
+
     # Sonst normal speichern + Tool-Status konsistent
     db.session.flush()
     _recompute_tool_borrowed(res.tool_id)
