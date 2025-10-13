@@ -24,14 +24,22 @@
 }
 .modal-actions {
   display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  margin-top: 12px;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
 }
 .btn-primary {
   background: #2563eb;
   color: #fff;
   border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+.btn-secondary {
+  background: #e5e7eb;
+  color: #111827;
+  border: 1px solid #d1d5db;
   padding: 6px 12px;
   border-radius: 8px;
 }
@@ -41,6 +49,23 @@
   border: none;
   padding: 6px 12px;
   border-radius: 8px;
+}
+
+.btn-danger-outline {
+  background: #fff;
+  color: #b91c1c;
+  border: 1px solid #b91c1c;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+.btn-danger-outline:hover {
+  background: #fee2e2;
+}
+
+.left-actions,
+.right-actions {
+  display: flex;
+  gap: 8px;
 }
 
 /* Nur bei fehlender Berechtigung ausgrauen (nicht global) */

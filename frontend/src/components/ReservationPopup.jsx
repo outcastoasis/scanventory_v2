@@ -42,14 +42,14 @@ export default function ReservationPopup({
   const role = currentUser?.role || "guest";
   const isLoggedIn = role !== "guest";
 
-  // Nur Admin/Supervisor dürfen (theoretisch) für andere speichern; bei dir wird aber kein Picker mehr angezeigt.
-  const canSubmit =
+  // Berechtigungen
+  const isOwnReservation =
+    currentUser && user && String(user.id) === String(currentUser.id);
+
+  const canEditReservation =
     role === "admin" ||
     role === "supervisor" ||
-    (role === "user" &&
-      user &&
-      currentUser &&
-      String(user.id) === String(currentUser.id));
+    (role === "user" && isOwnReservation);
 
   const fetchWithAuth = (url, options = {}) => {
     const token = getToken();
@@ -76,7 +76,7 @@ export default function ReservationPopup({
       return setError("Werkzeug fehlt (per Reservieren-Knopf auswählen).");
     if (!(start < end))
       return setError("Endzeit muss nach der Startzeit liegen.");
-    if (!canSubmit) return setError("Keine Berechtigung.");
+    if (!canEditReservation) return setError("Keine Berechtigung.");
 
     setBusy(true);
     try {
@@ -155,6 +155,28 @@ export default function ReservationPopup({
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("Diese Reservation wirklich löschen?")) return;
+
+    setBusy(true);
+    try {
+      const id = initialData?.reservation?.id ?? initialData?.id ?? null;
+      if (!id) throw new Error("Reservation-ID fehlt.");
+
+      const res = await fetchWithAuth(`${API_URL}/api/reservations/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Löschen fehlgeschlagen");
+
+      onClose?.();
+      window.dispatchEvent(new CustomEvent("scanventory:reservations:refresh"));
+    } catch (err) {
+      setError(err?.message || "Fehler beim Löschen.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   // Labels
   const userLabel =
     user?.username ??
@@ -164,7 +186,7 @@ export default function ReservationPopup({
     tool?.qr_code ? ` (${tool.qr_code})` : ""
   }`;
 
-  const disabledSave = busy || !isLoggedIn || !canSubmit || !tool;
+  const disabledSave = busy || !isLoggedIn || !canEditReservation || !tool;
 
   return (
     <div className="modal-backdrop" onClick={() => !busy && onClose?.()}>
@@ -182,7 +204,6 @@ export default function ReservationPopup({
           </div>
         )}
 
-        {/* Wer — nur wenn angemeldet */}
         {isLoggedIn && (
           <div className="modal-row">
             <label>Wer:</label>
@@ -190,7 +211,6 @@ export default function ReservationPopup({
           </div>
         )}
 
-        {/* Was — immer read-only, kommt vom Reservieren-Knopf */}
         <div className="modal-row">
           <label>Was:</label>
           <input
@@ -200,7 +220,6 @@ export default function ReservationPopup({
           />
         </div>
 
-        {/* Zeiten */}
         <div className="modal-row">
           <label>Von:</label>
           <DatePicker
@@ -212,7 +231,7 @@ export default function ReservationPopup({
             dateFormat="dd.MM.yyyy HH:mm"
             timeFormat="HH:mm"
             locale="de"
-            disabled={busy || !canSubmit || !isLoggedIn}
+            disabled={busy || !canEditReservation || !isLoggedIn}
           />
         </div>
         <div className="modal-row">
@@ -227,11 +246,10 @@ export default function ReservationPopup({
             timeFormat="HH:mm"
             minDate={start}
             locale="de"
-            disabled={busy || !canSubmit || !isLoggedIn}
+            disabled={busy || !canEditReservation || !isLoggedIn}
           />
         </div>
 
-        {/* Notiz */}
         <div className="modal-row">
           <label>Notiz:</label>
           <input
@@ -243,29 +261,41 @@ export default function ReservationPopup({
           />
         </div>
 
-        {/* Aktionen */}
         <div className="modal-actions">
-          <button onClick={onClose} disabled={busy}>
-            Abbrechen
-          </button>
-
-          {mode === "edit" && (
-            <button
-              className="btn-danger"
-              onClick={handleReturn}
-              disabled={busy || !canSubmit}
-            >
-              Rückgabe
+          <div className="left-actions">
+            <button onClick={onClose} disabled={busy} className="btn-secondary">
+              Abbrechen
             </button>
-          )}
-
-          <button
-            className="btn-primary"
-            onClick={handleSubmit}
-            disabled={disabledSave}
-          >
-            {mode === "create" ? "Speichern" : "Änderungen speichern"}
-          </button>
+          </div>
+          <div className="right-actions">
+            {mode === "edit" && canEditReservation && (
+              <>
+                <button
+                  className="btn-danger-outline"
+                  onClick={handleDelete}
+                  disabled={busy}
+                >
+                  Löschen
+                </button>
+                {/* 
+                <button
+                  className="btn-danger"
+                  onClick={handleReturn}
+                  disabled={busy}
+                >
+                  Rückgabe
+                </button>
+                */}
+              </>
+            )}
+            <button
+              className="btn-primary"
+              onClick={handleSubmit}
+              disabled={disabledSave}
+            >
+              {mode === "create" ? "Speichern" : "Änderungen speichern"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
