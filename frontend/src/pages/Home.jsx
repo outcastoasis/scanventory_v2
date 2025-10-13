@@ -46,7 +46,9 @@ function Home() {
   const [scannedTool, setScannedTool] = useState(null);
 
   // Für Heute Reserviert Ansicht
-  const todayReservations = useMemo(() => {
+  const activeReservations = useMemo(() => {
+    const now = new Date();
+
     const toLocalDate = (s) => new Date(String(s).replace(" ", "T"));
 
     const computeUserLabel = (u) => {
@@ -62,37 +64,13 @@ function Home() {
       return label || "Unbekannt";
     };
 
-    const now = new Date();
-    const startOfToday = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      0,
-      0,
-      0,
-      0
-    );
-    const endOfToday = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      23,
-      59,
-      59,
-      999
-    );
-
     return (reservations || [])
       .filter((r) => {
         const start = toLocalDate(r.start);
         const end = toLocalDate(r.end);
-        return start <= endOfToday && end >= startOfToday;
+        return start <= now && end >= now; // Nur aktuell laufende
       })
-      .sort((a, b) => {
-        const ae = toLocalDate(a.end) - toLocalDate(b.end);
-        if (ae !== 0) return ae;
-        return (a.tool?.name || "").localeCompare(b.tool?.name || "");
-      })
+      .sort((a, b) => toLocalDate(a.end) - toLocalDate(b.end))
       .map((r) => ({
         ...r,
         _userLabel: computeUserLabel(r.user),
@@ -373,9 +351,16 @@ function Home() {
             window.location.reload();
           }, timeout);
 
-          fetchReservations(); // <-- Token ist gültig → jetzt laden!
+          fetchReservations(); // Initial
 
-          return () => clearTimeout(logoutTimer);
+          const interval = setInterval(() => {
+            fetchReservations();
+          }, 30000); // ⏱ Polling
+
+          return () => {
+            clearTimeout(logoutTimer);
+            clearInterval(interval);
+          };
         } else {
           clearToken();
         }
@@ -383,7 +368,11 @@ function Home() {
         clearToken();
       }
     } else {
-      fetchReservations(); // <-- kein Token (Gast-Zugriff z. B.)
+      fetchReservations(); // Für Gäste
+      const interval = setInterval(() => {
+        fetchReservations();
+      }, 30000);
+      return () => clearInterval(interval);
     }
   }, []);
 
@@ -517,11 +506,11 @@ function Home() {
       </section>
 
       <section className="home-scanner-head">
-        <h2>Heute reserviert</h2>
+        <h2>Aktuell reserviert</h2>
       </section>
       <section className="home-today">
-        {todayReservations.length === 0 ? (
-          <div className="today-empty">Keine heutigen Reservationen.</div>
+        {activeReservations.length === 0 ? (
+          <div className="today-empty">Keine aktuellen Reservationen.</div>
         ) : (
           <div className="today-table-wrap">
             <table className="today-table">
@@ -533,7 +522,7 @@ function Home() {
                 </tr>
               </thead>
               <tbody>
-                {todayReservations.map((r) => {
+                {activeReservations.map((r) => {
                   const toolLabel =
                     r.tool?.name || r.tool?.qr_code || "Unbekannt";
                   return (
