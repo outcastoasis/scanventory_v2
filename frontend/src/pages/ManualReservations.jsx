@@ -14,6 +14,8 @@ function ManualReservations() {
   const [selectedTools, setSelectedTools] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [hasSetStartDefault, setHasSetStartDefault] = useState(false);
+  const [hasSetEndDefault, setHasSetEndDefault] = useState(false);
 
   const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$|^\/+/, "");
 
@@ -135,21 +137,47 @@ function ManualReservations() {
           <label>Von:</label>
           <DatePicker
             selected={start}
-            onChange={(date) => setStart(date)}
+            onChange={(date) => {
+              if (!date) return;
+
+              // Falls noch kein Start gesetzt wurde → einmalig 06:00
+              if (!hasSetStartDefault) {
+                const newDate = new Date(date);
+                newDate.setHours(6, 0, 0, 0);
+                setStart(newDate);
+                setHasSetStartDefault(true);
+              } else {
+                // Danach einfach übernehmen, was der Benutzer auswählt (Datum oder Zeit)
+                setStart(date);
+              }
+            }}
             showTimeSelect
             timeFormat="HH:mm"
             timeIntervals={15}
             dateFormat="dd.MM.yyyy HH:mm"
+            placeholderText="Startdatum & Zeit wählen"
           />
 
           <label>Bis:</label>
           <DatePicker
             selected={end}
-            onChange={(date) => setEnd(date)}
+            onChange={(date) => {
+              if (!date) return;
+
+              if (!hasSetEndDefault) {
+                const newDate = new Date(date);
+                newDate.setHours(23, 45, 0, 0);
+                setEnd(newDate);
+                setHasSetEndDefault(true);
+              } else {
+                setEnd(date);
+              }
+            }}
             showTimeSelect
             timeFormat="HH:mm"
             timeIntervals={15}
             dateFormat="dd.MM.yyyy HH:mm"
+            placeholderText="Enddatum & Zeit wählen"
           />
 
           <button onClick={searchAvailableTools} disabled={loading}>
