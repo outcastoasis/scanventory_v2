@@ -161,6 +161,7 @@
   color: #111827;
   min-height: 150px;
   word-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 /* --- Kalender: Lösung A + Responsive --- */

@@ -294,3 +294,56 @@ def next_tool_qr():
     while n in nums:
         n += 1
     return jsonify({"next_qr": f"tool{n:04d}"})
+
+
+# Werkzeug-Info + nächste Reservationen abrufen (z. B. bei "tool zuerst gescannt")
+@tools_bp.route("/api/tools/info/<qr_code>", methods=["GET"])
+def get_tool_info(qr_code):
+    tool = Tool.query.filter(Tool.qr_code.ilike(qr_code)).first()
+    if not tool:
+        return jsonify({"error": "Werkzeug nicht gefunden"}), 404
+
+    now_utc = datetime.utcnow()
+    zurich = timezone("Europe/Zurich")
+
+    # Aktive Reservation (falls jetzt ausgeliehen)
+    active = (
+        Reservation.query.filter_by(tool_id=tool.id)
+        .filter(Reservation.start_time <= now_utc)
+        .filter(Reservation.end_time >= now_utc)
+        .order_by(Reservation.start_time.asc())
+        .first()
+    )
+
+    # Kommende Reservationen (max. 2)
+    upcoming = (
+        Reservation.query.filter_by(tool_id=tool.id)
+        .filter(Reservation.start_time > now_utc)
+        .order_by(Reservation.start_time.asc())
+        .limit(2)
+        .all()
+    )
+
+    def res_to_dict(res):
+        start_local = res.start_time.replace(tzinfo=pytz.utc).astimezone(zurich)
+        end_local = res.end_time.replace(tzinfo=pytz.utc).astimezone(zurich)
+        return {
+            "user": {
+                "first_name": res.user.first_name,
+                "last_name": res.user.last_name,
+            },
+            "start": start_local.strftime("%Y-%m-%d %H:%M"),
+            "end": end_local.strftime("%Y-%m-%d %H:%M"),
+        }
+
+    return jsonify(
+        {
+            "tool": {
+                "name": tool.name,
+                "qr_code": tool.qr_code,
+                "is_borrowed": tool.is_borrowed,
+            },
+            "active_reservation": res_to_dict(active) if active else None,
+            "upcoming_reservations": [res_to_dict(r) for r in upcoming],
+        }
+    )

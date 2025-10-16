@@ -288,7 +288,58 @@ function Home() {
           setMessage(`❌ Werkzeug nicht gefunden: ${toolCode}`);
         }
       } else {
-        setMessage("Bitte zuerst Benutzer scannen");
+        try {
+          const res = await fetch(`${API_URL}/api/tools/info/${toolCode}`);
+          if (!res.ok) throw new Error("Werkzeug nicht gefunden");
+          const data = await res.json();
+
+          const tool = data.tool;
+          const active = data.active_reservation;
+          const upcoming = data.upcoming_reservations || [];
+
+          // 🧩 Hilfsfunktion zum Formatieren der Datumsangaben
+          const formatDateRange = (start, end) => {
+            const toDateParts = (s) => {
+              const d = new Date(s.replace(" ", "T"));
+              const dd = String(d.getDate()).padStart(2, "0");
+              const mm = String(d.getMonth() + 1).padStart(2, "0");
+              const yyyy = d.getFullYear();
+              const hh = String(d.getHours()).padStart(2, "0");
+              const min = String(d.getMinutes()).padStart(2, "0");
+              return `${dd}.${mm}.${yyyy} ${hh}:${min}`;
+            };
+            return `${toDateParts(start)} - ${toDateParts(end)}`;
+          };
+
+          // 📦 Anzeige-Text aufbauen
+          let msg = `Werkzeug: ${tool.name}\nQR-Code: ${
+            tool.qr_code
+          }\nStatus: ${tool.is_borrowed ? "Reserviert" : "Frei"}`;
+
+          if (active) {
+            msg += `\n\nAktuell reserviert von ${active.user.first_name} ${
+              active.user.last_name
+            }\n${formatDateRange(active.start, active.end)}`;
+          }
+
+          if (upcoming.length > 0) {
+            msg += `\n\nNächste Reservationen:`;
+            upcoming.forEach((r, i) => {
+              msg += `\n${i + 1}. ${r.user.first_name} ${
+                r.user.last_name
+              }: ${formatDateRange(r.start, r.end)}`;
+            });
+          }
+
+          setMessage(msg);
+
+          // Nach 20 Sekunden wieder zurücksetzen
+          setTimeout(() => {
+            setMessage("Bitte zuerst Benutzer scannen");
+          }, 20000);
+        } catch (err) {
+          setMessage(`❌ Werkzeug nicht gefunden: ${toolCode}`);
+        }
       }
       return;
     }
