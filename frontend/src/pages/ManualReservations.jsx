@@ -15,7 +15,6 @@ function ManualReservations() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [hasSetStartDefault, setHasSetStartDefault] = useState(false);
-  const [hasSetEndDefault, setHasSetEndDefault] = useState(false);
 
   const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$|^\/+/, "");
 
@@ -140,15 +139,16 @@ function ManualReservations() {
             onChange={(date) => {
               if (!date) return;
 
-              // Falls noch kein Start gesetzt wurde → einmalig 06:00
-              if (!hasSetStartDefault) {
-                const newDate = new Date(date);
-                newDate.setHours(6, 0, 0, 0);
-                setStart(newDate);
-                setHasSetStartDefault(true);
-              } else {
-                // Danach einfach übernehmen, was der Benutzer auswählt (Datum oder Zeit)
-                setStart(date);
+              const newStart = new Date(date);
+              newStart.setHours(6, 0, 0, 0);
+              setStart(newStart);
+              setHasSetStartDefault(true);
+
+              // Wenn "Bis" leer ist oder vor/neben dem Start liegt → auf +1h setzen
+              if (!end || new Date(end) <= newStart) {
+                const newEnd = new Date(newStart);
+                newEnd.setHours(23, 45, 0, 0); // Standard-Endzeit
+                setEnd(newEnd);
               }
             }}
             showTimeSelect
@@ -163,15 +163,7 @@ function ManualReservations() {
             selected={end}
             onChange={(date) => {
               if (!date) return;
-
-              if (!hasSetEndDefault) {
-                const newDate = new Date(date);
-                newDate.setHours(23, 45, 0, 0);
-                setEnd(newDate);
-                setHasSetEndDefault(true);
-              } else {
-                setEnd(date);
-              }
+              setEnd(date); // Einfach direkt übernehmen
             }}
             showTimeSelect
             timeFormat="HH:mm"

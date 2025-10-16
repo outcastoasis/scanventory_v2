@@ -181,7 +181,7 @@ Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das B
 
 ## 🧠 Weitere geplante Verbesserungen
 
-- [ ] Wenn Tool zuerst gescannt, info der aktuellen Reservation und des werkzeuges anzeigen
+- [x] Wenn Tool zuerst gescannt, info der aktuellen Reservation und des werkzeuges anzeigen
 - [ ] Offline-Hilfe für Admins und Nutzer
 - [x] Automatischer Reset von `is_borrowed` per Scheduler im Backend
 - [x] Automatisches Polling der Kalenderdaten alle 30 Sekunden (Live-Update bei Scannerverwendung)
