@@ -161,8 +161,8 @@ Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das B
 
 ## ✅ Weitere Features in Arbeit
 
-- [X] `export_data` und `export_qr_codes` müssen in Exportlogik integriert werden (Berechtigungsprüfung)
-- [X] Entfernen der Bearbeitungsfunktion einzelner Permission-Keys (nicht sinnvoll)
+- [x] `export_data` und `export_qr_codes` müssen in Exportlogik integriert werden (Berechtigungsprüfung)
+- [x] Entfernen der Bearbeitungsfunktion einzelner Permission-Keys (nicht sinnvoll)
 - [ ] Admin-Panel für:
   - Kategorienpflege bei Werkzeugen
   - Firmenpflege bei Benutzern (nicht hardcoded)
@@ -185,6 +185,7 @@ Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das B
 - [ ] Offline-Hilfe für Admins und Nutzer
 - [x] Automatischer Reset von `is_borrowed` per Scheduler im Backend
 - [x] Automatisches Polling der Kalenderdaten alle 30 Sekunden (Live-Update bei Scannerverwendung)
+- [ ] Reservation bearbeiten endzeit abfangen, um keine negativen Einträge zu verursachen (Nicht erlaubt dass endzeit vor startzeit reserviert werden kann)
 
 ## 🧠 Quality of Life
 
@@ -195,7 +196,6 @@ Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das B
 - [ ] Responsivness verbessern von aktueller Seite (Hochformat priorisieren)
 - [x] Kalendersprache auf Deutsch stellen (October, Wed, 7:57 PM, etc)
 - [x] Heute Reserviert Liste unterhalb vom Kalender
-
 
 ---
 
