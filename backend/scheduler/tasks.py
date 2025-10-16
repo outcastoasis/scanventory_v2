@@ -5,19 +5,12 @@ from sqlalchemy import and_
 
 def reset_expired_borrowed_tools():
     now = datetime.utcnow()
-
-    tools = Tool.query.filter_by(is_borrowed=True).all()
-
-    for tool in tools:
-        # Gibt es noch eine aktive Reservation?
+    all_tools = Tool.query.all()
+    for tool in all_tools:
         active = Reservation.query.filter(
             Reservation.tool_id == tool.id,
             Reservation.start_time <= now,
             Reservation.end_time >= now,
         ).first()
-
-        if not active:
-            tool.is_borrowed = False
-            print(f"[Scheduler] Werkzeug {tool.qr_code} als zurückgegeben markiert")
-
+        tool.is_borrowed = bool(active)
     db.session.commit()

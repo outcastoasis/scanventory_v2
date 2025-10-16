@@ -147,7 +147,11 @@ def create_reservation():
         )
         db.session.add(reservation)
         db.session.flush()
-        _recompute_tool_borrowed(tool.id)
+        now_utc = datetime.utcnow()
+        if start_utc <= now_utc <= end_utc:
+            tool.is_borrowed = True
+        else:
+            tool.is_borrowed = False
         db.session.commit()
 
         return jsonify({"message": "Manuelle Reservation gespeichert"}), 201
@@ -201,7 +205,11 @@ def create_reservation():
     )
     db.session.add(reservation)
     db.session.flush()
-    _recompute_tool_borrowed(tool.id)
+    now_utc = datetime.utcnow()
+    if start_utc <= now_utc <= end_utc:
+        tool.is_borrowed = True
+    else:
+        tool.is_borrowed = False
     db.session.commit()
 
     return jsonify({"message": "Reservation gespeichert"}), 201
