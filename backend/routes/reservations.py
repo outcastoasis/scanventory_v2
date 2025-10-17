@@ -206,7 +206,7 @@ def create_reservation():
     db.session.add(reservation)
     db.session.flush()
     now_utc = datetime.utcnow()
-    if start_utc <= now_utc <= end_utc:
+    if start_time <= now_utc <= end_time:
         tool.is_borrowed = True
     else:
         tool.is_borrowed = False

@@ -1,8 +1,8 @@
 # backend/routes/permissions.py
 from flask import Blueprint, request, jsonify
 from flask_cors import cross_origin
-from models import db, Role, Permission, RolePermission
-from utils.permissions import requires_permission
+from models import db, Role, Permission, RolePermission, User
+from utils.permissions import requires_permission, get_token_payload
 
 permissions_bp = Blueprint("permissions", __name__)
 
@@ -174,3 +174,26 @@ def patch_role_permissions():
 @permissions_bp.route("/api/permissions/<int:perm_id>", methods=["PATCH"])
 def permission_patch_blocked(perm_id):
     return jsonify({"error": "Bearbeiten von Permission-Keys ist nicht erlaubt."}), 405
+
+
+@permissions_bp.route("/api/role-permissions/current", methods=["GET"])
+@cross_origin(origins="http://localhost:5173", supports_credentials=True)
+def get_current_user_permissions():
+    """
+    Gibt alle Berechtigungen (Keys + Werte) für den aktuell eingeloggten Benutzer zurück.
+    Beispiel: { "create_reservations": "self_only", "edit_reservations": "true", ... }
+    """
+    payload = get_token_payload()
+    user_id = payload.get("user_id") if payload else None
+    if not user_id:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    # Alle RolePermissions der Benutzerrolle holen
+    rps = RolePermission.query.filter_by(role_id=user.role_id).all()
+    result = {Permission.query.get(rp.permission_id).key: rp.value for rp in rps}
+
+    return jsonify(result), 200

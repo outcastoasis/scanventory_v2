@@ -98,14 +98,6 @@ Starten:
 python app.py
 ```
 
-### 🔹 Frontend (React + Vite)
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
 #### ⚙️ .env Struktur im Frontend
 
 ```ini
@@ -116,6 +108,14 @@ VITE_API_URL=http://localhost:5050
 Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das Backend weitergeleitet werden. Ohne diese Konfiguration funktionieren keine Admin-Funktionen.
 
 ---
+
+### 🔹 Frontend (React + Vite)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 ## 🚧 Phasenplan
 

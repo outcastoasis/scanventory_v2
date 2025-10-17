@@ -62,8 +62,8 @@ export default function CalendarView({ reservations }) {
       try {
         const decoded = jwtDecode(token);
         setCurrentUser({
-          id: decoded.id,
-          username: decoded.username,
+          id: decoded.user_id || decoded.id,
+          username: decoded.username || decoded.sub || "unknown",
           role: decoded.role || "guest",
         });
       } catch {

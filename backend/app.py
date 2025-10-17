@@ -68,8 +68,6 @@ def _job_reset_expired_borrowed_tools():
         reset_expired_borrowed_tools()
 
 
-_job_reset_expired_borrowed_tools()
-
 # Job hinzufügen: alle 10 Minuten prüfen, ob Werkzeuge automatisch zurückgesetzt werden müssen
 scheduler.add_job(
     id="auto_reset_is_borrowed",
@@ -82,4 +80,6 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
         create_initial_data(app)
+        _job_reset_expired_borrowed_tools()
+
     app.run(debug=True, port=5050)

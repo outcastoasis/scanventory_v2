@@ -1,5 +1,5 @@
 // frontend/src/components/ReservationPopup.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import DatePicker, { registerLocale, setDefaultLocale } from "react-datepicker";
 import de from "date-fns/locale/de";
 import "react-datepicker/dist/react-datepicker.css";
@@ -42,15 +42,6 @@ export default function ReservationPopup({
   const role = currentUser?.role || "guest";
   const isLoggedIn = role !== "guest";
 
-  // Berechtigungen
-  const isOwnReservation =
-    currentUser && user && String(user.id) === String(currentUser.id);
-
-  const canEditReservation =
-    role === "admin" ||
-    role === "supervisor" ||
-    (role === "user" && isOwnReservation);
-
   const fetchWithAuth = (url, options = {}) => {
     const token = getToken();
     const headers = {
@@ -60,6 +51,26 @@ export default function ReservationPopup({
     if (token) headers.Authorization = `Bearer ${token}`;
     return fetch(url, { ...options, headers });
   };
+
+  // Berechtigungen
+  const [permissions, setPermissions] = useState({});
+  const isOwnReservation =
+    currentUser && user && String(user.id) === String(currentUser.id);
+
+  useEffect(() => {
+    if (!currentUser || role === "guest") return;
+    fetchWithAuth(`${API_URL}/api/role-permissions/current`)
+      .then((res) => (res.ok ? res.json() : {}))
+      .then((data) => setPermissions(data))
+      .catch(() => setPermissions({}));
+  }, [currentUser]);
+
+  const canEditReservation = useMemo(() => {
+    const perm = permissions?.edit_reservations ?? "false";
+    if (perm === "true") return true;
+    if (perm === "self_only" && isOwnReservation) return true;
+    return false;
+  }, [permissions, isOwnReservation]);
 
   if (!isOpen) return null;
 

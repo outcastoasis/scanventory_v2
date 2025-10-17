@@ -144,7 +144,6 @@ function ManualReservations() {
               setStart(newStart);
               setHasSetStartDefault(true);
 
-              // Wenn "Bis" leer ist oder vor/neben dem Start liegt → auf +1h setzen
               if (!end || new Date(end) <= newStart) {
                 const newEnd = new Date(newStart);
                 newEnd.setHours(23, 45, 0, 0); // Standard-Endzeit
