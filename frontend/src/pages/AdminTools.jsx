@@ -309,8 +309,13 @@ export default function AdminTools() {
                       t.is_borrowed ? "borrowed" : "available"
                     }`}
                   >
-                    {t.is_borrowed ? "ausgeliehen" : t.status || "available"}
+                    {t.is_borrowed
+                      ? "ausgeliehen"
+                      : t.status === "available" || !t.status
+                      ? "verfügbar"
+                      : t.status}
                   </td>
+
                   <td>{t.created_at?.slice(0, 10) || "-"}</td>
                   <td>
                     <button

@@ -11,7 +11,7 @@ import os
 
 # APScheduler importieren
 from flask_apscheduler import APScheduler
-from scheduler.tasks import reset_expired_borrowed_tools
+from scheduler.tasks import reset_expired_borrowed_tools, reset_borrowed_tools_fast
 
 
 app = Flask(__name__)
@@ -68,12 +68,24 @@ def _job_reset_expired_borrowed_tools():
         reset_expired_borrowed_tools()
 
 
+def _job_reset_borrowed_tools_fast():
+    with app.app_context():
+        reset_borrowed_tools_fast()
+
+
 # Job hinzufügen: alle 10 Minuten prüfen, ob Werkzeuge automatisch zurückgesetzt werden müssen
 scheduler.add_job(
     id="auto_reset_is_borrowed",
     func=_job_reset_expired_borrowed_tools,
     trigger="interval",
     minutes=10,
+)
+
+scheduler.add_job(
+    id="quick_update_is_borrowed",
+    func=_job_reset_borrowed_tools_fast,
+    trigger="interval",
+    seconds=30,  # Alle 30 Sekunden
 )
 
 if __name__ == "__main__":

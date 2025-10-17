@@ -139,11 +139,16 @@ function ManualReservations() {
             onChange={(date) => {
               if (!date) return;
 
-              const newStart = new Date(date);
-              newStart.setHours(6, 0, 0, 0);
-              setStart(newStart);
-              setHasSetStartDefault(true);
+              let newStart = new Date(date);
 
+              if (!hasSetStartDefault) {
+                newStart.setHours(6, 0, 0, 0); // Nur beim ersten Mal setzen
+                setHasSetStartDefault(true);
+              }
+
+              setStart(newStart);
+
+              // Endzeit nur setzen, wenn sie leer oder vor dem Start ist
               if (!end || new Date(end) <= newStart) {
                 const newEnd = new Date(newStart);
                 newEnd.setHours(23, 45, 0, 0); // Standard-Endzeit
