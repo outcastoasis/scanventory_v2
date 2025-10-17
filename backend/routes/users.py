@@ -1,6 +1,6 @@
 # backend/routes/users.py
 from flask import Blueprint, request, jsonify
-from models import db, User, Role
+from models import db, User, Role, Company
 from utils.permissions import requires_permission, get_token_payload
 from werkzeug.security import generate_password_hash
 
@@ -19,7 +19,8 @@ def get_users():
                 "username": u.username,
                 "first_name": u.first_name,
                 "last_name": u.last_name,
-                "company_name": u.company_name,
+                "company_id": u.company_id,
+                "company_name": u.company_ref.name if u.company_ref else None,
                 "qr_code": u.qr_code,
                 "role": u.role.name,
                 "created_at": u.created_at.isoformat() if u.created_at else None,
@@ -53,7 +54,7 @@ def create_user():
     username = data.get("username")
     first_name = data.get("first_name")
     last_name = data.get("last_name")
-    company_name = data.get("company_name")
+    company_id = data.get("company_id")  # NEU
     password = data.get("password")
     qr_code = data.get("qr_code")
     role_name = data.get("role")
@@ -68,11 +69,13 @@ def create_user():
     if not role:
         return jsonify({"error": "Rolle existiert nicht"}), 400
 
+    company = Company.query.get(company_id) if company_id else None
+
     user = User(
         username=username,
         first_name=first_name,
         last_name=last_name,
-        company_name=company_name,
+        company_id=company.id if company else None,
         password=generate_password_hash(password),
         qr_code=qr_code,
         role_id=role.id,
@@ -87,7 +90,8 @@ def create_user():
                 "username": user.username,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
-                "company_name": user.company_name,
+                "company_id": user.company_id,
+                "company_name": user.company_ref.name if user.company_ref else None,
                 "qr_code": user.qr_code,
                 "role": role.name,
                 "created_at": user.created_at.isoformat() if user.created_at else None,
@@ -110,8 +114,10 @@ def update_user(user_id):
         user.first_name = data["first_name"]
     if "last_name" in data:
         user.last_name = data["last_name"]
-    if "company_name" in data:
-        user.company_name = data["company_name"]
+
+    if "company_id" in data:
+        company = Company.query.get(data["company_id"])
+        user.company_id = company.id if company else None
 
     if "password" in data and data["password"]:
         user.password = generate_password_hash(data["password"])
@@ -132,7 +138,8 @@ def update_user(user_id):
             "username": user.username,
             "first_name": user.first_name,
             "last_name": user.last_name,
-            "company_name": user.company_name,
+            "company_id": user.company_id,
+            "company_name": user.company_ref.name if user.company_ref else None,
             "qr_code": user.qr_code,
             "role": user.role.name,
             "created_at": user.created_at.isoformat() if user.created_at else None,
@@ -190,3 +197,58 @@ def get_next_user_qr():
 
     next_qr = f"usr{next_num:04d}"
     return jsonify({"next_qr": next_qr})
+
+
+# Company routes
+@users_bp.route("/api/companies", methods=["GET"])
+@requires_permission("manage_users")
+def list_companies():
+    companies = Company.query.order_by(Company.name.asc()).all()
+    return jsonify([c.serialize() for c in companies])
+
+
+@users_bp.route("/api/companies", methods=["POST"])
+@requires_permission("manage_users")
+def create_company():
+    data = request.get_json() or {}
+    name = data.get("name", "").strip()
+
+    if not name:
+        return jsonify({"error": "Name darf nicht leer sein."}), 400
+
+    if Company.query.filter_by(name=name).first():
+        return jsonify({"error": "Firma existiert bereits."}), 400
+
+    new_company = Company(name=name)
+    db.session.add(new_company)
+    db.session.commit()
+    return jsonify(new_company.serialize()), 201
+
+
+@users_bp.route("/api/companies/<int:comp_id>", methods=["PATCH"])
+@requires_permission("manage_users")
+def update_company(comp_id):
+    company = Company.query.get_or_404(comp_id)
+    data = request.get_json() or {}
+    name = data.get("name", "").strip()
+
+    if not name:
+        return jsonify({"error": "Name darf nicht leer sein."}), 400
+
+    company.name = name
+    db.session.commit()
+    return jsonify(company.serialize())
+
+
+@users_bp.route("/api/companies/<int:comp_id>", methods=["DELETE"])
+@requires_permission("manage_users")
+def delete_company(comp_id):
+    company = Company.query.get_or_404(comp_id)
+
+    # 🔄 Neue Prüfung über FK (nicht mehr Name!)
+    if User.query.filter_by(company_id=comp_id).first():
+        return jsonify({"error": "Firma wird noch verwendet."}), 400
+
+    db.session.delete(company)
+    db.session.commit()
+    return jsonify({"message": "Firma gelöscht."})

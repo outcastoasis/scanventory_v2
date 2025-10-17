@@ -17,6 +17,10 @@ function AdminPanel() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortKey, setSortKey] = useState(null);
   const [sortDirection, setSortDirection] = useState("asc");
+  const [companies, setCompanies] = useState([]);
+  const [companySearch, setCompanySearch] = useState("");
+  const [companySortKey, setCompanySortKey] = useState(null);
+  const [companySortDirection, setCompanySortDirection] = useState("asc");
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -50,6 +54,12 @@ function AdminPanel() {
     })
       .then((res) => res.json())
       .then(setCategories);
+
+    fetch(`${API_URL}/api/companies`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    })
+      .then((res) => res.json())
+      .then(setCompanies);
 
     fetch(`${API_URL}/api/reservations`, {
       headers: { Authorization: `Bearer ${getToken()}` },
@@ -155,6 +165,67 @@ function AdminPanel() {
     setCategories((prev) => [...prev, data]);
   };
 
+  const handleCreateCompany = async () => {
+    const name = prompt("Name der neuen Firma:", "");
+    if (!name) return;
+    const res = await fetch(`${API_URL}/api/companies`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name }),
+    });
+    const data = await res.json();
+    if (!res.ok) return alert(data?.error || "Fehler beim Erstellen.");
+    setCompanies((prev) => [...prev, data]);
+  };
+
+  const handleEditCompany = async (comp) => {
+    const newName = prompt("Neuer Name für die Firma:", comp.name);
+    if (!newName || newName === comp.name) return;
+    const res = await fetch(`${API_URL}/api/companies/${comp.id}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name: newName }),
+    });
+    const data = await res.json();
+    if (!res.ok) return alert(data?.error || "Fehler beim Umbenennen.");
+    setCompanies((prev) => prev.map((c) => (c.id === data.id ? data : c)));
+  };
+
+  const handleDeleteCompany = async (id) => {
+    if (!confirm("Firma wirklich löschen?")) return;
+    const res = await fetch(`${API_URL}/api/companies/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    const data = await res.json();
+    if (!res.ok) return alert(data?.error || "Fehler beim Löschen.");
+    setCompanies(companies.filter((c) => c.id !== id));
+  };
+
+  const handleCompanySort = (key) => {
+    const direction =
+      companySortKey === key && companySortDirection === "asc" ? "desc" : "asc";
+    setCompanySortKey(key);
+    setCompanySortDirection(direction);
+  };
+
+  const sortedCompanies = [...companies]
+    .filter((c) => c.name.toLowerCase().includes(companySearch.toLowerCase()))
+    .sort((a, b) => {
+      if (!companySortKey) return 0;
+      const valA = a[companySortKey]?.toString().toLowerCase();
+      const valB = b[companySortKey]?.toString().toLowerCase();
+      if (valA < valB) return companySortDirection === "asc" ? -1 : 1;
+      if (valA > valB) return companySortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+
   if (loading) return <p className="adminpanel-loading">Lade Admin-Panel...</p>;
 
   return (
@@ -224,6 +295,53 @@ function AdminPanel() {
                   <button
                     className="tools-delete-button"
                     onClick={() => handleDeleteCategory(cat.id)}
+                  >
+                    Löschen
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="adminpanel-section">
+        <h3 className="adminpanel-section-title">Firmen</h3>
+        <div className="tools-actions">
+          <button className="tools-add-button" onClick={handleCreateCompany}>
+            + Firma hinzufügen
+          </button>
+          <input
+            type="text"
+            className="tools-search"
+            placeholder="Suche nach Firma..."
+            value={companySearch}
+            onChange={(e) => setCompanySearch(e.target.value)}
+          />
+        </div>
+        <table className="tools-table">
+          <thead>
+            <tr>
+              <th onClick={() => handleCompanySort("id")}>ID</th>
+              <th onClick={() => handleCompanySort("name")}>Name</th>
+              <th>Aktionen</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedCompanies.map((comp) => (
+              <tr key={comp.id}>
+                <td>{comp.id}</td>
+                <td>{comp.name}</td>
+                <td>
+                  <button
+                    className="tools-edit-button"
+                    onClick={() => handleEditCompany(comp)}
+                  >
+                    Bearbeiten
+                  </button>
+                  <button
+                    className="tools-delete-button"
+                    onClick={() => handleDeleteCompany(comp.id)}
                   >
                     Löschen
                   </button>

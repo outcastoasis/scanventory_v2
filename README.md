@@ -163,7 +163,7 @@ npm run dev
 
 - [x] `export_data` und `export_qr_codes` müssen in Exportlogik integriert werden (Berechtigungsprüfung)
 - [x] Entfernen der Bearbeitungsfunktion einzelner Permission-Keys (nicht sinnvoll)
-- [ ] Admin-Panel für:
+- [/] Admin-Panel für: (Teilweise umgesetzt, zurzeit noch in Testphase von Jascha)
   - Kategorienpflege bei Werkzeugen
   - Firmenpflege bei Benutzern (nicht hardcoded)
   - Anzeige und Download von QR Codes wie: cancel, reload

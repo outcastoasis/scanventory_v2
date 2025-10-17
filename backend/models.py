@@ -41,7 +41,7 @@ class User(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)  # Anzeigbarer Name
     first_name = db.Column(db.String(50), nullable=True)
     last_name = db.Column(db.String(50), nullable=True)
-    company_name = db.Column(db.String(100), nullable=True)
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.id"))
     password = db.Column(db.String(255), nullable=False)  # Gehashter Hash
     qr_code = db.Column(db.String(20), unique=True, nullable=False)  # z. B. USR0001
     role_id = db.Column(db.Integer, db.ForeignKey("role.id"), nullable=False)
@@ -96,6 +96,16 @@ class ToolCategory(db.Model):
 
     # Optional: Relationship zu Tools
     tools = db.relationship("Tool", backref="category_ref", lazy=True)
+
+    def serialize(self):
+        return {"id": self.id, "name": self.name}
+
+
+class Company(db.Model):
+    __tablename__ = "companies"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    users = db.relationship("User", backref="company_ref", lazy=True)
 
     def serialize(self):
         return {"id": self.id, "name": self.name}

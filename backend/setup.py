@@ -1,5 +1,5 @@
 # backend/setup.py
-from models import db, User, Role, Permission, RolePermission, ToolCategory
+from models import db, User, Role, Permission, RolePermission, ToolCategory, Company
 from werkzeug.security import generate_password_hash
 from datetime import datetime
 import os
@@ -22,7 +22,7 @@ testuser_qr = os.getenv("TESTUSER_QR")
 
 def create_initial_data(app):
     with app.app_context():
-        # Rollen anlegen (falls nicht vorhanden)
+        # === Rollen anlegen ===
         roles = ["admin", "supervisor", "user", "guest"]
         role_objs = {}
         for r in roles:
@@ -33,7 +33,7 @@ def create_initial_data(app):
             role_objs[r] = role
         db.session.commit()
 
-        # Rechte anlegen
+        # === Rechte anlegen ===
         permissions = [
             "manage_users",
             "manage_tools",
@@ -53,7 +53,7 @@ def create_initial_data(app):
             permission_objs[p] = perm
         db.session.commit()
 
-        # Rollen → Rechte zuweisen (gemäß Berechtigungskonzept)
+        # === Rollen → Rechte zuweisen ===
         matrix = {
             "admin": {
                 "manage_users": "true",
@@ -111,13 +111,40 @@ def create_initial_data(app):
                     db.session.add(rp)
         db.session.commit()
 
-        # Admin-User anlegen (nur wenn noch keiner vorhanden)
+        # === Standard-Werkzeugkategorien anlegen ===
+        default_categories = [
+            "Maschinen",
+            "Handwerkzeug",
+            "Druck & Beschriftung",
+            "Reinigungsgeräte",
+            "Bauhilfsmittel",
+            "Messgeräte",
+            "Sonstiges",
+        ]
+        for cat_name in default_categories:
+            if not ToolCategory.query.filter_by(name=cat_name).first():
+                db.session.add(ToolCategory(name=cat_name))
+        db.session.commit()
+        print("Standard-Werkzeugkategorien wurden angelegt (falls nicht vorhanden).")
+
+        # === Standard-Firmen anlegen ===
+        default_companies = ["Administration", "RTS", "RTC", "RSS", "PZM"]
+        for comp_name in default_companies:
+            if not Company.query.filter_by(name=comp_name).first():
+                db.session.add(Company(name=comp_name))
+        db.session.commit()
+        print("Standard-Firmen wurden angelegt (falls nicht vorhanden).")
+
+        # === Firmenobjekt für Administration holen ===
+        admin_company = Company.query.filter_by(name="Administration").first()
+
+        # === Admin-User anlegen ===
         if not User.query.filter_by(username=admin_username).first():
             admin_user = User(
                 username=admin_username,
                 first_name="Admin",
                 last_name="Admin",
-                company_name="Administration",
+                company_id=admin_company.id,
                 password=generate_password_hash(admin_password),
                 qr_code=admin_qr,
                 role_id=role_objs["admin"].id,
@@ -129,13 +156,13 @@ def create_initial_data(app):
         else:
             print("Admin-Benutzer existiert bereits.")
 
-        # Supervisor-User anlegen (nur wenn noch keiner vorhanden)
+        # === Supervisor-User anlegen ===
         if not User.query.filter_by(username=supervisor_username).first():
             supervisor_user = User(
                 username=supervisor_username,
                 first_name="Supervisor",
                 last_name="Supervisor",
-                company_name="Administration",
+                company_id=admin_company.id,
                 password=generate_password_hash(supervisor_password),
                 qr_code=supervisor_qr,
                 role_id=role_objs["supervisor"].id,
@@ -147,13 +174,13 @@ def create_initial_data(app):
         else:
             print("Supervisor-Benutzer existiert bereits.")
 
-        # Testuser anlegen (nur wenn noch keiner vorhanden)
+        # === Testuser anlegen ===
         if not User.query.filter_by(username=testuser_username).first():
             test_user = User(
                 username=testuser_username,
                 first_name="Test",
                 last_name="User",
-                company_name="Administration",
+                company_id=admin_company.id,
                 password=generate_password_hash(testuser_password),
                 qr_code=testuser_qr,
                 role_id=role_objs["user"].id,
@@ -164,21 +191,3 @@ def create_initial_data(app):
             print(f"Test-Benutzer '{testuser_username}' wurde erstellt.")
         else:
             print("Test-Benutzer existiert bereits.")
-
-        # === Standard-Werkzeugkategorien anlegen ===
-        default_categories = [
-            "Maschinen",
-            "Handwerkzeug",
-            "Druck & Beschriftung",
-            "Reinigungsgeräte",
-            "Bauhilfsmittel",
-            "Messgeräte",
-            "Sonstiges",
-        ]
-
-        for cat_name in default_categories:
-            if not ToolCategory.query.filter_by(name=cat_name).first():
-                db.session.add(ToolCategory(name=cat_name))
-
-        db.session.commit()
-        print("Standard-Werkzeugkategorien wurden angelegt (falls nicht vorhanden).")

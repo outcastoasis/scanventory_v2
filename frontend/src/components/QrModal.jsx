@@ -19,7 +19,7 @@ function QrModal({ user, tool, onClose, canDownload = false }) {
     const line1 = user
       ? `${user.first_name || ""} ${user.last_name || ""}`.trim()
       : tool?.name || "";
-    const line2 = user ? user.company_name || "" : tool?.category_name || "";
+    const line2 = user ? user.company_name : tool?.category_name || "";
     const code = subject.qr_code || "";
 
     // Breiten schätzen
@@ -70,7 +70,7 @@ function QrModal({ user, tool, onClose, canDownload = false }) {
   const handleDownload = () => {
     const canvas = canvasRef.current;
     const base = user
-      ? `${user.qr_code}_${user.company_name || ""}_${user.first_name || ""}_${
+      ? `${user.qr_code}_${user.company_name}_${user.first_name || ""}_${
           user.last_name || ""
         }`
       : `${tool?.qr_code || "tool"}_${(tool?.name || "").replace(

@@ -7,6 +7,7 @@ from models import (
     User,
     RolePermission,
     Permission,
+    ToolCategory,
 )
 from utils.permissions import requires_permission, get_token_payload
 from datetime import datetime
@@ -357,7 +358,6 @@ def get_tool_info(qr_code):
 @tools_bp.route("/api/categories", methods=["GET"])
 @requires_permission("manage_tools")
 def list_categories():
-    from models import ToolCategory
 
     categories = ToolCategory.query.order_by(ToolCategory.name.asc()).all()
     return jsonify([cat.serialize() for cat in categories])
@@ -366,7 +366,6 @@ def list_categories():
 @tools_bp.route("/api/categories/<int:cat_id>", methods=["PATCH"])
 @requires_permission("manage_tools")
 def update_category(cat_id):
-    from models import ToolCategory
 
     category = ToolCategory.query.get_or_404(cat_id)
     data = request.get_json() or {}
@@ -384,7 +383,6 @@ def update_category(cat_id):
 @tools_bp.route("/api/categories/<int:cat_id>", methods=["DELETE"])
 @requires_permission("manage_tools")
 def delete_category(cat_id):
-    from models import ToolCategory
 
     category = ToolCategory.query.get_or_404(cat_id)
 
@@ -401,7 +399,6 @@ def delete_category(cat_id):
 @tools_bp.route("/api/categories", methods=["POST"])
 @requires_permission("manage_tools")
 def create_category():
-    from models import ToolCategory
 
     data = request.get_json() or {}
     name = data.get("name", "").strip()

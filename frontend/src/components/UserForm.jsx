@@ -14,8 +14,8 @@ function UserForm({ user, onClose, onSave }) {
   const [currentUsername, setCurrentUsername] = useState(null);
   const [firstName, setFirstName] = useState(user?.first_name || "");
   const [lastName, setLastName] = useState(user?.last_name || "");
-  const [companyName, setCompanyName] = useState(user?.company_name || "");
-  const allowedCompanies = ["Administration", "RTS", "RSS", "RTC", "PZM"];
+  const [companyId, setCompanyId] = useState(user?.company_id || "");
+  const [companies, setCompanies] = useState([]);
 
   const isEditing = !!user?.id;
 
@@ -39,6 +39,17 @@ function UserForm({ user, onClose, onSave }) {
       .then((res) => res.json())
       .then((data) => setRoles(data))
       .catch(() => setRoles(["admin", "supervisor", "user", "guest"]));
+  }, []);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/companies`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    })
+      .then((res) => res.json())
+      .then(setCompanies)
+      .catch(() => setCompanies([]));
   }, []);
 
   useEffect(() => {
@@ -68,7 +79,7 @@ function UserForm({ user, onClose, onSave }) {
       qr_code: qrCode,
       first_name: firstName,
       last_name: lastName,
-      company_name: companyName,
+      company_id: companyId,
       ...(password ? { password } : {}),
     };
 
@@ -136,14 +147,14 @@ function UserForm({ user, onClose, onSave }) {
             Firma:
             <select
               className="user-form-select"
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
+              value={companyId}
+              onChange={(e) => setCompanyId(e.target.value)}
               required
             >
               <option value="">– Auswahl –</option>
-              {allowedCompanies.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              {companies.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
                 </option>
               ))}
             </select>
