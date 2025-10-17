@@ -166,6 +166,7 @@ npm run dev
 - [/] Admin-Panel für: (Teilweise umgesetzt, zurzeit noch in Testphase von Jascha)
   - Kategorienpflege bei Werkzeugen
   - Firmenpflege bei Benutzern (nicht hardcoded)
+  - Firmenpflege fehlt noch sortierfunktion mit Pfeilen
   - Anzeige und Download von QR Codes wie: cancel, reload
   - alle Reservationen auflisten, sortierbar und Suchbar machen (Wie bei Userliste/Toolliste) und löschen per Button
   - Fehler Logs einbauen und hier auflisten
