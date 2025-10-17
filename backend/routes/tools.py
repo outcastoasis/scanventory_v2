@@ -29,7 +29,6 @@ def list_tools_public():
             db.or_(
                 Tool.name.ilike(like),
                 Tool.qr_code.ilike(like),
-                Tool.category.ilike(like),
             )
         )
 
@@ -41,7 +40,8 @@ def list_tools_public():
                 "id": t.id,
                 "name": t.name,
                 "qr_code": t.qr_code,
-                "category": t.category,
+                "category_id": t.category_id,
+                "category_name": t.category_ref.name if t.category_ref else None,
                 "status": t.status,
                 "is_borrowed": t.is_borrowed,
                 "created_at": t.created_at.isoformat() if t.created_at else None,
@@ -127,7 +127,8 @@ def get_available_tools():
                 "id": t.id,
                 "name": t.name,
                 "qr_code": t.qr_code,
-                "category": t.category,
+                "category_id": t.category_id,
+                "category_name": t.category_ref.name if t.category_ref else None,
                 "status": t.status,
                 "is_borrowed": t.is_borrowed,
                 "created_at": t.created_at.isoformat() if t.created_at else None,
@@ -148,7 +149,8 @@ def list_tools():
                 "id": t.id,
                 "name": t.name,
                 "qr_code": t.qr_code,
-                "category": t.category,
+                "category_id": t.category_id,
+                "category_name": t.category_ref.name if t.category_ref else None,
                 "status": t.status,
                 "is_borrowed": t.is_borrowed,
                 "created_at": t.created_at.isoformat() if t.created_at else None,
@@ -170,7 +172,8 @@ def get_tool_by_qr(qr_code):
             "id": tool.id,
             "name": tool.name,
             "qr_code": tool.qr_code,
-            "category": getattr(tool, "category", None),
+            "category_id": tool.category_id,
+            "category_name": tool.category_ref.name if tool.category_ref else None,
             "status": getattr(tool, "status", None),
             "is_borrowed": getattr(tool, "is_borrowed", False),
             "created_at": (
@@ -189,7 +192,7 @@ def create_tool():
     data = request.get_json() or {}
     name = data.get("name")
     qr_code = data.get("qr_code")
-    category = data.get("category")
+    category_id = data.get("category_id")
 
     if not name or not qr_code:
         return jsonify({"error": "Name und QR-Code sind Pflichtfelder."}), 400
@@ -200,7 +203,7 @@ def create_tool():
     tool = Tool(
         name=name,
         qr_code=qr_code,
-        category=category,
+        category_id=category_id,
         status="available",
         is_borrowed=False,
     )
@@ -213,7 +216,8 @@ def create_tool():
                 "id": tool.id,
                 "name": tool.name,
                 "qr_code": tool.qr_code,
-                "category": tool.category,
+                "category_id": tool.category_id,
+                "category_name": tool.category_ref.name if tool.category_ref else None,
                 "status": tool.status,
                 "is_borrowed": tool.is_borrowed,
                 "created_at": tool.created_at.isoformat() if tool.created_at else None,
@@ -239,8 +243,8 @@ def update_tool(tool_id):
             return jsonify({"error": "QR-Code existiert bereits."}), 409
         tool.qr_code = new_qr
 
-    if "category" in data:
-        tool.category = data["category"]
+    if "category_id" in data:
+        tool.category_id = data["category_id"]
 
     db.session.commit()
 
@@ -249,7 +253,8 @@ def update_tool(tool_id):
             "id": tool.id,
             "name": tool.name,
             "qr_code": tool.qr_code,
-            "category": tool.category,
+            "category_id": tool.category_id,
+            "category_name": tool.category_ref.name if tool.category_ref else None,
             "status": tool.status,
             "is_borrowed": tool.is_borrowed,
             "created_at": tool.created_at.isoformat() if tool.created_at else None,
@@ -347,3 +352,68 @@ def get_tool_info(qr_code):
             "upcoming_reservations": [res_to_dict(r) for r in upcoming],
         }
     )
+
+
+@tools_bp.route("/api/categories", methods=["GET"])
+@requires_permission("manage_tools")
+def list_categories():
+    from models import ToolCategory
+
+    categories = ToolCategory.query.order_by(ToolCategory.name.asc()).all()
+    return jsonify([cat.serialize() for cat in categories])
+
+
+@tools_bp.route("/api/categories/<int:cat_id>", methods=["PATCH"])
+@requires_permission("manage_tools")
+def update_category(cat_id):
+    from models import ToolCategory
+
+    category = ToolCategory.query.get_or_404(cat_id)
+    data = request.get_json() or {}
+    name = data.get("name", "").strip()
+
+    if not name:
+        return jsonify({"error": "Name darf nicht leer sein."}), 400
+
+    category.name = name
+    db.session.commit()
+
+    return jsonify(category.serialize())
+
+
+@tools_bp.route("/api/categories/<int:cat_id>", methods=["DELETE"])
+@requires_permission("manage_tools")
+def delete_category(cat_id):
+    from models import ToolCategory
+
+    category = ToolCategory.query.get_or_404(cat_id)
+
+    # Prüfen, ob noch Tools mit dieser Kategorie existieren
+    tools_with_category = Tool.query.filter_by(category_id=category.id).first()
+    if tools_with_category:
+        return jsonify({"error": "Kategorie wird noch verwendet."}), 400
+
+    db.session.delete(category)
+    db.session.commit()
+    return jsonify({"message": "Kategorie gelöscht."}), 200
+
+
+@tools_bp.route("/api/categories", methods=["POST"])
+@requires_permission("manage_tools")
+def create_category():
+    from models import ToolCategory
+
+    data = request.get_json() or {}
+    name = data.get("name", "").strip()
+
+    if not name:
+        return jsonify({"error": "Name darf nicht leer sein."}), 400
+
+    # Optional: prüfen, ob der Name schon existiert
+    if ToolCategory.query.filter_by(name=name).first():
+        return jsonify({"error": "Kategorie existiert bereits."}), 400
+
+    new_category = ToolCategory(name=name)
+    db.session.add(new_category)
+    db.session.commit()
+    return jsonify(new_category.serialize()), 201

@@ -19,7 +19,7 @@ function QrModal({ user, tool, onClose, canDownload = false }) {
     const line1 = user
       ? `${user.first_name || ""} ${user.last_name || ""}`.trim()
       : tool?.name || "";
-    const line2 = user ? user.company_name || "" : tool?.category || "";
+    const line2 = user ? user.company_name || "" : tool?.category_name || "";
     const code = subject.qr_code || "";
 
     // Breiten schätzen
@@ -73,7 +73,10 @@ function QrModal({ user, tool, onClose, canDownload = false }) {
       ? `${user.qr_code}_${user.company_name || ""}_${user.first_name || ""}_${
           user.last_name || ""
         }`
-      : `${tool?.qr_code || "tool"}_${(tool?.name || "").replace(/\s+/g, "_")}`;
+      : `${tool?.qr_code || "tool"}_${(tool?.name || "").replace(
+          /\s+/g,
+          "_"
+        )}_${(tool?.category_name || "").replace(/\s+/g, "_")}`;
     const link = document.createElement("a");
     link.download = `${base}.png`;
     link.href = canvas.toDataURL("image/png");

@@ -1,0 +1,131 @@
+/* === AdminPanel.css === */
+
+.adminpanel-page {
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+}
+
+.adminpanel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.adminpanel-title {
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.adminpanel-back-button {
+  background-color: #f2f2f2;
+  color: #333;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.adminpanel-back-button:hover {
+  background-color: #ddd;
+}
+
+.adminpanel-section {
+  margin-bottom: 2rem;
+}
+
+.adminpanel-section-title {
+  margin-bottom: 0.6rem;
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+.adminpanel-list {
+  list-style: none;
+  padding-left: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.adminpanel-list li {
+  padding: 0.2rem 0;
+}
+
+.adminpanel-add-button {
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.adminpanel-add-button:hover {
+  background-color: #155aa8;
+}
+
+.adminpanel-qr-button {
+  margin-right: 1rem;
+  margin-top: 0.5rem;
+  background-color: #e0e0e0;
+  color: #333;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.adminpanel-qr-button:hover {
+  background-color: #ccc;
+}
+
+.adminpanel-search {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  max-width: 300px;
+  margin-bottom: 0.8rem;
+}
+
+.adminpanel-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.adminpanel-table th,
+.adminpanel-table td {
+  border: 1px solid #e0e0e0;
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+}
+
+.adminpanel-table th {
+  background-color: #f9f9f9;
+  cursor: pointer;
+  user-select: none;
+}
+
+.adminpanel-delete-button {
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.adminpanel-delete-button:hover {
+  background-color: #aa1e1e;
+}
+
+.adminpanel-loading {
+  font-style: italic;
+}
+
+.adminpanel-placeholder {
+  color: #666;
+  font-style: italic;
+}

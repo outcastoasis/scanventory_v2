@@ -24,6 +24,7 @@ import {
   faKey,
   faPlus,
   faSignOutAlt,
+  faWrench,
 } from "@fortawesome/free-solid-svg-icons";
 
 function Home() {
@@ -503,16 +504,15 @@ function Home() {
                         >
                           <FontAwesomeIcon icon={faKey} /> Rechte
                         </button>
+                        <button
+                          onClick={() =>
+                            (window.location.href = "/admin-panel")
+                          }
+                        >
+                          <FontAwesomeIcon icon={faWrench} /> Admin-Panel
+                        </button>
                       </>
                     )}
-                    {/* HIER angepasst: statt Alert → Navigation */}
-                    <button
-                      onClick={() =>
-                        (window.location.href = "/reservations/manual")
-                      }
-                    >
-                      <FontAwesomeIcon icon={faPlus} /> Reservation
-                    </button>
                   </div>
                 </div>
               )}

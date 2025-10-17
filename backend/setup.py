@@ -1,5 +1,5 @@
 # backend/setup.py
-from models import db, User, Role, Permission, RolePermission
+from models import db, User, Role, Permission, RolePermission, ToolCategory
 from werkzeug.security import generate_password_hash
 from datetime import datetime
 import os
@@ -164,3 +164,21 @@ def create_initial_data(app):
             print(f"Test-Benutzer '{testuser_username}' wurde erstellt.")
         else:
             print("Test-Benutzer existiert bereits.")
+
+        # === Standard-Werkzeugkategorien anlegen ===
+        default_categories = [
+            "Maschinen",
+            "Handwerkzeug",
+            "Druck & Beschriftung",
+            "Reinigungsgeräte",
+            "Bauhilfsmittel",
+            "Messgeräte",
+            "Sonstiges",
+        ]
+
+        for cat_name in default_categories:
+            if not ToolCategory.query.filter_by(name=cat_name).first():
+                db.session.add(ToolCategory(name=cat_name))
+
+        db.session.commit()
+        print("Standard-Werkzeugkategorien wurden angelegt (falls nicht vorhanden).")

@@ -99,7 +99,7 @@ export default function AdminTools() {
       t.id?.toString().includes(term) ||
       t.name?.toLowerCase().includes(term) ||
       t.qr_code?.toLowerCase().includes(term) ||
-      t.category?.toLowerCase().includes(term) ||
+      t.category_name?.toLowerCase().includes(term) ||
       t.status?.toLowerCase().includes(term) ||
       t.created_at?.toLowerCase().includes(term)
     );
@@ -128,7 +128,9 @@ export default function AdminTools() {
 
       ctx.font = "20px Arial";
       const codeWidth = ctx.measureText(tool.qr_code || "").width;
-      const catWidth = tool.category ? ctx.measureText(tool.category).width : 0;
+      const catWidth = tool.category_name
+        ? ctx.measureText(tool.category_name).width
+        : 0;
 
       const maxTextWidth = Math.max(codeWidth, nameWidth, catWidth);
       const canvasWidth = qrSize + padding * 3 + maxTextWidth;
@@ -160,7 +162,8 @@ export default function AdminTools() {
       ctx.font = "bold 25px Arial";
       ctx.fillText(name, textX, textY + 30);
       ctx.font = "20px Arial";
-      if (tool.category) ctx.fillText(tool.category, textX, textY + 60);
+      if (tool.category_name)
+        ctx.fillText(tool.category_name, textX, textY + 60);
 
       const dataUrl = canvas.toDataURL("image/png");
       const base64 = dataUrl.split(",")[1];
@@ -256,12 +259,12 @@ export default function AdminTools() {
                   </span>
                 </th>
                 <th
-                  onClick={() => handleSort("category")}
-                  className={sortConfig.key === "category" ? "sorted" : ""}
+                  onClick={() => handleSort("category_name")}
+                  className={sortConfig.key === "category_name" ? "sorted" : ""}
                 >
                   Kategorie{" "}
                   <span className="sort-icon">
-                    {sortConfig.key === "category"
+                    {sortConfig.key === "category_name"
                       ? sortConfig.direction === "asc"
                         ? "▲"
                         : "▼"
@@ -303,7 +306,7 @@ export default function AdminTools() {
                   <td>{t.id}</td>
                   <td>{t.name}</td>
                   <td>{t.qr_code}</td>
-                  <td>{t.category || "-"}</td>
+                  <td>{t.category_name || "-"}</td>
                   <td
                     className={`tools-status ${
                       t.is_borrowed ? "borrowed" : "available"

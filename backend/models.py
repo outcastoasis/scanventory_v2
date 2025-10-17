@@ -61,7 +61,7 @@ class Tool(db.Model):
         db.String(20), default="available"
     )  # available, borrowed, reserved
     is_borrowed = db.Column(db.Boolean, default=False)
-    category = db.Column(db.String(50))  # z. B. Elektro
+    category_id = db.Column(db.Integer, db.ForeignKey("tool_categories.id"))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     reservations = db.relationship("Reservation", backref="tool", lazy=True)
@@ -86,3 +86,16 @@ class Log(db.Model):
     action = db.Column(db.String(100), nullable=False)
     details = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ToolCategory(db.Model):
+    __tablename__ = "tool_categories"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+
+    # Optional: Relationship zu Tools
+    tools = db.relationship("Tool", backref="category_ref", lazy=True)
+
+    def serialize(self):
+        return {"id": self.id, "name": self.name}
