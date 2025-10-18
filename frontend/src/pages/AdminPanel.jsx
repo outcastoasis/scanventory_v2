@@ -257,8 +257,11 @@ function AdminPanel() {
         <table className="tools-table">
           <thead>
             <tr>
-              <th onClick={() => handleCategorySort("id")}>
-                ID{" "}
+              <th
+                onClick={() => handleCategorySort("id")}
+                className={categorySortKey === "id" ? "sorted" : ""}
+              >
+                ID
                 <span className="sort-icon">
                   {categorySortKey === "id"
                     ? categorySortDirection === "asc"
@@ -267,8 +270,11 @@ function AdminPanel() {
                     : "▲"}
                 </span>
               </th>
-              <th onClick={() => handleCategorySort("name")}>
-                Name{" "}
+              <th
+                onClick={() => handleCategorySort("name")}
+                className={categorySortKey === "name" ? "sorted" : ""}
+              >
+                Name
                 <span className="sort-icon">
                   {categorySortKey === "name"
                     ? categorySortDirection === "asc"
@@ -277,6 +283,7 @@ function AdminPanel() {
                     : "▲"}
                 </span>
               </th>
+
               <th>Aktionen</th>
             </tr>
           </thead>
@@ -322,8 +329,32 @@ function AdminPanel() {
         <table className="tools-table">
           <thead>
             <tr>
-              <th onClick={() => handleCompanySort("id")}>ID</th>
-              <th onClick={() => handleCompanySort("name")}>Name</th>
+              <th
+                onClick={() => handleCompanySort("id")}
+                className={companySortKey === "id" ? "sorted" : ""}
+              >
+                ID
+                <span className="sort-icon">
+                  {companySortKey === "id"
+                    ? companySortDirection === "asc"
+                      ? "▲"
+                      : "▼"
+                    : "▲"}
+                </span>
+              </th>
+              <th
+                onClick={() => handleCompanySort("name")}
+                className={companySortKey === "name" ? "sorted" : ""}
+              >
+                Name
+                <span className="sort-icon">
+                  {companySortKey === "name"
+                    ? companySortDirection === "asc"
+                      ? "▲"
+                      : "▼"
+                    : "▲"}
+                </span>
+              </th>
               <th>Aktionen</th>
             </tr>
           </thead>

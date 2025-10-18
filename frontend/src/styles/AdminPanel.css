@@ -129,3 +129,24 @@
   color: #666;
   font-style: italic;
 }
+
+/* Neue Sort-Styles wie bei AdminTools */
+
+.tools-table th.sorted,
+.adminpanel-table th.sorted {
+  background-color: #e3f2fd;
+  font-weight: bold;
+}
+
+.sort-icon {
+  display: inline-block;
+  width: 1ch;
+  text-align: center;
+  opacity: 0.5;
+  font-size: 0.9rem;
+  margin-left: 0.3rem;
+}
+
+.sorted .sort-icon {
+  opacity: 1;
+}
