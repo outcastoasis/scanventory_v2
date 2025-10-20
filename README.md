@@ -183,7 +183,10 @@ npm run dev
 ## 🧠 Weitere geplante Verbesserungen
 
 - [x] Wenn Tool zuerst gescannt, info der aktuellen Reservation und des werkzeuges anzeigen
-- [ ] Offline-Hilfe für Admins und Nutzer
+- [/] Offline-Hilfe für Admins und Nutzer (Teilweise umgesetzt, Adminhilfe noch ausstehend)
+  - [x] Anleitung für Werkzeug reservieren und Rückgabe
+  - [x] Übersicht der Rollen
+  - [-] Admin hilfe
 - [x] Automatischer Reset von `is_borrowed` per Scheduler im Backend
 - [x] Automatisches Polling der Kalenderdaten alle 30 Sekunden (Live-Update bei Scannerverwendung)
 - [ ] Reservation bearbeiten endzeit abfangen, um keine negativen Einträge zu verursachen (Nicht erlaubt dass endzeit vor startzeit reserviert werden kann)

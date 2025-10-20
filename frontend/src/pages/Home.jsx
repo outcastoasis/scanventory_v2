@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react"; // useRef ergänzen
+import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import ScannerHandler from "../components/ScannerHandler";
 import CalendarView from "../components/CalendarView";
 import StaticQrCodes from "../components/StaticQrCodes";
@@ -32,20 +33,19 @@ function Home() {
   const [flashType, setFlashType] = useState(null); // "success" | "error" | null
   const flashTimerRef = useRef(null);
 
-    const triggerFlash = (type, ms = 3000) => {
-      // Timer stoppen
-       if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+  const triggerFlash = (type, ms = 3000) => {
+    // Timer stoppen
+    if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
 
- // Klasse entfernen, Reflow erzwingen, dann neu setzen
-  setFlashType(null);
-  requestAnimationFrame(() => {
-    // Reflow
-    void boxRef.current?.offsetWidth;
-    // Klasse wieder setzen
-    setFlashType(type);
- 
-  });
-};
+    // Klasse entfernen, Reflow erzwingen, dann neu setzen
+    setFlashType(null);
+    requestAnimationFrame(() => {
+      // Reflow
+      void boxRef.current?.offsetWidth;
+      // Klasse wieder setzen
+      setFlashType(type);
+    });
+  };
   const [scanState, setScanState] = useState({
     user: null,
     tool: null,
@@ -66,15 +66,14 @@ function Home() {
 
   const [flashOK, setFlashOK] = useState(false);
 
-
-// Grünes aufleuchten bei erfolgreichen Scan
-useEffect(() => {
-  if (scanState.user && scanState.tool) {
-    setFlashOK(true);
-    const t = setTimeout(() => setFlashOK(false), 1000);
-    return () => clearTimeout(t);
-  }
-}, [scanState.user, scanState.tool]);
+  // Grünes aufleuchten bei erfolgreichen Scan
+  useEffect(() => {
+    if (scanState.user && scanState.tool) {
+      setFlashOK(true);
+      const t = setTimeout(() => setFlashOK(false), 1000);
+      return () => clearTimeout(t);
+    }
+  }, [scanState.user, scanState.tool]);
 
   // Für Heute Reserviert Ansicht
   const activeReservations = useMemo(() => {
@@ -222,7 +221,9 @@ useEffect(() => {
     if (code === "return") {
       setReturnMode(true);
       setShowDurationModal(false);
+      triggerFlash("success");
       resetScan("Rückgabemodus aktiviert – bitte Werkzeug scannen");
+
       return;
     }
 
@@ -515,6 +516,14 @@ useEffect(() => {
               </label>
               <button onClick={handleLogin}>Login</button>
             </div>
+            <button
+              className="admin-toggle help-nav-button"
+              onClick={() => (window.location.href = "/help")}
+              title="Hilfe / Anleitung"
+              aria-label="Hilfe / Anleitung"
+            >
+              <FontAwesomeIcon icon={faQuestionCircle} />
+            </button>
           </div>
         ) : (
           <div className="login-info">
@@ -557,8 +566,18 @@ useEffect(() => {
                   </div>
                 </div>
               )}
+
               <button onClick={handleLogout}>
                 <FontAwesomeIcon icon={faSignOutAlt} /> Logout
+              </button>
+
+              <button
+                className="admin-toggle help-nav-button"
+                onClick={() => (window.location.href = "/help")}
+                title="Hilfe / Anleitung"
+                aria-label="Hilfe / Anleitung"
+              >
+                <FontAwesomeIcon icon={faQuestionCircle} />
               </button>
             </div>
           </div>
@@ -571,17 +590,20 @@ useEffect(() => {
           <h3 className="home-return-title">Rückgabe</h3>
         </div>
 
-     <div className="home-scanner-row">
-  <div
-  ref={boxRef}
-   className={`scan-box ${flashType === "success" ? "flash-success" : ""} ${flashType === "error" ? "flash-error" : ""}`}>
-  {message}
-</div>
+        <div className="home-scanner-row">
+          <div
+            ref={boxRef}
+            className={`scan-box ${
+              flashType === "success" ? "flash-success" : ""
+            } ${flashType === "error" ? "flash-error" : ""}`}
+          >
+            {message}
+          </div>
 
-  <div className="home-return">
-    <StaticQrCodes />
-  </div>
-</div>
+          <div className="home-return">
+            <StaticQrCodes />
+          </div>
+        </div>
 
         <ScannerHandler onScan={handleScan} />
       </section>

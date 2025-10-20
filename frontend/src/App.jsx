@@ -6,6 +6,7 @@ import AdminTools from "./pages/AdminTools";
 import AdminPermissions from "./pages/AdminPermissions";
 import ManuelReservations from "./pages/ManualReservations";
 import AdminPanel from "./pages/AdminPanel";
+import Help from "./pages/Help";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
       <Route path="/permissions" element={<AdminPermissions />} />
       <Route path="/reservations/manual" element={<ManuelReservations />} />
       <Route path="/admin-panel" element={<AdminPanel />} />
+      <Route path="/help" element={<Help />} />
     </Routes>
   );
 }
