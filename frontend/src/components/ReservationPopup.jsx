@@ -237,7 +237,7 @@ export default function ReservationPopup({
             selected={start}
             onChange={(d) => setStart(d)}
             showTimeSelect
-            timeIntervals={15}
+            timeIntervals={30}
             timeCaption="Zeit"
             dateFormat="dd.MM.yyyy HH:mm"
             timeFormat="HH:mm"
@@ -251,7 +251,7 @@ export default function ReservationPopup({
             selected={end}
             onChange={(d) => setEnd(d)}
             showTimeSelect
-            timeIntervals={15}
+            timeIntervals={30}
             timeCaption="Zeit"
             dateFormat="dd.MM.yyyy HH:mm"
             timeFormat="HH:mm"

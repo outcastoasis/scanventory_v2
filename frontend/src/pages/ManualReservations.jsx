@@ -157,7 +157,7 @@ function ManualReservations() {
             }}
             showTimeSelect
             timeFormat="HH:mm"
-            timeIntervals={15}
+            timeIntervals={30}
             dateFormat="dd.MM.yyyy HH:mm"
             placeholderText="Startdatum & Zeit wählen"
           />
@@ -171,7 +171,7 @@ function ManualReservations() {
             }}
             showTimeSelect
             timeFormat="HH:mm"
-            timeIntervals={15}
+            timeIntervals={30}
             dateFormat="dd.MM.yyyy HH:mm"
             placeholderText="Enddatum & Zeit wählen"
           />
