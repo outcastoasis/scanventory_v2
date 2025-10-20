@@ -74,6 +74,7 @@ function AdminPanel() {
     })
       .then((res) => res.json())
       .then(setReservations);
+      
   }, [loading]);
 
   // --- Sortier-Handler ---
@@ -489,8 +490,8 @@ function AdminPanel() {
             {sortedReservations.map((r) => (
               <tr key={r.id}>
                 <td>{r.id}</td>
-                <td>{r.username}</td>
-                <td>{r.tool_name}</td>
+                <td>{r.user?.username}</td>
+                <td>{r.tool?.name}</td>
                 <td>{r.start?.slice(0, 16).replace("T", " ")}</td>
                 <td>{r.end?.slice(0, 16).replace("T", " ")}</td>
                 <td>
