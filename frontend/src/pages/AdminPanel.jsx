@@ -9,18 +9,25 @@ function AdminPanel() {
   const navigate = useNavigate();
   const [permissions, setPermissions] = useState({});
   const [loading, setLoading] = useState(true);
+
+  // Kategorien
   const [categories, setCategories] = useState([]);
   const [categorySearch, setCategorySearch] = useState("");
   const [categorySortKey, setCategorySortKey] = useState(null);
   const [categorySortDirection, setCategorySortDirection] = useState("asc");
-  const [reservations, setReservations] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortKey, setSortKey] = useState(null);
-  const [sortDirection, setSortDirection] = useState("asc");
+
+  // Firmen
   const [companies, setCompanies] = useState([]);
   const [companySearch, setCompanySearch] = useState("");
   const [companySortKey, setCompanySortKey] = useState(null);
   const [companySortDirection, setCompanySortDirection] = useState("asc");
+
+  // Reservationen
+  const [reservations, setReservations] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [reservationSortKey, setReservationSortKey] = useState(null);
+  const [reservationSortDirection, setReservationSortDirection] =
+    useState("asc");
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -49,6 +56,7 @@ function AdminPanel() {
 
   useEffect(() => {
     if (loading) return;
+
     fetch(`${API_URL}/api/categories`, {
       headers: { Authorization: `Bearer ${getToken()}` },
     })
@@ -68,11 +76,14 @@ function AdminPanel() {
       .then(setReservations);
   }, [loading]);
 
-  const handleSort = (key) => {
+  // --- Sortier-Handler ---
+  const handleReservationSort = (key) => {
     const direction =
-      sortKey === key && sortDirection === "asc" ? "desc" : "asc";
-    setSortKey(key);
-    setSortDirection(direction);
+      reservationSortKey === key && reservationSortDirection === "asc"
+        ? "desc"
+        : "asc";
+    setReservationSortKey(key);
+    setReservationSortDirection(direction);
   };
 
   const handleCategorySort = (key) => {
@@ -84,6 +95,14 @@ function AdminPanel() {
     setCategorySortDirection(direction);
   };
 
+  const handleCompanySort = (key) => {
+    const direction =
+      companySortKey === key && companySortDirection === "asc" ? "desc" : "asc";
+    setCompanySortKey(key);
+    setCompanySortDirection(direction);
+  };
+
+  // --- Filter & Sort Reservations ---
   const filteredReservations = reservations.filter((r) => {
     const term = searchTerm.toLowerCase();
     return (
@@ -94,14 +113,15 @@ function AdminPanel() {
   });
 
   const sortedReservations = [...filteredReservations].sort((a, b) => {
-    if (!sortKey) return 0;
-    const valA = a[sortKey]?.toString().toLowerCase();
-    const valB = b[sortKey]?.toString().toLowerCase();
-    if (valA < valB) return sortDirection === "asc" ? -1 : 1;
-    if (valA > valB) return sortDirection === "asc" ? 1 : -1;
+    if (!reservationSortKey) return 0;
+    const valA = a[reservationSortKey]?.toString().toLowerCase();
+    const valB = b[reservationSortKey]?.toString().toLowerCase();
+    if (valA < valB) return reservationSortDirection === "asc" ? -1 : 1;
+    if (valA > valB) return reservationSortDirection === "asc" ? 1 : -1;
     return 0;
   });
 
+  // --- Filter & Sort Kategorien ---
   const sortedCategories = [...categories]
     .filter((c) => c.name.toLowerCase().includes(categorySearch.toLowerCase()))
     .sort((a, b) => {
@@ -113,6 +133,19 @@ function AdminPanel() {
       return 0;
     });
 
+  // --- Filter & Sort Firmen ---
+  const sortedCompanies = [...companies]
+    .filter((c) => c.name.toLowerCase().includes(companySearch.toLowerCase()))
+    .sort((a, b) => {
+      if (!companySortKey) return 0;
+      const valA = a[companySortKey]?.toString().toLowerCase();
+      const valB = b[companySortKey]?.toString().toLowerCase();
+      if (valA < valB) return companySortDirection === "asc" ? -1 : 1;
+      if (valA > valB) return companySortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+
+  // --- Actions ---
   const handleDeleteReservation = async (id) => {
     if (!confirm("Reservation wirklich löschen?")) return;
     const res = await fetch(`${API_URL}/api/reservations/${id}`, {
@@ -208,24 +241,6 @@ function AdminPanel() {
     setCompanies(companies.filter((c) => c.id !== id));
   };
 
-  const handleCompanySort = (key) => {
-    const direction =
-      companySortKey === key && companySortDirection === "asc" ? "desc" : "asc";
-    setCompanySortKey(key);
-    setCompanySortDirection(direction);
-  };
-
-  const sortedCompanies = [...companies]
-    .filter((c) => c.name.toLowerCase().includes(companySearch.toLowerCase()))
-    .sort((a, b) => {
-      if (!companySortKey) return 0;
-      const valA = a[companySortKey]?.toString().toLowerCase();
-      const valB = b[companySortKey]?.toString().toLowerCase();
-      if (valA < valB) return companySortDirection === "asc" ? -1 : 1;
-      if (valA > valB) return companySortDirection === "asc" ? 1 : -1;
-      return 0;
-    });
-
   if (loading) return <p className="adminpanel-loading">Lade Admin-Panel...</p>;
 
   return (
@@ -240,6 +255,7 @@ function AdminPanel() {
         </button>
       </div>
 
+      {/* Kategorien */}
       <div className="adminpanel-section">
         <h3 className="adminpanel-section-title">Kategorien</h3>
         <div className="tools-actions">
@@ -283,7 +299,6 @@ function AdminPanel() {
                     : "▲"}
                 </span>
               </th>
-
               <th>Aktionen</th>
             </tr>
           </thead>
@@ -312,6 +327,7 @@ function AdminPanel() {
         </table>
       </div>
 
+      {/* Firmen */}
       <div className="adminpanel-section">
         <h3 className="adminpanel-section-title">Firmen</h3>
         <div className="tools-actions">
@@ -383,6 +399,7 @@ function AdminPanel() {
         </table>
       </div>
 
+      {/* Alle Reservationen */}
       <div className="adminpanel-section">
         <h3 className="adminpanel-section-title">Alle Reservationen</h3>
         <input
@@ -392,14 +409,79 @@ function AdminPanel() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="adminpanel-search"
         />
-        <table className="adminpanel-table">
+        <table className="tools-table">
           <thead>
             <tr>
-              <th onClick={() => handleSort("id")}>ID</th>
-              <th onClick={() => handleSort("username")}>Benutzer</th>
-              <th onClick={() => handleSort("tool_name")}>Werkzeug</th>
-              <th onClick={() => handleSort("start_time")}>Start</th>
-              <th onClick={() => handleSort("end_time")}>Ende</th>
+              <th
+                onClick={() => handleReservationSort("id")}
+                className={reservationSortKey === "id" ? "sorted" : ""}
+              >
+                ID
+                <span className="sort-icon">
+                  {reservationSortKey === "id"
+                    ? reservationSortDirection === "asc"
+                      ? "▲"
+                      : "▼"
+                    : "▲"}
+                </span>
+              </th>
+
+              <th
+                onClick={() => handleReservationSort("username")}
+                className={reservationSortKey === "username" ? "sorted" : ""}
+              >
+                Benutzer
+                <span className="sort-icon">
+                  {reservationSortKey === "username"
+                    ? reservationSortDirection === "asc"
+                      ? "▲"
+                      : "▼"
+                    : "▲"}
+                </span>
+              </th>
+
+              <th
+                onClick={() => handleReservationSort("tool_name")}
+                className={reservationSortKey === "tool_name" ? "sorted" : ""}
+              >
+                Werkzeug
+                <span className="sort-icon">
+                  {reservationSortKey === "tool_name"
+                    ? reservationSortDirection === "asc"
+                      ? "▲"
+                      : "▼"
+                    : "▲"}
+                </span>
+              </th>
+
+              <th
+                onClick={() => handleReservationSort("start_time")}
+                className={reservationSortKey === "start_time" ? "sorted" : ""}
+              >
+                Start
+                <span className="sort-icon">
+                  {reservationSortKey === "start_time"
+                    ? reservationSortDirection === "asc"
+                      ? "▲"
+                      : "▼"
+                    : "▲"}
+                </span>
+              </th>
+
+              <th
+                onClick={() => handleReservationSort("end_time")}
+                className={reservationSortKey === "end_time" ? "sorted" : ""}
+              >
+                Ende
+                <span className="sort-icon">
+                  {reservationSortKey === "end_time"
+                    ? reservationSortDirection === "asc"
+                      ? "▲"
+                      : "▼"
+                    : "▲"}
+                </span>
+              </th>
+
               <th>Aktionen</th>
             </tr>
           </thead>
