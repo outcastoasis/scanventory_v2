@@ -455,12 +455,12 @@ function AdminPanel() {
               </th>
 
               <th
-                onClick={() => handleReservationSort("start_time")}
-                className={reservationSortKey === "start_time" ? "sorted" : ""}
+                onClick={() => handleReservationSort("start")}
+                className={reservationSortKey === "start" ? "sorted" : ""}
               >
                 Start
                 <span className="sort-icon">
-                  {reservationSortKey === "start_time"
+                  {reservationSortKey === "start"
                     ? reservationSortDirection === "asc"
                       ? "▲"
                       : "▼"
@@ -469,12 +469,12 @@ function AdminPanel() {
               </th>
 
               <th
-                onClick={() => handleReservationSort("end_time")}
-                className={reservationSortKey === "end_time" ? "sorted" : ""}
+                onClick={() => handleReservationSort("end")}
+                className={reservationSortKey === "end" ? "sorted" : ""}
               >
                 Ende
                 <span className="sort-icon">
-                  {reservationSortKey === "end_time"
+                  {reservationSortKey === "end"
                     ? reservationSortDirection === "asc"
                       ? "▲"
                       : "▼"
@@ -491,8 +491,8 @@ function AdminPanel() {
                 <td>{r.id}</td>
                 <td>{r.username}</td>
                 <td>{r.tool_name}</td>
-                <td>{r.start_time?.slice(0, 16).replace("T", " ")}</td>
-                <td>{r.end_time?.slice(0, 16).replace("T", " ")}</td>
+                <td>{r.start?.slice(0, 16).replace("T", " ")}</td>
+                <td>{r.end?.slice(0, 16).replace("T", " ")}</td>
                 <td>
                   <button
                     className="adminpanel-delete-button"
