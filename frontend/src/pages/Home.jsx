@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react"; // useRef ergänzen
 import ScannerHandler from "../components/ScannerHandler";
 import CalendarView from "../components/CalendarView";
 import StaticQrCodes from "../components/StaticQrCodes";
@@ -28,6 +28,24 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 function Home() {
+  const boxRef = useRef(null);
+  const [flashType, setFlashType] = useState(null); // "success" | "error" | null
+  const flashTimerRef = useRef(null);
+
+    const triggerFlash = (type, ms = 3000) => {
+      // Timer stoppen
+       if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+
+ // Klasse entfernen, Reflow erzwingen, dann neu setzen
+  setFlashType(null);
+  requestAnimationFrame(() => {
+    // Reflow
+    void boxRef.current?.offsetWidth;
+    // Klasse wieder setzen
+    setFlashType(type);
+ 
+  });
+};
   const [scanState, setScanState] = useState({
     user: null,
     tool: null,
@@ -45,6 +63,18 @@ function Home() {
 
   const [scannedUser, setScannedUser] = useState(null);
   const [scannedTool, setScannedTool] = useState(null);
+
+  const [flashOK, setFlashOK] = useState(false);
+
+
+// Grünes aufleuchten bei erfolgreichen Scan
+useEffect(() => {
+  if (scanState.user && scanState.tool) {
+    setFlashOK(true);
+    const t = setTimeout(() => setFlashOK(false), 1000);
+    return () => clearTimeout(t);
+  }
+}, [scanState.user, scanState.tool]);
 
   // Für Heute Reserviert Ansicht
   const activeReservations = useMemo(() => {
@@ -135,6 +165,7 @@ function Home() {
     setShowDurationModal(false);
     setReturnMode(false);
     resetScan("Vorgang abgebrochen. Bitte Benutzer scannen");
+    triggerFlash("error");
   };
 
   const pickDuration = (days) => handleScan(`dur${days}`);
@@ -204,11 +235,13 @@ function Home() {
         const foundUser = await res.json();
         setScanState({ user: code, tool: null, duration: null });
         setScannedUser(foundUser);
+        triggerFlash("success");
         setMessage(
           `Benutzer erkannt: ${foundUser.first_name} ${foundUser.last_name}, ${foundUser.qr_code}`
         );
       } catch {
         setMessage(`❌ Benutzer nicht gefunden: ${code}`);
+        triggerFlash("error");
       }
       return;
     }
@@ -256,6 +289,7 @@ function Home() {
           }
 
           setMessage(`✅ Rückgabe abgeschlossen für ${toolCode}`);
+          triggerFlash("success");
           setReturnMode(false);
           setShowDurationModal(false);
           resetScan();
@@ -265,6 +299,7 @@ function Home() {
           );
         } catch (err) {
           setMessage(`❌ Rückgabe fehlgeschlagen: ${err.message}`);
+          triggerFlash("error");
           setReturnMode(false);
           setShowDurationModal(false);
           resetScan();
@@ -280,6 +315,7 @@ function Home() {
 
           setScanState((prev) => ({ ...prev, tool: toolCode }));
           setScannedTool(foundTool);
+          triggerFlash("success");
           setMessage(
             `Werkzeug erkannt: ${foundTool.name}, ${foundTool.qr_code}`
           );
@@ -287,6 +323,7 @@ function Home() {
           setShowDurationModal(true);
         } catch {
           setMessage(`❌ Werkzeug nicht gefunden: ${toolCode}`);
+          triggerFlash("error");
         }
       } else {
         try {
@@ -333,6 +370,7 @@ function Home() {
           }
 
           setMessage(msg);
+          triggerFlash("success");
 
           // Nach 20 Sekunden wieder zurücksetzen
           setTimeout(() => {
@@ -340,6 +378,7 @@ function Home() {
           }, 20000);
         } catch (err) {
           setMessage(`❌ Werkzeug nicht gefunden: ${toolCode}`);
+          triggerFlash("error");
         }
       }
       return;
@@ -367,6 +406,7 @@ function Home() {
           if (!res.ok)
             throw new Error(data.error || "Reservation fehlgeschlagen");
 
+          triggerFlash("success");
           setShowDurationModal(false);
           resetScan("✅ Reservation gespeichert");
           fetchReservations();
@@ -376,6 +416,7 @@ function Home() {
         } catch (err) {
           setShowDurationModal(false);
           resetScan(`❌ ${err.message}`);
+          triggerFlash("error");
         }
         return;
       }
@@ -530,12 +571,17 @@ function Home() {
           <h3 className="home-return-title">Rückgabe</h3>
         </div>
 
-        <div className="home-scanner-row">
-          <div className="scan-box">{message}</div>
-          <div className="home-return">
-            <StaticQrCodes />
-          </div>
-        </div>
+     <div className="home-scanner-row">
+  <div
+  ref={boxRef}
+   className={`scan-box ${flashType === "success" ? "flash-success" : ""} ${flashType === "error" ? "flash-error" : ""}`}>
+  {message}
+</div>
+
+  <div className="home-return">
+    <StaticQrCodes />
+  </div>
+</div>
 
         <ScannerHandler onScan={handleScan} />
       </section>

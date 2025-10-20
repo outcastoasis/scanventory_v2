@@ -162,7 +162,28 @@
   min-height: 150px;
   word-wrap: break-word;
   white-space: pre-wrap;
+  transition: border-color .25s ease, box-shadow .25s ease;
 }
+/* Erfolgreicher Scan: 1s grüner Rand-Flash */
+.scan-box.flash-success {
+  animation: borderFlash 3s ease forwards;
+}
+@keyframes borderFlash {
+  0%   { border-color: #10b981; box-shadow: 0 0 0 0 rgba(16,185,129,.45); }
+  35%  { border-color: #10b981; box-shadow: 0 0 0 6px rgba(16,185,129,.18); }
+  100% { border-color: #e5e7eb; box-shadow: none; }
+}
+
+/* Fehler/Abbruch: roter Rand-Flash */
+.scan-box.flash-error {
+  animation: borderFlashRed 3s ease forwards;
+}
+@keyframes borderFlashRed {
+  0%   { border-color: #ef4444; box-shadow: 0 0 0 0 rgba(239,68,68,.45); }
+  35%  { border-color: #ef4444; box-shadow: 0 0 0 6px rgba(239,68,68,.18); }
+  100% { border-color: #e5e7eb; box-shadow: none; }
+}
+
 
 /* --- Kalender: Lösung A + Responsive --- */
 

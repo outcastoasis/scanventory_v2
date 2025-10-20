@@ -164,12 +164,12 @@ npm run dev
 - [x] `export_data` und `export_qr_codes` müssen in Exportlogik integriert werden (Berechtigungsprüfung)
 - [x] Entfernen der Bearbeitungsfunktion einzelner Permission-Keys (nicht sinnvoll)
 - [/] Admin-Panel für: (Teilweise umgesetzt, zurzeit noch in Testphase von Jascha)
-  - Kategorienpflege bei Werkzeugen
-  - Firmenpflege bei Benutzern (nicht hardcoded)
-  - Firmenpflege fehlt noch sortierfunktion mit Pfeilen
-  - Anzeige und Download von QR Codes wie: cancel, reload
-  - alle Reservationen auflisten, sortierbar und Suchbar machen (Wie bei Userliste/Toolliste) und löschen per Button
-  - Fehler Logs einbauen und hier auflisten
+  - [x] Kategorienpflege bei Werkzeugen
+  - [x] Firmenpflege bei Benutzern (nicht hardcoded)
+  - [x] Firmenpflege fehlt noch sortierfunktion mit Pfeilen
+  - [-] Anzeige und Download von QR Codes wie: cancel, reload
+  - [x] alle Reservationen auflisten, sortierbar und Suchbar machen (Wie bei Userliste/Toolliste) und löschen per Button
+  - [-] Fehler Logs einbauen und hier auflisten
 - [x] Darstellung von Reservationen auf der Startseite als: `Start – Ende | Werkzeug – Nachname Vorname`
 - [x] Kalenderhöhe dynamisch anpassen je nach Eintragsanzahl pro Tag
 - [x] Klickbare Reservationen für alle sichtbar, Bearbeitung nur wenn berechtigt (`edit_reservations: true` oder `self_only`)
@@ -190,7 +190,7 @@ npm run dev
 
 ## 🧠 Quality of Life
 
-- [ ] bessere visuelle bestätigung bei reservationen per Scanner (zB Scan Status Feld grün aufleuchten lassen kurz)
+- [x] bessere visuelle bestätigung bei reservationen per Scanner (zB Scan Status Feld grün aufleuchten lassen kurz)
 - [ ] Audit-Log-Ansicht (basierend auf `logs`-Tabelle)
 - [ ] Eigene Komponente für System-Statusmeldungen (z.B. Fehler, Erfolg-popup)
 - [x] Rückgabe QR Code auf Startseite benennen/beschreiben/Titel hinzufügen
