@@ -7,6 +7,7 @@ from routes.users import users_bp
 from routes.tools import tools_bp
 from routes.permissions import permissions_bp
 from setup import create_initial_data
+from flask_migrate import Migrate
 import os
 
 # APScheduler importieren
@@ -35,6 +36,7 @@ app.config.from_object(Config())
 
 # DB & CORS
 db.init_app(app)
+migrate = Migrate(app, db)
 CORS(
     app,
     supports_credentials=True,
