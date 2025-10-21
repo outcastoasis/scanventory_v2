@@ -23,7 +23,7 @@ const ScannerHandler = ({ onScan }) => {
         e.code === "NumpadEnter" ||
         e.code === "Enter"
       ) {
-        const scanned = bufferRef.current.trim();
+        const scanned = bufferRef.current.trim().replace(/^NumLock/, "");
 
         if (scanned !== "") {
           onScan(scanned);
