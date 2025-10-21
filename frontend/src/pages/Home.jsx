@@ -492,11 +492,8 @@ function Home() {
   const [isSmallScreen, setIsSmallScreen] = useState(false);
 
   useEffect(() => {
-    const checkWidth = () => {
-      setIsSmallScreen(window.innerWidth < 1081);
-    };
-
-    checkWidth();
+    const checkWidth = () => setIsSmallScreen(window.innerWidth < 1081);
+    checkWidth(); // initial prüfen
     window.addEventListener("resize", checkWidth);
     return () => window.removeEventListener("resize", checkWidth);
   }, []);
@@ -549,7 +546,9 @@ function Home() {
               <FontAwesomeIcon icon={faQuestionCircle} />
             </button>
           </div>
-        ) : (
+        ) : null}
+
+        {loggedInUser && !isSmallScreen && (
           <div className="login-info">
             <div className="user-label">
               Angemeldet als: <strong>{loggedInUser}</strong>
