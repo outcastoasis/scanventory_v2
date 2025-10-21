@@ -184,21 +184,22 @@ npm run dev
 ## 🧠 Weitere geplante Verbesserungen
 
 - [x] Wenn Tool zuerst gescannt, info der aktuellen Reservation und des werkzeuges anzeigen
-- [/] Offline-Hilfe für Admins und Nutzer (Teilweise umgesetzt, Adminhilfe noch ausstehend)
+- [x] Offline-Hilfe für Admins und Nutzer (Teilweise umgesetzt, Adminhilfe noch ausstehend)
   - [x] Anleitung für Werkzeug reservieren und Rückgabe
   - [x] Übersicht der Rollen
-  - [-] Admin hilfe
 - [x] Automatischer Reset von `is_borrowed` per Scheduler im Backend
 - [x] Automatisches Polling der Kalenderdaten alle 30 Sekunden (Live-Update bei Scannerverwendung)
-- [ ] Reservation bearbeiten endzeit abfangen, um keine negativen Einträge zu verursachen (Nicht erlaubt dass endzeit vor startzeit reserviert werden kann)
+- [x] Reservation bearbeiten endzeit abfangen, um keine negativen Einträge zu verursachen (Nicht erlaubt dass endzeit vor startzeit reserviert werden kann)
+- [ ] Notizen für reservationen fixen -> werden aktuell nicht gespeichert
+- [ ] create_reservations Rechte in manuelle reservation einbauen
+- [ ] view_all_reservations und export_data entfernen
 
 ## 🧠 Quality of Life
 
 - [x] bessere visuelle bestätigung bei reservationen per Scanner (zB Scan Status Feld grün aufleuchten lassen kurz)
-- [ ] Audit-Log-Ansicht (basierend auf `logs`-Tabelle)
-- [ ] Eigene Komponente für System-Statusmeldungen (z.B. Fehler, Erfolg-popup)
+- [x] Eigene Komponente für System-Statusmeldungen (z.B. Fehler, Erfolg-popup)
 - [x] Rückgabe QR Code auf Startseite benennen/beschreiben/Titel hinzufügen
-- [ ] Responsivness verbessern von aktueller Seite (Hochformat priorisieren)
+- [x] Responsivness verbessern von aktueller Seite (Hochformat priorisieren)
 - [x] Kalendersprache auf Deutsch stellen (October, Wed, 7:57 PM, etc)
 - [x] Heute Reserviert Liste unterhalb vom Kalender
 
