@@ -138,6 +138,14 @@ function Home() {
       );
     }, [id, days]);
 
+    useEffect(() => {
+      const canvas = document.getElementById("cancel-qr");
+      if (!canvas) return;
+      QRCode.toCanvas(canvas, "cancel", { width: 140, margin: 1 }).catch(
+        () => {}
+      );
+    }, []);
+
     return (
       <button
         className="duration-tile"
@@ -680,11 +688,18 @@ function Home() {
               {[1, 2, 3, 4, 5].map((d) => (
                 <DurationQrTile key={d} days={d} onPick={pickDuration} />
               ))}
-            </div>
 
-            <div className="duration-actions">
-              <button onClick={cancelDurationSelection}>
-                Reservation abbrechen
+              <button
+                className="duration-tile"
+                onClick={cancelDurationSelection}
+                aria-label="Vorgang abbrechen"
+                title="Abbrechen (cancel)"
+              >
+                <canvas
+                  id="cancel-qr"
+                  style={{ width: "140px", height: "140px" }}
+                />
+                <span className="duration-tile-label">Abbrechen</span>
               </button>
             </div>
           </div>
