@@ -6,6 +6,12 @@
   font-family: "Segoe UI", sans-serif;
 }
 
+@media (min-width: 1081px) {
+  .home-container {
+    max-width: 90%;
+  }
+}
+
 .home-header {
   display: flex;
   justify-content: space-between;

@@ -1,8 +1,17 @@
 /* === Werkzeugverwaltung === */
 
 .tools-page {
-  padding: 2rem;
-  font-family: Arial, sans-serif;
+  width: 100%;
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 1rem;
+  font-family: "Segoe UI", sans-serif;
+}
+
+@media (min-width: 1081px) {
+  .tools-page {
+    max-width: 90%;
+  }
 }
 
 .tools-header {

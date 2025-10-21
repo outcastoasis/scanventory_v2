@@ -1,12 +1,17 @@
 /* src/styles/Help.css */
 
 .help-page {
-  width: 80%;
+  width: 100%;
   max-width: 1000px;
   margin: 2rem auto;
   padding: 1rem;
   font-family: "Segoe UI", sans-serif;
-  color: #111;
+}
+
+@media (min-width: 1081px) {
+  .help-page {
+    max-width: 90%;
+  }
 }
 
 .help-header {

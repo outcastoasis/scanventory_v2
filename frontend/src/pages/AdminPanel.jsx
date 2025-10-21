@@ -74,7 +74,6 @@ function AdminPanel() {
     })
       .then((res) => res.json())
       .then(setReservations);
-      
   }, [loading]);
 
   // --- Sortier-Handler ---
@@ -115,8 +114,31 @@ function AdminPanel() {
 
   const sortedReservations = [...filteredReservations].sort((a, b) => {
     if (!reservationSortKey) return 0;
-    const valA = a[reservationSortKey]?.toString().toLowerCase();
-    const valB = b[reservationSortKey]?.toString().toLowerCase();
+
+    let valA, valB;
+
+    switch (reservationSortKey) {
+      case "username":
+        valA = a.user?.username?.toLowerCase() || "";
+        valB = b.user?.username?.toLowerCase() || "";
+        break;
+      case "tool_name":
+        valA = a.tool?.name?.toLowerCase() || "";
+        valB = b.tool?.name?.toLowerCase() || "";
+        break;
+      case "start":
+        valA = a.start || "";
+        valB = b.start || "";
+        break;
+      case "end":
+        valA = a.end || "";
+        valB = b.end || "";
+        break;
+      default:
+        valA = a[reservationSortKey]?.toString().toLowerCase() || "";
+        valB = b[reservationSortKey]?.toString().toLowerCase() || "";
+    }
+
     if (valA < valB) return reservationSortDirection === "asc" ? -1 : 1;
     if (valA > valB) return reservationSortDirection === "asc" ? 1 : -1;
     return 0;
