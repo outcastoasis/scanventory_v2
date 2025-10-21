@@ -206,7 +206,7 @@ function ManualReservations() {
                 </td>
                 <td>{tool.name}</td>
                 <td>{tool.qr_code}</td>
-                <td>{tool.category || "-"}</td>
+                <td>{tool.category_name || "-"}</td>
               </tr>
             ))}
           </tbody>
