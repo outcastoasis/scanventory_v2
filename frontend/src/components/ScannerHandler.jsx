@@ -1,36 +1,45 @@
-// frontend/src/components/ScannerHandler.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 const ScannerHandler = ({ onScan }) => {
-  const [buffer, setBuffer] = useState("");
-  const [lastKeyTime, setLastKeyTime] = useState(Date.now());
+  const bufferRef = useRef("");
+  const lastKeyTimeRef = useRef(Date.now());
 
   useEffect(() => {
     const handleKeyPress = (e) => {
       const now = Date.now();
 
-      // Falls mehr als 100ms seit letzter Taste → Buffer zurücksetzen
-      if (now - lastKeyTime > 1000) {
-        setBuffer("");
+      // Reset, wenn zu viel Zeit zwischen zwei Tasten vergangen ist
+      if (now - lastKeyTimeRef.current > 1000) {
+        bufferRef.current = "";
       }
 
-      setLastKeyTime(now);
+      lastKeyTimeRef.current = now;
 
-      if (e.key === "Enter") {
-        if (buffer.trim() !== "") {
-          onScan(buffer.trim());
+      // Wenn Enter oder ähnliche Taste erkannt wurde → Scan abschließen
+      if (
+        e.key === "Enter" ||
+        e.key === "\r" ||
+        e.keyCode === 13 ||
+        e.code === "NumpadEnter" ||
+        e.code === "Enter"
+      ) {
+        const scanned = bufferRef.current.trim();
+
+        if (scanned !== "") {
+          onScan(scanned);
         }
-        setBuffer("");
+
+        bufferRef.current = "";
       } else {
-        setBuffer((prev) => prev + e.key);
+        bufferRef.current += e.key;
       }
     };
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [buffer, lastKeyTime, onScan]);
+  }, [onScan]);
 
-  return null; // Kein UI-Element nötig
+  return null; // Kein sichtbares UI-Element
 };
 
 export default ScannerHandler;

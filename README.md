@@ -103,6 +103,7 @@ python app.py
 ```ini
 # frontend/.env
 VITE_API_URL=http://localhost:5050
+# VITE_API_URL=http://server-scanventory (wenn auf RPI installiert -> Hostname von Server-RPI)
 ```
 
 Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das Backend weitergeleitet werden. Ohne diese Konfiguration funktionieren keine Admin-Funktionen.

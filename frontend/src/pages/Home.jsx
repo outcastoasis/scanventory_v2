@@ -402,10 +402,13 @@ function Home() {
               duration: newState.duration,
             }),
           });
+
           const data = await res.json();
-          console.error("Reservation Error:", data); // Zeigt dir den exakten Fehler im Dev-Tool
-          if (!res.ok)
+
+          if (!res.ok) {
+            console.error("Reservation Error:", data); // ❗ Nur im Fehlerfall
             throw new Error(data.error || "Reservation fehlgeschlagen");
+          }
 
           triggerFlash("success");
           setShowDurationModal(false);
@@ -419,6 +422,7 @@ function Home() {
           resetScan(`❌ ${err.message}`);
           triggerFlash("error");
         }
+
         return;
       }
     }
