@@ -446,9 +446,3 @@
 .manual-reservation-button:hover {
   background-color: #004080;
 }
-
-@media (max-width: 1080px) {
-  .login-wrapper {
-    display: none !important;
-  }
-}

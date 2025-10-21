@@ -489,15 +489,6 @@ function Home() {
       window.removeEventListener("scanventory:reservations:refresh", reload);
   }, []);
 
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
-
-  useEffect(() => {
-    const checkWidth = () => setIsSmallScreen(window.innerWidth < 1081);
-    checkWidth(); // initial prüfen
-    window.addEventListener("resize", checkWidth);
-    return () => window.removeEventListener("resize", checkWidth);
-  }, []);
-
   return (
     <div className="home-container">
       <header className="home-header">
@@ -505,7 +496,7 @@ function Home() {
           <h1 className="home-title">Scanventory</h1>
         </div>
 
-        {!loggedInUser && !isSmallScreen ? (
+        {!loggedInUser ? (
           <div className="login-wrapper">
             <div className="login-box">
               <input
@@ -546,9 +537,7 @@ function Home() {
               <FontAwesomeIcon icon={faQuestionCircle} />
             </button>
           </div>
-        ) : null}
-
-        {loggedInUser && !isSmallScreen && (
+        ) : (
           <div className="login-info">
             <div className="user-label">
               Angemeldet als: <strong>{loggedInUser}</strong>
