@@ -126,7 +126,7 @@ function ManualReservations() {
             </div>
           )}
           <div className="manualres-actions">
-            <button onClick={() => (window.location.href = "/")}>Zurück</button>
+            <button onClick={() => (window.location.href = "/")}>← Zurück zur Startseite</button>
           </div>
         </div>
       </header>
