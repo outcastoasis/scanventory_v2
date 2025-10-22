@@ -39,9 +39,7 @@ def create_initial_data(app):
             "manage_tools",
             "create_reservations",
             "edit_reservations",
-            "view_all_reservations",
             "access_admin_panel",
-            "export_data",
             "export_qr_codes",
         ]
         permission_objs = {}
@@ -60,9 +58,7 @@ def create_initial_data(app):
                 "manage_tools": "true",
                 "create_reservations": "true",
                 "edit_reservations": "true",
-                "view_all_reservations": "true",
                 "access_admin_panel": "true",
-                "export_data": "true",
                 "export_qr_codes": "true",
             },
             "supervisor": {
@@ -70,9 +66,7 @@ def create_initial_data(app):
                 "manage_tools": "true",
                 "create_reservations": "true",
                 "edit_reservations": "self_only",
-                "view_all_reservations": "true",
                 "access_admin_panel": "false",
-                "export_data": "true",
                 "export_qr_codes": "true",
             },
             "user": {
@@ -80,9 +74,7 @@ def create_initial_data(app):
                 "manage_tools": "false",
                 "create_reservations": "self_only",
                 "edit_reservations": "self_only",
-                "view_all_reservations": "true",
                 "access_admin_panel": "false",
-                "export_data": "true",
                 "export_qr_codes": "true",
             },
             "guest": {
@@ -90,9 +82,7 @@ def create_initial_data(app):
                 "manage_tools": "false",
                 "create_reservations": "false",
                 "edit_reservations": "false",
-                "view_all_reservations": "true",
                 "access_admin_panel": "false",
-                "export_data": "false",
                 "export_qr_codes": "false",
             },
         }

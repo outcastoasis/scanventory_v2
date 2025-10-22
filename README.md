@@ -193,7 +193,7 @@ npm run dev
 - [x] Reservation bearbeiten endzeit abfangen, um keine negativen Einträge zu verursachen (Nicht erlaubt dass endzeit vor startzeit reserviert werden kann)
 - [ ] Notizen für reservationen fixen -> werden aktuell nicht gespeichert
 - [ ] create_reservations Rechte in manuelle reservation einbauen
-- [ ] view_all_reservations und export_data entfernen
+- [x] view_all_reservations und export_data entfernen
 - [ ] Return Funktion sollte nach einiger Zeit (zB 15 Sekunden) wieder abgebrochen werden.
 
 ## 🧠 Quality of Life
