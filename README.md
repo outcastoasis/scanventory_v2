@@ -170,6 +170,7 @@ npm run dev
   - [x] Firmenpflege fehlt noch sortierfunktion mit Pfeilen
   - [-] Anzeige und Download von QR Codes wie: cancel, reload
   - [x] alle Reservationen auflisten, sortierbar und Suchbar machen (Wie bei Userliste/Toolliste) und löschen per Button
+  - [ ] Nur eine gewisse Anzahl reservationen auflisten (zB 10 Einträge und dann auf nächste Seite) und Suchfunktion einbauen.
   - [-] Fehler Logs einbauen und hier auflisten
 - [x] Darstellung von Reservationen auf der Startseite als: `Start – Ende | Werkzeug – Nachname Vorname`
 - [x] Kalenderhöhe dynamisch anpassen je nach Eintragsanzahl pro Tag
@@ -193,6 +194,7 @@ npm run dev
 - [ ] Notizen für reservationen fixen -> werden aktuell nicht gespeichert
 - [ ] create_reservations Rechte in manuelle reservation einbauen
 - [ ] view_all_reservations und export_data entfernen
+- [ ] Return Funktion sollte nach einiger Zeit (zB 15 Sekunden) wieder abgebrochen werden.
 
 ## 🧠 Quality of Life
 
