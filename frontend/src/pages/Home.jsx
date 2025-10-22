@@ -229,50 +229,47 @@ function Home() {
       return;
     }
 
-    if (code === "return") {
-      setReturnMode(true);
-      setShowDurationModal(false);
-      triggerFlash("success");
-      resetScan("Rückgabemodus aktiviert – bitte Werkzeug scannen");
+  if (code === "return") {
+  setReturnMode(true);
+  setShowDurationModal(false);
+  triggerFlash("success");
+  resetScan("Rückgabemodus aktiviert – bitte Werkzeug scannen");
 
-      if (returnTimerRef.current) clearTimeout(returnTimerRef.current);
-      if (returnCountdownIntervalRef.current) {
-        clearInterval(returnCountdownIntervalRef.current);
-        returnCountdownIntervalRef.current = null;
-      }
+  if (returnTimerRef.current) clearTimeout(returnTimerRef.current);
+  if (returnCountdownIntervalRef.current) {
+    clearInterval(returnCountdownIntervalRef.current);
+    returnCountdownIntervalRef.current = null;
+  }
+
+  setReturnCountdown(15);
+
+  let count = 15;
+  const countdownInterval = setInterval(() => {
+    count -= 1;
+    if (count <= 0) {
+      clearInterval(countdownInterval);
+      returnCountdownIntervalRef.current = null;
       setReturnCountdown(null);
-      setReturnMode(false);
-
-      // Countdown starten
-      setReturnCountdown(15);
-
-      let count = 15;
-      const countdownInterval = setInterval(() => {
-        count -= 1;
-        if (count <= 0) {
-          clearInterval(countdownInterval);
-          setReturnCountdown(null);
-          return;
-        }
-        setReturnCountdown(count);
-      }, 1000);
-
-      // Speichern fürs spätere Stoppen
-      returnCountdownIntervalRef.current = countdownInterval;
-
-      // Timeout nach 5s
-      returnTimerRef.current = setTimeout(() => {
-        clearInterval(countdownInterval);
-        setReturnCountdown(null);
-        setReturnMode(false);
-        setShowDurationModal(false);
-        setMessage("Rückgabemodus abgelaufen – bitte Benutzer scannen");
-        triggerFlash("error");
-        resetScan();
-      }, 15000);
-
       return;
     }
+    setReturnCountdown(count);
+  }, 1000);
+
+  returnCountdownIntervalRef.current = countdownInterval;
+
+  returnTimerRef.current = setTimeout(() => {
+    clearInterval(countdownInterval);
+    returnCountdownIntervalRef.current = null;
+    setReturnCountdown(null);
+    setReturnMode(false); // ✅ hier ist korrekt
+    setShowDurationModal(false);
+    setMessage("Rückgabemodus abgelaufen – bitte Benutzer scannen");
+    triggerFlash("error");
+    resetScan();
+  }, 15000);
+
+  return;
+}
 
     if (code.startsWith("usr")) {
       if (returnTimerRef.current) clearTimeout(returnTimerRef.current);
