@@ -66,6 +66,8 @@ function Home() {
   const [flashOK, setFlashOK] = useState(false);
 
   const returnTimerRef = useRef(null);
+  const [returnCountdown, setReturnCountdown] = useState(null);
+  const returnCountdownIntervalRef = useRef(null);
 
   // Grünes aufleuchten bei erfolgreichen Scan
   useEffect(() => {
@@ -233,25 +235,53 @@ function Home() {
       triggerFlash("success");
       resetScan("Rückgabemodus aktiviert – bitte Werkzeug scannen");
 
-      // 🔄 Timer aufräumen, falls mehrfach aktiviert
       if (returnTimerRef.current) clearTimeout(returnTimerRef.current);
+      if (returnCountdownIntervalRef.current) {
+        clearInterval(returnCountdownIntervalRef.current);
+        returnCountdownIntervalRef.current = null;
+      }
+      setReturnCountdown(null);
+      setReturnMode(false);
 
-      // ⏳ Nach 20 Sekunden Rückgabemodus automatisch beenden
+      // Countdown starten
+      setReturnCountdown(15);
+
+      let count = 15;
+      const countdownInterval = setInterval(() => {
+        count -= 1;
+        if (count <= 0) {
+          clearInterval(countdownInterval);
+          setReturnCountdown(null);
+          return;
+        }
+        setReturnCountdown(count);
+      }, 1000);
+
+      // Speichern fürs spätere Stoppen
+      returnCountdownIntervalRef.current = countdownInterval;
+
+      // Timeout nach 5s
       returnTimerRef.current = setTimeout(() => {
+        clearInterval(countdownInterval);
+        setReturnCountdown(null);
         setReturnMode(false);
         setShowDurationModal(false);
         setMessage("Rückgabemodus abgelaufen – bitte Benutzer scannen");
         triggerFlash("error");
         resetScan();
-      }, 20000);
+      }, 15000);
 
       return;
     }
 
     if (code.startsWith("usr")) {
       if (returnTimerRef.current) clearTimeout(returnTimerRef.current);
+      if (returnCountdownIntervalRef.current) {
+        clearInterval(returnCountdownIntervalRef.current);
+        returnCountdownIntervalRef.current = null;
+      }
+      setReturnCountdown(null);
       setReturnMode(false);
-      setShowDurationModal(false);
       try {
         const res = await fetch(`${API_URL}/api/users/qr/${code}`);
         if (!res.ok) throw new Error("Benutzer nicht gefunden");
@@ -271,6 +301,7 @@ function Home() {
 
     if (code.startsWith("tool")) {
       const toolCode = code;
+      setReturnCountdown(null);
 
       if (returnMode) {
         const body = JSON.stringify({ tool: toolCode });
@@ -315,6 +346,13 @@ function Home() {
           triggerFlash("success");
           setReturnMode(false);
           if (returnTimerRef.current) clearTimeout(returnTimerRef.current);
+          if (returnCountdownIntervalRef.current) {
+            clearInterval(returnCountdownIntervalRef.current);
+            returnCountdownIntervalRef.current = null;
+          }
+          setReturnCountdown(null);
+          setReturnMode(false);
+          setReturnCountdown(null);
           setShowDurationModal(false);
           resetScan();
           fetchReservations();
@@ -507,6 +545,12 @@ function Home() {
   useEffect(() => {
     return () => {
       if (returnTimerRef.current) clearTimeout(returnTimerRef.current);
+      if (returnCountdownIntervalRef.current) {
+        clearInterval(returnCountdownIntervalRef.current);
+        returnCountdownIntervalRef.current = null;
+      }
+      setReturnCountdown(null);
+      setReturnMode(false);
     };
   }, []);
 
@@ -631,6 +675,9 @@ function Home() {
             } ${flashType === "error" ? "flash-error" : ""}`}
           >
             {message}
+            {returnCountdown !== null && (
+              <div className="return-countdown">{returnCountdown}s</div>
+            )}
           </div>
 
           <div className="home-return">

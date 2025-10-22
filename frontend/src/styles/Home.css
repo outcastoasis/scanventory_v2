@@ -169,7 +169,9 @@
   word-wrap: break-word;
   white-space: pre-wrap;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  position: relative; /* nötig für .return-countdown positioning */
 }
+
 /* Erfolgreicher Scan: 1s grüner Rand-Flash */
 .scan-box.flash-success {
   animation: borderFlash 3s ease forwards;
@@ -213,6 +215,18 @@
     background-color: #f3f4f6; /* Standard */
   }
 }
+
+.return-countdown {
+  position: absolute;
+  bottom: 5px;       
+  right: 10px;       
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 6px;
+  color: #333;
+}
+
 
 /* --- Kalender: Lösung A + Responsive --- */
 
@@ -396,6 +410,10 @@
   background: #f3f4f6;
   font-weight: 500;
 }
+
+
+
+
 
 /* Mobile */
 @media (max-width: 768px) {
