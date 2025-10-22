@@ -36,7 +36,6 @@ function Home() {
   const triggerFlash = (type, ms = 3000) => {
     // Timer stoppen
     if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
-
     // Klasse entfernen, Reflow erzwingen, dann neu setzen
     setFlashType(null);
     requestAnimationFrame(() => {
@@ -65,6 +64,8 @@ function Home() {
   const [scannedTool, setScannedTool] = useState(null);
 
   const [flashOK, setFlashOK] = useState(false);
+
+  const returnTimerRef = useRef(null);
 
   // Grünes aufleuchten bei erfolgreichen Scan
   useEffect(() => {
@@ -232,10 +233,23 @@ function Home() {
       triggerFlash("success");
       resetScan("Rückgabemodus aktiviert – bitte Werkzeug scannen");
 
+      // 🔄 Timer aufräumen, falls mehrfach aktiviert
+      if (returnTimerRef.current) clearTimeout(returnTimerRef.current);
+
+      // ⏳ Nach 20 Sekunden Rückgabemodus automatisch beenden
+      returnTimerRef.current = setTimeout(() => {
+        setReturnMode(false);
+        setShowDurationModal(false);
+        setMessage("Rückgabemodus abgelaufen – bitte Benutzer scannen");
+        triggerFlash("error");
+        resetScan();
+      }, 20000);
+
       return;
     }
 
     if (code.startsWith("usr")) {
+      if (returnTimerRef.current) clearTimeout(returnTimerRef.current);
       setReturnMode(false);
       setShowDurationModal(false);
       try {
@@ -300,6 +314,7 @@ function Home() {
           setMessage(`✅ Rückgabe abgeschlossen für ${toolCode}`);
           triggerFlash("success");
           setReturnMode(false);
+          if (returnTimerRef.current) clearTimeout(returnTimerRef.current);
           setShowDurationModal(false);
           resetScan();
           fetchReservations();
@@ -358,7 +373,7 @@ function Home() {
             return `${toDateParts(start)} - ${toDateParts(end)}`;
           };
 
-          // 📦 Anzeige-Text aufbauen
+          // Anzeige-Text aufbauen
           let msg = `Werkzeug: ${tool.name}\nQR-Code: ${
             tool.qr_code
           }\nStatus: ${tool.is_borrowed ? "Reserviert" : "Frei"}`;
@@ -487,6 +502,12 @@ function Home() {
     window.addEventListener("scanventory:reservations:refresh", reload);
     return () =>
       window.removeEventListener("scanventory:reservations:refresh", reload);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (returnTimerRef.current) clearTimeout(returnTimerRef.current);
+    };
   }, []);
 
   return (

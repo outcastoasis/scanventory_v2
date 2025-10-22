@@ -194,7 +194,7 @@ npm run dev
 - [ ] Notizen für reservationen fixen -> werden aktuell nicht gespeichert
 - [ ] create_reservations Rechte in manuelle reservation einbauen
 - [x] view_all_reservations und export_data entfernen
-- [ ] Return Funktion sollte nach einiger Zeit (zB 15 Sekunden) wieder abgebrochen werden.
+- [x] Return Funktion sollte nach einiger Zeit (zB 15 Sekunden) wieder abgebrochen werden.
 
 ## 🧠 Quality of Life
 
