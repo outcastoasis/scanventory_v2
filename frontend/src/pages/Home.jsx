@@ -486,6 +486,7 @@ function Home() {
     }
 
     setMessage(`Ungültiger Scan oder falsche Reihenfolge: ${scannedCode}`);
+    triggerFlash("error");
   };
 
   useEffect(() => {
