@@ -195,6 +195,9 @@ npm run dev
 - [ ] create_reservations Rechte in manuelle reservation einbauen
 - [x] view_all_reservations und export_data entfernen
 - [x] Return Funktion sollte nach einiger Zeit (zB 15 Sekunden) wieder abgebrochen werden.
+- [ ] "Last Login" Funktion bei Profilen einfügen und speichern für Kontrolle auf inaktive Konten.
+- [ ] QR Code darstellen für verlinkung der Mobile Seite der heutigen reservationen. Damit man eine bessere übersicht der aktuellen Reservationen erhält.
+- [ ] Admin Buttons abhängig von Rollen machen
 
 ## 🧠 Quality of Life
 
