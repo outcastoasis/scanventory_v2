@@ -198,6 +198,7 @@ npm run dev
 - [ ] "Last Login" Funktion bei Profilen einfügen und speichern für Kontrolle auf inaktive Konten.
 - [ ] QR Code darstellen für verlinkung der Mobile Seite der heutigen reservationen. Damit man eine bessere übersicht der aktuellen Reservationen erhält.
 - [ ] Admin Buttons abhängig von Rollen machen
+- [ ] Reservationen bearbeiten wenn möglich mit "isediting" versehen. Dass popup bei anderen dann ebenfalls für bearbeitung geblockt ist
 
 ## 🧠 Quality of Life
 
@@ -208,6 +209,7 @@ npm run dev
 - [x] Kalendersprache auf Deutsch stellen (October, Wed, 7:57 PM, etc)
 - [x] Heute Reserviert Liste unterhalb vom Kalender
 - [ ] alle User können alle Rückgaben tätigen (momentan wenn user eingeloggt nur die eigenen)
+
 ---
 
 ## 📄 Lizenz
