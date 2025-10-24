@@ -1,0 +1,74 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecaseBorderColor #999
+skinparam usecaseBackgroundColor #f9f9f9
+skinparam actorStyle awesome
+hide stereotype
+
+' --- Rollen (mit Vererbung für weniger Pfeile) ---
+actor "Gast" as Guest
+actor "Benutzer" as User
+actor "Supervisor" as Supervisor
+actor "Administrator" as Admin
+
+User <|-- Supervisor
+Supervisor <|-- Admin
+
+rectangle "Scanventory" {
+
+  
+
+  package "Nutzung über WEB-UI" {
+    usecase "Anmelden (Web-GUI)" as UC_Login
+    usecase "Reservation anlegen" as UC_Create
+    usecase "Reservation bearbeiten" as UC_EditOwn
+    usecase "Rückgabe verbuchen" as UC_ReturnOwn
+  }
+
+  package "Nutzung über QR-Code Scan" {
+    usecase "Reservation anlegen" as UC_QR_Create
+    usecase "Rückgabe verbuchen" as UC_QR_Return
+  }
+
+  package "Verwaltung" {
+    usecase "Werkzeuge verwalten" as UC_Tools
+    usecase "QR-Codes vergeben / exportieren" as UC_QR
+    usecase "Benutzer & Rollen verwalten" as UC_RBAC
+  }
+
+  package "Öffentliche Ansicht" {
+    usecase "Kalender anzeigen\n(alle Reservationen)" as UC_Calendar
+  }
+}
+
+' --- Zuordnungen minimal & klar ---
+Guest --> UC_Calendar
+
+User --> UC_Login
+User --> UC_Create
+User --> UC_EditOwn
+User --> UC_ReturnOwn
+User --> UC_QR_Create
+User --> UC_QR_Return
+
+
+Supervisor --> UC_Tools
+Supervisor --> UC_QR
+
+
+Admin --> UC_RBAC
+
+' --- kurze Regeln als Notizen ---
+note right of UC_Calendar
+Öffentlich (ohne Login) für alle sichtbar
+end note
+
+note right of UC_EditOwn
+Benutzer: Nur eigene Reservationen
+Supervisor: alle Reservationen
+Admin: alle Reservationen
+end note
+
+
+@enduml

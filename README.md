@@ -207,7 +207,7 @@ npm run dev
 - [x] Responsivness verbessern von aktueller Seite (Hochformat priorisieren)
 - [x] Kalendersprache auf Deutsch stellen (October, Wed, 7:57 PM, etc)
 - [x] Heute Reserviert Liste unterhalb vom Kalender
-
+- [ ] alle User können alle Rückgaben tätigen (momentan wenn user eingeloggt nur die eigenen)
 ---
 
 ## 📄 Lizenz
