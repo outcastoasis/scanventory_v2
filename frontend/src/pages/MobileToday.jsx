@@ -41,7 +41,24 @@ export default function MobileToday() {
         if (filter === "past") return end < now;
         return true;
       })
-      .sort((a, b) => new Date(a.start) - new Date(b.start));
+      .sort((a, b) => {
+        const now = new Date();
+        const getStatus = (r) => {
+          const start = new Date(r.start);
+          const end = new Date(r.end);
+          if (start > now) return 2; // future
+          if (end < now) return 3; // past
+          return 1; // active
+        };
+
+        const statusA = getStatus(a);
+        const statusB = getStatus(b);
+
+        if (statusA !== statusB) return statusA - statusB;
+
+        // Innerhalb derselben Kategorie nach Startzeit sortieren
+        return new Date(a.start) - new Date(b.start);
+      });
   }, [reservations, filter]);
 
   const getStatusClass = (startStr, endStr) => {
