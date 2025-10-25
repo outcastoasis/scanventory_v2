@@ -218,15 +218,14 @@
 
 .return-countdown {
   position: absolute;
-  bottom: 5px;       
-  right: 10px;       
+  bottom: 5px;
+  right: 10px;
   font-size: 1.1rem;
   font-weight: bold;
   padding: 2px 6px;
   border-radius: 6px;
   color: #333;
 }
-
 
 /* --- Kalender: Lösung A + Responsive --- */
 
@@ -411,10 +410,6 @@
   font-weight: 500;
 }
 
-
-
-
-
 /* Mobile */
 @media (max-width: 768px) {
   .home-container {
@@ -463,4 +458,47 @@
 
 .manual-reservation-button:hover {
   background-color: #004080;
+}
+
+/* Neuer visueller Countdown-Balken */
+.return-visual-wrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 28px;
+  display: flex;
+  align-items: flex-end; /* ⬅️ ändert Richtung nach unten */
+  justify-content: center;
+  pointer-events: none;
+}
+
+.return-visual-bar {
+  width: 100%;
+  background-color: #10b981;
+  border-radius: 3px 0 0 3px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transition: height 1s linear;
+  color: white;
+  font-weight: bold;
+  font-size: 0.9rem;
+  height: 100%; /* default */
+  animation: fadeInBar 0.3s ease;
+}
+
+.return-visual-time {
+  padding-bottom: 4px;
+}
+
+@keyframes fadeInBar {
+  from {
+    opacity: 0;
+    transform: scaleY(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
 }

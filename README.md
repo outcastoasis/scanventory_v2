@@ -196,7 +196,7 @@ npm run dev
 - [x] view_all_reservations und export_data entfernen
 - [x] Return Funktion sollte nach einiger Zeit (zB 15 Sekunden) wieder abgebrochen werden.
 - [ ] "Last Login" Funktion bei Profilen einfügen und speichern für Kontrolle auf inaktive Konten.
-- [ ] QR Code darstellen für verlinkung der Mobile Seite der heutigen reservationen. Damit man eine bessere übersicht der aktuellen Reservationen erhält.
+- [x] QR Code darstellen für verlinkung der Mobile Seite der heutigen reservationen. Damit man eine bessere übersicht der aktuellen Reservationen erhält.
 - [ ] Admin Buttons abhängig von Rollen machen
 - [ ] Reservationen bearbeiten wenn möglich mit "isediting" versehen. Dass popup bei anderen dann ebenfalls für bearbeitung geblockt ist
 
