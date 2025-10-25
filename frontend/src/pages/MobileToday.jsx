@@ -1,4 +1,3 @@
-// src/pages/MobileToday.jsx
 import { useEffect, useState, useMemo } from "react";
 import "../styles/MobileToday.css";
 
@@ -31,7 +30,6 @@ export default function MobileToday() {
         const start = new Date(r.start);
         const end = new Date(r.end);
 
-        // Nur Reservationen für **heute**
         const sameDay =
           start.toDateString() === today.toDateString() ||
           end.toDateString() === today.toDateString();
@@ -41,7 +39,7 @@ export default function MobileToday() {
         if (filter === "active") return start <= now && end >= now;
         if (filter === "future") return start > now;
         if (filter === "past") return end < now;
-        return true; // all
+        return true;
       })
       .sort((a, b) => new Date(a.start) - new Date(b.start));
   }, [reservations, filter]);
@@ -50,40 +48,48 @@ export default function MobileToday() {
     const now = new Date();
     const start = new Date(startStr);
     const end = new Date(endStr);
-    if (start > now) return "future"; // grün
-    if (end < now) return "past"; // grau
-    return "active"; // orange
+    if (start > now) return "mobiletoday-future";
+    if (end < now) return "mobiletoday-past";
+    return "mobiletoday-active";
   };
 
   return (
     <>
-      <header>
-        <h1>Heutige Reservationen</h1>
-        <div className="today-date">{todayStr}</div>
+      <header className="mobiletoday-header">
+        <h1 className="mobiletoday-title">Heutige Reservationen</h1>
+        <div className="mobiletoday-date">{todayStr}</div>
       </header>
 
-      <div className="mobile-container">
-        <div className="filter-buttons">
+      <div className="mobiletoday-container">
+        <div className="mobiletoday-filters">
           <button
-            className={filter === "all" ? "active" : ""}
+            className={`mobiletoday-filter-btn ${
+              filter === "all" ? "active" : ""
+            }`}
             onClick={() => setFilter("all")}
           >
             Alle
           </button>
           <button
-            className={filter === "active" ? "active" : ""}
+            className={`mobiletoday-filter-btn ${
+              filter === "active" ? "active" : ""
+            }`}
             onClick={() => setFilter("active")}
           >
             Laufende
           </button>
           <button
-            className={filter === "future" ? "active" : ""}
+            className={`mobiletoday-filter-btn ${
+              filter === "future" ? "active" : ""
+            }`}
             onClick={() => setFilter("future")}
           >
             Spätere
           </button>
           <button
-            className={filter === "past" ? "active" : ""}
+            className={`mobiletoday-filter-btn ${
+              filter === "past" ? "active" : ""
+            }`}
             onClick={() => setFilter("past")}
           >
             Vorbei
@@ -91,15 +97,18 @@ export default function MobileToday() {
         </div>
 
         {filtered.length === 0 ? (
-          <div className="no-results">Keine Reservationen gefunden.</div>
+          <div className="mobiletoday-empty">Keine Reservationen gefunden.</div>
         ) : (
-          <div className="reservations-list">
+          <div className="mobiletoday-list">
             {filtered.map((res) => (
               <div
                 key={res.id}
-                className={`reservation ${getStatusClass(res.start, res.end)}`}
+                className={`mobiletoday-entry ${getStatusClass(
+                  res.start,
+                  res.end
+                )}`}
               >
-                <h3>{res.tool.name}</h3>
+                <h3 className="mobiletoday-tool">{res.tool.name}</h3>
                 <p>
                   <strong>Von:</strong> {res.user.first_name || ""}{" "}
                   {res.user.last_name || ""}
