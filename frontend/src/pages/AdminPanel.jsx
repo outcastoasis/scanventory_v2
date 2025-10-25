@@ -134,6 +134,11 @@ function AdminPanel() {
         valA = a.end || "";
         valB = b.end || "";
         break;
+      case "id":
+        valA = Number(a.id) || 0;
+        valB = Number(b.id) || 0;
+        break;
+
       default:
         valA = a[reservationSortKey]?.toString().toLowerCase() || "";
         valB = b[reservationSortKey]?.toString().toLowerCase() || "";
@@ -149,10 +154,21 @@ function AdminPanel() {
     .filter((c) => c.name.toLowerCase().includes(categorySearch.toLowerCase()))
     .sort((a, b) => {
       if (!categorySortKey) return 0;
-      const valA = a[categorySortKey]?.toString().toLowerCase();
-      const valB = b[categorySortKey]?.toString().toLowerCase();
-      if (valA < valB) return categorySortDirection === "asc" ? -1 : 1;
-      if (valA > valB) return categorySortDirection === "asc" ? 1 : -1;
+
+      const dir = categorySortDirection === "asc" ? 1 : -1;
+
+      const valA =
+        categorySortKey === "id"
+          ? Number(a.id) || 0
+          : (a[categorySortKey] ?? "").toString().toLowerCase();
+
+      const valB =
+        categorySortKey === "id"
+          ? Number(b.id) || 0
+          : (b[categorySortKey] ?? "").toString().toLowerCase();
+
+      if (valA < valB) return -1 * dir;
+      if (valA > valB) return 1 * dir;
       return 0;
     });
 
@@ -161,10 +177,21 @@ function AdminPanel() {
     .filter((c) => c.name.toLowerCase().includes(companySearch.toLowerCase()))
     .sort((a, b) => {
       if (!companySortKey) return 0;
-      const valA = a[companySortKey]?.toString().toLowerCase();
-      const valB = b[companySortKey]?.toString().toLowerCase();
-      if (valA < valB) return companySortDirection === "asc" ? -1 : 1;
-      if (valA > valB) return companySortDirection === "asc" ? 1 : -1;
+
+      const dir = companySortDirection === "asc" ? 1 : -1;
+
+      const valA =
+        companySortKey === "id"
+          ? Number(a.id) || 0
+          : (a[companySortKey] ?? "").toString().toLowerCase();
+
+      const valB =
+        companySortKey === "id"
+          ? Number(b.id) || 0
+          : (b[companySortKey] ?? "").toString().toLowerCase();
+
+      if (valA < valB) return -1 * dir;
+      if (valA > valB) return 1 * dir;
       return 0;
     });
 
