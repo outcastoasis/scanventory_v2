@@ -137,6 +137,12 @@ function AdminUsers() {
     if (!sortConfig.key) return 0;
     const valA = a[sortConfig.key]?.toString().toLowerCase();
     const valB = b[sortConfig.key]?.toString().toLowerCase();
+    const dir = sortConfig.direction === "asc" ? 1 : -1;
+    if (sortConfig.key === "id") {
+      const ai = Number(a.id) || 0;
+      const bi = Number(b.id) || 0;
+      return (ai - bi) * dir;
+    }
     if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
     if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
     return 0;
