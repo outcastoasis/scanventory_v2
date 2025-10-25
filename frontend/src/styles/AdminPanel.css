@@ -102,6 +102,23 @@
   width: 100%;
   border-collapse: collapse;
   margin-top: 0.5rem;
+  table-layout: fixed;
+  margin-top: 0.5rem;
+}
+
+.adminpanel-table th,
+.adminpanel-table td {
+  border: 1px solid #e0e0e0;
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  overflow: hidden;           
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adminpanel-table th:nth-child(1)
+ {
+  width: 6%;
 }
 
 .adminpanel-table th,
@@ -139,9 +156,7 @@
   font-style: italic;
 }
 
-/* Neue Sort-Styles wie bei AdminTools */
 
-.tools-table th.sorted,
 .adminpanel-table th.sorted {
   background-color: #e3f2fd;
   font-weight: bold;
@@ -159,3 +174,4 @@
 .sorted .sort-icon {
   opacity: 1;
 }
+

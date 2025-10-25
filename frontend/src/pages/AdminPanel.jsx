@@ -293,7 +293,7 @@ function AdminPanel() {
             onChange={(e) => setCategorySearch(e.target.value)}
           />
         </div>
-        <table className="tools-table">
+        <table className="adminpanel-table">
           <thead>
             <tr>
               <th
@@ -365,7 +365,7 @@ function AdminPanel() {
             onChange={(e) => setCompanySearch(e.target.value)}
           />
         </div>
-        <table className="tools-table">
+        <table className="adminpanel-table">
           <thead>
             <tr>
               <th
@@ -432,7 +432,7 @@ function AdminPanel() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="adminpanel-search"
         />
-        <table className="tools-table">
+        <table className="adminpanel-table">
           <thead>
             <tr>
               <th
