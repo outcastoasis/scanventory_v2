@@ -95,3 +95,40 @@
   color: #666;
   padding: 30px 10px;
 }
+
+.mobiletoday-legend {
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px solid #ccc;
+  font-size: 0.9em;
+  color: #555;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.legend-active {
+  background-color: #ff9800;
+}
+
+.legend-future {
+  background-color: #4caf50;
+}
+
+.legend-past {
+  background-color: #999;
+}

@@ -70,6 +70,16 @@ export default function MobileToday() {
     return "mobiletoday-active";
   };
 
+  const formatDate = (str) => {
+    const d = new Date(str);
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    const hh = String(d.getHours()).padStart(2, "0");
+    const min = String(d.getMinutes()).padStart(2, "0");
+    return `${dd}.${mm}.${yyyy} ${hh}:${min}`;
+  };
+
   return (
     <>
       <header className="mobiletoday-header">
@@ -131,13 +141,24 @@ export default function MobileToday() {
                   {res.user.last_name || ""}
                 </p>
                 <p>
-                  <strong>Start:</strong> {res.start}
+                  <strong>Start:</strong> {formatDate(res.start)}
                 </p>
                 <p>
-                  <strong>Ende:</strong> {res.end}
+                  <strong>Ende:</strong> {formatDate(res.end)}
                 </p>
               </div>
             ))}
+            <div className="mobiletoday-legend">
+              <span className="legend-item">
+                <span className="legend-color legend-active" /> Laufend
+              </span>
+              <span className="legend-item">
+                <span className="legend-color legend-future" /> Später
+              </span>
+              <span className="legend-item">
+                <span className="legend-color legend-past" /> Vorbei
+              </span>
+            </div>
           </div>
         )}
       </div>
