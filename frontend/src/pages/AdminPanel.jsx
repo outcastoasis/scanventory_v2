@@ -14,21 +14,21 @@ function AdminPanel() {
   // Kategorien
   const [categories, setCategories] = useState([]);
   const [categorySearch, setCategorySearch] = useState("");
-  const [categorySortKey, setCategorySortKey] = useState(null);
+  const [categorySortKey, setCategorySortKey] = useState("id");
   const [categorySortDirection, setCategorySortDirection] = useState("asc");
 
   // Firmen
   const [companies, setCompanies] = useState([]);
   const [companySearch, setCompanySearch] = useState("");
-  const [companySortKey, setCompanySortKey] = useState(null);
+  const [companySortKey, setCompanySortKey] = useState("id");
   const [companySortDirection, setCompanySortDirection] = useState("asc");
 
   // Reservationen
   const [reservations, setReservations] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [reservationSortKey, setReservationSortKey] = useState(null);
+  const [reservationSortKey, setReservationSortKey] = useState("start");
   const [reservationSortDirection, setReservationSortDirection] =
-    useState("asc");
+    useState("desc");
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -108,8 +108,8 @@ function AdminPanel() {
     const term = searchTerm.toLowerCase();
     return (
       r.id.toString().includes(term) ||
-      r.tool_name?.toLowerCase().includes(term) ||
-      r.username?.toLowerCase().includes(term)
+      r.tool?.name?.toLowerCase().includes(term) ||
+      r.user?.username?.toLowerCase().includes(term)
     );
   });
 
