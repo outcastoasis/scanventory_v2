@@ -30,11 +30,13 @@ export default function MobileToday() {
         const start = new Date(r.start);
         const end = new Date(r.end);
 
-        const sameDay =
-          start.toDateString() === today.toDateString() ||
-          end.toDateString() === today.toDateString();
+        const startOfToday = new Date(today);
+        startOfToday.setHours(0, 0, 0, 0);
+        const endOfToday = new Date(today);
+        endOfToday.setHours(23, 59, 59, 999);
 
-        if (!sameDay) return false;
+        const overlapsToday = start <= endOfToday && end >= startOfToday;
+        if (!overlapsToday) return false;
 
         if (filter === "active") return start <= now && end >= now;
         if (filter === "future") return start > now;
