@@ -15,7 +15,7 @@ const ScannerHandler = ({ onScan }) => {
 
       lastKeyTimeRef.current = now;
 
-      // Wenn Enter oder ähnliche Taste erkannt wurde → Scan abschließen
+      // Wenn Enter oder ähnliche Taste erkannt wurde → Scan abschliessen
       if (
         e.key === "Enter" ||
         e.key === "\r" ||

@@ -49,7 +49,7 @@ function QrModal({ user, tool, onClose, canDownload = false }) {
       const textX = qrSize + padding * 2;
       const textY = 100;
 
-      // Weißer Kasten hinter Text
+      // Weisser Kasten hinter Text
       const boxPadding = 12;
       const textBoxWidth = maxTextWidth + boxPadding * 2;
       const textBoxHeight = 90;
@@ -104,7 +104,7 @@ function QrModal({ user, tool, onClose, canDownload = false }) {
           >
             Herunterladen
           </button>
-          <button onClick={onClose}>Schließen</button>
+          <button onClick={onClose}>Schliessen</button>
         </div>
       </div>
     </div>

@@ -44,7 +44,7 @@
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
 }
 
-/* QR Größe konsistent halten */
+/* QR Grösse konsistent halten */
 .duration-tile canvas {
   width: 200px !important;
   height: 200px !important;

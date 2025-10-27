@@ -229,9 +229,9 @@
 
 /* --- Kalender: Lösung A + Responsive --- */
 
-/* RBC (react-big-calendar) soll nicht durch äußere Styles begrenzt werden */
+/* RBC (react-big-calendar) soll nicht durch äussere Styles begrenzt werden */
 .home-calendar .rbc-calendar {
-  height: 100% !important; /* Höhe kommt vom umschließenden Div (dynamicHeight) */
+  height: 100% !important; /* Höhe kommt vom umschliessenden Div (dynamicHeight) */
 }
 
 /* Header/Labels etwas kompakter */

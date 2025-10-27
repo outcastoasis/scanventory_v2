@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "../styles/AdminPanel.css";
 import { getToken } from "../utils/authUtils";
+import StaticQrCodesTable from "../components/StaticQrCodesTable";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -448,6 +449,8 @@ function AdminPanel() {
           </tbody>
         </table>
       </div>
+
+      <StaticQrCodesTable />
 
       {/* Alle Reservationen */}
       <div className="adminpanel-section">

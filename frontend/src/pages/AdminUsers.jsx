@@ -177,7 +177,7 @@ function AdminUsers() {
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
 
-      // Hintergrund komplett weiß
+      // Hintergrund komplett weiss
       ctx.fillStyle = "white";
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
@@ -192,7 +192,7 @@ function AdminUsers() {
       const textX = qrSize + padding * 2;
       const textY = 100;
 
-      // Weißer Hintergrund hinter Textbereich
+      // Weisser Hintergrund hinter Textbereich
       const boxPadding = 12;
       const textBoxWidth = maxTextWidth + boxPadding * 2;
       const textBoxHeight = 90;
