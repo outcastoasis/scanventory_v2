@@ -224,7 +224,9 @@ export default function AdminPermissions() {
                     {r.name}
                   </th>
                 ))}
+                {/*
                 <th style={{ minWidth: 200 }}>Aktionen</th>
+                */}
               </tr>
             </thead>
 
@@ -253,6 +255,7 @@ export default function AdminPermissions() {
                     );
                   })}
 
+                  {/* 
                   <td className="permissions-actions-cell">
                     <button
                       className="permissions-delete-button"
@@ -261,6 +264,7 @@ export default function AdminPermissions() {
                       Löschen
                     </button>
                   </td>
+*/}
                 </tr>
               ))}
             </tbody>

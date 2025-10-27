@@ -1,79 +1,93 @@
-# Scanventory – Werkzeugreservierung per QR-Code
+# 📦 Scanventory – Werkzeugreservierung per QR-Code
 
-**Scanventory** ist ein webbasiertes Tool zur Verwaltung und Ausleihe von Werkzeugen mittels QR-Codes. Es besteht aus einem React-Frontend und einem Flask-Backend mit SQLite-Datenbank.
-
----
-
-## 📆 Aktueller Stand (Oktober 2025)
-
-- QR-Scan per Tastaturemulation (User, Werkzeug, Dauer) -> Bei aktuellen oder in Zukunft vorhandenen Reservationen = Fail
-- Werkzeugreservierungen mit Start-/Endzeitpunkt (UTC)
-- Rückgabe per QR-Scan oder Login
-- Kalenderansicht mit allen Einträgen (öffentlich sichtbar)
-- Login-System mit JWT-Token
-- Rollenbasiertes Berechtigungssystem: `guest`, `user`, `supervisor`, `admin`
-- Adminmenü mit Dropdown (Werkzeuge, Benutzer, Rechte, Reservation)
-- Manuelle Reservation per Button auf Startseite nach Login
-- Rechte-Logik vollständig datenbankgesteuert
-- Rückgabe auch ohne Login möglich
-
-### **Benutzerverwaltung im Adminbereich**
-
-- Benutzerliste mit Filter & Sortierfunktion
-- Erstellen, Bearbeiten, Löschen von Benutzern
-- Visuelle Sortieranzeige (▲▼)
-- QR-ID-Vergabe mit nächster freier `usr000X`-ID
-- Zugriff nur mit `manage_users = true`
-- Anzeige von:
-  - Benutzername
-  - Vorname, Nachname
-  - Firma (Dropdown-Auswahl: Administration, RTS, RSS, RTC, PZM)
-  - Rolle & Erstellungsdatum
-
-### **Werkzeugverwaltung im Adminbereich**
-
-- Werkzeugliste mit Filter & Sortierfunktion
-- Erstellen, Bearbeiten, Löschen von Werkzeugen
-- Visuelle Sortieranzeige (▲▼)
-- QR-ID-Vergabe mit nächster freier `tool000X`-ID
-- Zugriff nur mit `manage_tools = true`
-- Anzeige von:
-  - ID
-  - Name
-  - QR-Code
-  - Kategorie
-  - Status
-  - Erstellungsdatum
-
-### **Rechteverwaltung im Adminbereich**
-
-- Rechteliste mit Filter & Sortierfunktion
-- Erstellen, Bearbeiten, Löschen von Rechten
-- Visuelle Sortieranzeige (▲▼)
-- QR-ID-Vergabe mit nächster freier `permission000X`-ID
-- Zugriff nur mit `manage_permission = true`
-- Anzeige von:
-  - ID
-  - Permission-Key
-  - admin
-  - guest
-  - supervisor
-  - user
+**Scanventory** ist eine lokal gehostete Webanwendung zur Verwaltung und Ausleihe von Werkzeugen mittels QR-Codes. Sie basiert auf einem **React-Frontend** und einem **Flask-Backend** mit SQLite-Datenbank und ist optimiert für den Einsatz auf Geräten wie dem Raspberry Pi.
 
 ---
 
-## 🔧 Setup
+## 🔍 Projektüberblick
 
-### 🔹 Backend (Flask + SQLite)
+- Offlinefähig, lokal nutzbar (z. B. Raspberry Pi)
+- Bedienung per HID-Scanner (Tastaturemulation)
+- QR-Code-System für Benutzer, Werkzeuge & Funktionen
+- Rollenbasiertes Berechtigungssystem (`admin`, `supervisor`, `user`, `guest`)
+- Kalender- und Listenansicht für alle Reservationen
+- Adminbereich zur Verwaltung von Benutzern, Werkzeugen & Rechten
+- Unterstützung für CSV-Import & QR-Export (PNG/ZIP)
+- Unterstützung für manuelle & gescannte Reservationen
+
+---
+
+## 🧱 Projektstruktur
+
+```
+scanventory_v2/
+├── backend/
+│   ├── __pycache__/
+│   ├── instance/
+│   ├── routes/
+│   ├── scheduler/
+│   ├── utils/
+│   ├── venv/
+│   ├── .env
+│   ├── app.py
+│   ├── models.py
+│   ├── requirements.txt
+│   └── setup.py
+├── frontend/
+│   ├── node_modules/
+│   ├── public/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── styles/
+│   │   ├── utils/
+│   │   ├── App.css
+│   │   ├── App.jsx
+│   │   ├── index.css
+│   │   └── main.jsx
+│   ├── .env
+│   ├── index.html
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── vite.config.js
+│   └── .gitignore
+└── README.md
+```
+
+---
+
+## ⚙️ Technologien
+
+| Bereich     | Technologie              |
+| ----------- | ------------------------ |
+| Frontend    | React + Vite, CSS-Module |
+| Backend     | Flask, SQLAlchemy        |
+| Auth        | JWT, bcrypt              |
+| Datenbank   | SQLite                   |
+| QR-Codes    | qrcode, Pillow           |
+| Zeitplanung | APScheduler              |
+
+---
+
+## 🖥️ Installation (lokal, z. B. in VS Code)
+
+### 🔹 Voraussetzungen
+
+- Python 3.10+
+- Node.js + npm
+- Git
+
+### 🔹 Backend einrichten
 
 ```bash
-cd backend
+git clone https://github.com/outcastoasis/scanventory_v2.git
+cd scanventory_v2/backend
 python -m venv venv
-venv\Scripts\activate  # Windows
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-#### ⚙️ .env Struktur im Backend (Beispiel)
+.env-Datei erstellen:
 
 ```ini
 # backend/.env
@@ -92,13 +106,21 @@ TESTUSER_PASSWORD=testuser123
 TESTUSER_QR=usr0003
 ```
 
-Starten:
+Backend starten:
 
 ```bash
 python app.py
 ```
 
-#### ⚙️ .env Struktur im Frontend
+### 🔹 Frontend einrichten
+
+```bash
+cd ../frontend
+npm install
+npm run dev
+```
+
+`.env` Datei:
 
 ```ini
 # frontend/.env
@@ -106,112 +128,171 @@ VITE_API_URL=http://localhost:5050
 # VITE_API_URL=http://server-scanventory (wenn auf RPI installiert -> Hostname von Server-RPI)
 ```
 
-Diese Variable wird benötigt, damit alle API-Calls (z.B. `/api/users`) an das Backend weitergeleitet werden. Ohne diese Konfiguration funktionieren keine Admin-Funktionen.
+Frontend erreichbar unter: [http://localhost:5173](http://localhost:5173)
 
 ---
 
-### 🔹 Frontend (React + Vite)
+## 🍓 Installation auf Raspberry Pi
+
+- Raspberry Pi OS (Bookworm) mit Lite Version
+
+### 1. Pakete installieren
 
 ```bash
-cd frontend
-npm install
-npm run dev
+sudo apt update && sudo apt upgrade -y
+sudo apt install git python3 python3-pip python3-venv nginx nodejs npm sqlite3 -y
 ```
 
-## 🚧 Phasenplan
+### 2. Projekt klonen
 
-### ✅ Phase 1: Grundgerüst
+```bash
+cd /opt
+sudo git clone https://github.com/outcastoasis/scanventory_v2.git
+sudo chown -R $USER:$USER scanventory_v2
+```
 
-- [x] Vite + Flask Grundgerüst
-- [x] API-Endpunkte `/ping`, `/api/reservations`, etc.
-- [x] ScannerHandler mit globalem Keybuffer
-- [x] QR-Scan-Logik implementiert
+### 3. Backend vorbereiten
 
-### ✅ Phase 2: Datenmodelle & Auth
+```bash
+cd scanventory_v2/backend
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+```
 
-- [x] Modelle für User, Tool, Reservation, Rollen & Rechte
-- [x] SQLite-DB mit SQLAlchemy
-- [x] JWT-Login (Token-Handling)
-- [x] Rollenmodell + Rechteprüfung via Middleware
+### 4. Datenbank initialisieren
 
-### ✅ Phase 3: Ausleihe per Scanner
+```bash
+export FLASK_APP=app
+flask db init
+flask db migrate -m "Initial schema"
+flask db upgrade
+```
 
-- [x] Reservationen via QR-Scan (usr + tool + dur)
-- [x] Rückgabe per "return" + Werkzeugcode
-- [x] Rückgabe auch ohne Login
-- [x] Kalenderansicht mit allen Einträgen (öffentlich)
+### 5. Benutzer initialisieren
 
-### ✅ Phase 4: Kalender & Anzeige
+`.env` Datei wie oben beschrieben im `backend/` Ordner anlegen, dann:
 
-- [x] Monats-/Wochenansicht mit Reservationen
-- [x] PopUps für Bearbeiten (eigene + adminfähig)
-- [x] Farbcodierung, Anzeige nach Aktiven oder Vergangenen Einträgen
+```bash
+python3 app.py
+```
 
-### ✅ Phase 5: Adminbereich
+### 6. Gunicorn Service einrichten
 
-- [x] Admin-Menü als Icon-Dropdown (⚙️)
-- [x] Benutzerverwaltung UI (`/users`)
-- [x] Werkzeugverwaltung UI (`/tools`)
-- [x] Rechteverwaltung UI (`/permissions`)
-- [x] QR-Code-Exportfunktion in `/users`
-  - Einzel-QR als PNG (inkl. Vorschau)
-  - Massenexport (ZIP mit mehreren PNGs)
-  - Dynamisches Canvas mit weißem Hintergrund, Textausrichtung und Schriftanpassung
+```bash
+sudo nano /etc/systemd/system/scanventory.service
+```
+
+**Inhalt:**
+
+```
+[Unit]
+Description=Scanventory Gunicorn
+After=network.target
+
+[Service]
+User=pi
+WorkingDirectory=/opt/scanventory_v2/backend
+ExecStart=/opt/scanventory_v2/backend/venv/bin/gunicorn -w 4 -b 127.0.0.1:8000 app:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Service starten:
+
+```bash
+sudo systemctl daemon-reload && sudo systemctl enable --now scanventory
+```
+
+### 7. Frontend vorbereiten
+
+```ini
+# Datei: frontend/.env
+VITE_API_URL=http://server-scanventory
+```
+
+```bash
+cd ../frontend
+npm install
+npm run build
+```
+
+### 8. Nginx konfigurieren
+
+```bash
+sudo nano /etc/nginx/sites-available/scanventory
+```
+
+**Inhalt:**
+
+```
+server {
+    listen 80;
+    server_name server-scanventory;
+
+    root /opt/scanventory_v2/frontend/dist;
+    index index.html;
+
+    location /api {
+        proxy_pass http://127.0.0.1:8000/api;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location / {
+        try_files $uri /index.html;
+    }
+}
+```
+
+```bash
+sudo ln -s /etc/nginx/sites-available/scanventory /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl restart nginx
+```
 
 ---
 
-## ✅ Weitere Features in Arbeit
+## 📸 Screenshots
 
-- [x] `export_data` und `export_qr_codes` müssen in Exportlogik integriert werden (Berechtigungsprüfung)
-- [x] Entfernen der Bearbeitungsfunktion einzelner Permission-Keys (nicht sinnvoll)
-- [/] Admin-Panel für: (Teilweise umgesetzt, zurzeit noch in Testphase von Jascha)
-  - [x] Kategorienpflege bei Werkzeugen
-  - [x] Firmenpflege bei Benutzern (nicht hardcoded)
-  - [x] Firmenpflege fehlt noch sortierfunktion mit Pfeilen
-  - [-] Anzeige und Download von QR Codes wie: cancel, reload
-  - [x] alle Reservationen auflisten, sortierbar und Suchbar machen (Wie bei Userliste/Toolliste) und löschen per Button
-  - [ ] Nur eine gewisse Anzahl reservationen auflisten (zB 10 Einträge und dann auf nächste Seite) und Suchfunktion einbauen.
-  - [-] Fehler Logs einbauen und hier auflisten
-- [x] Darstellung von Reservationen auf der Startseite als: `Start – Ende | Werkzeug – Nachname Vorname`
-- [x] Kalenderhöhe dynamisch anpassen je nach Eintragsanzahl pro Tag
-- [x] Klickbare Reservationen für alle sichtbar, Bearbeitung nur wenn berechtigt (`edit_reservations: true` oder `self_only`)
-- [x] Seite zur manuellen Reservation für eingeloggte Benutzer (`create_reservations = self_only/true`)
-- [ ] Import von CSV für Benutzer und Werkzeuglisten mit automatischer QR Code ID vergabe (Vorhandene Überspringen)
-- [x] Rückgabe-QR-Code (`return`) auf Startseite anzeigen
-- [x] QR-Code für Dauerwahl (`dur1`, `dur2`, `dur3`) nach erfolgreichem Scan von `usrXXXX` und `toolXXXX` anzeigen
+![Startseite Screenshot](./screenshots/startseite.png)
+![Werkzeugverwaltung Screenshot](./screenshots/werkzeugverwaltung.png)
+![Benutzerverwaltung Screenshot](./screenshots/benutzerverwaltung.png)
+![Berechtigungen Screenshot](./screenshots/berechtigungen.png)
+![Adminpanel Screenshot](./screenshots/adminpanel.png)
+![Manuelle Reservationen Screenshot](./screenshots/manreservations.png)
 
 ---
 
-## 🧠 Weitere geplante Verbesserungen
+## 📅 Hauptfunktionen (Auszug)
 
-- [x] Wenn Tool zuerst gescannt, info der aktuellen Reservation und des werkzeuges anzeigen
-- [x] Offline-Hilfe für Admins und Nutzer (Teilweise umgesetzt, Adminhilfe noch ausstehend)
-  - [x] Anleitung für Werkzeug reservieren und Rückgabe
-  - [x] Übersicht der Rollen
-- [x] Automatischer Reset von `is_borrowed` per Scheduler im Backend
-- [x] Automatisches Polling der Kalenderdaten alle 30 Sekunden (Live-Update bei Scannerverwendung)
-- [x] Reservation bearbeiten endzeit abfangen, um keine negativen Einträge zu verursachen (Nicht erlaubt dass endzeit vor startzeit reserviert werden kann)
-- [ ] Notizen für reservationen fixen -> werden aktuell nicht gespeichert
-- [ ] create_reservations Rechte in manuelle reservation einbauen
-- [x] view_all_reservations und export_data entfernen
-- [x] Return Funktion sollte nach einiger Zeit (zB 15 Sekunden) wieder abgebrochen werden.
-- [ ] "Last Login" Funktion bei Profilen einfügen und speichern für Kontrolle auf inaktive Konten.
-- [x] QR Code darstellen für verlinkung der Mobile Seite der heutigen reservationen. Damit man eine bessere übersicht der aktuellen Reservationen erhält.
-- [ ] Admin Buttons abhängig von Rollen machen
-- [ ] Reservationen bearbeiten wenn möglich mit "isediting" versehen. Dass popup bei anderen dann ebenfalls für bearbeitung geblockt ist
+- Werkzeugausleihe über QR-Codes (usr + tool + dur)
+- Rückgabe über QR-Code "return"
+- Übersicht aller Reservationen im Kalender (öffentlich)
+- Adminpanel für Benutzer/Werkzeug/Rechte
+- Rollen- und Rechteverwaltung über die Datenbank
+- Login-System mit Token (JWT)
+- Filterbare Listen & QR-Export
+- Automatische Rückgaben per Scheduler
 
-## 🧠 Quality of Life
+---
 
-- [x] bessere visuelle bestätigung bei reservationen per Scanner (zB Scan Status Feld grün aufleuchten lassen kurz)
-- [x] Eigene Komponente für System-Statusmeldungen (z.B. Fehler, Erfolg-popup)
-- [x] Rückgabe QR Code auf Startseite benennen/beschreiben/Titel hinzufügen
-- [x] Responsivness verbessern von aktueller Seite (Hochformat priorisieren)
-- [x] Kalendersprache auf Deutsch stellen (October, Wed, 7:57 PM, etc)
-- [x] Heute Reserviert Liste unterhalb vom Kalender
-- [ ] alle User können alle Rückgaben tätigen (momentan wenn user eingeloggt nur die eigenen)
+## 💡 Weitere Ideen & geplante Features
+
+- CSV-Import für Benutzer und Werkzeuge
+- Fehler-Log-Anzeige im Adminpanel
+- Responsive Redesign für mobile Geräte
+- Notizen für reservationen fixen -> werden aktuell nicht gespeichert
+- create_reservations Rechte in manuelle reservation einbauen, damit auch Admins oder Supervisor für andere User reservieren können.
+- "Last Login" Datum bei Profilen einfügen und speichern für Kontrolle auf inaktive Konten.
+- Admin Buttons abhängig von Rollen machen (sichtbarkeit der Adminpages je nach berechtigungen des eingeloggten Users)
+- Reservationen bearbeiten wenn möglich mit "isediting" versehen. Dass popup bei anderen dann ebenfalls für bearbeitung geblockt ist
+- alle User können alle Rückgaben tätigen (momentan wenn user eingeloggt nur die eigenen)
+- Fehler abfangen, wenn User gelöscht wird mit aktuellen Reservationen -> zus. Reservationen dieses Users mitlöschen
 
 ---
 
 ## 📄 Lizenz
 
-MIT oder eigene Lizenz nach Bedarf
+MIT – freie Nutzung für Bildung & interne Zwecke.
