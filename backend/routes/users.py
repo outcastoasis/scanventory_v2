@@ -1,8 +1,10 @@
 # backend/routes/users.py
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 from models import db, User, Role, Company
 from utils.permissions import requires_permission, get_token_payload
 from werkzeug.security import generate_password_hash
+import csv
+from io import StringIO, BytesIO
 
 users_bp = Blueprint("users", __name__)
 
@@ -252,3 +254,174 @@ def delete_company(comp_id):
     db.session.delete(company)
     db.session.commit()
     return jsonify({"message": "Firma gelöscht."})
+
+
+@users_bp.route("/api/users/template", methods=["GET"])
+@requires_permission("manage_users")
+def export_user_csv_template():
+    companies = Company.query.order_by(Company.name.asc()).all()
+    roles = Role.query.order_by(Role.name.asc()).all()
+
+    company_names = [c.name for c in companies]
+    role_names = [r.name for r in roles]
+
+    output = StringIO()
+    writer = csv.writer(output, delimiter=";")
+
+    # Kommentarzeilen (Hinweis)
+    writer.writerow([f"# Firmen: {', '.join(company_names)}"])
+    writer.writerow([f"# Rollen: {', '.join(role_names)}"])
+
+    # Headerzeile
+    writer.writerow(
+        ["Benutzername", "Vorname", "Nachname", "Firma", "Rolle", "Passwort"]
+    )
+
+    # Optional: Beispielzeile
+    # writer.writerow(["jschmidt", "Julia", "Schmidt", "ACME AG", "user", "pass123"])
+
+    csv_text = output.getvalue()
+    output.close()
+
+    # UTF-8 BOM hinzufügen
+    bom_prefix = b"\xef\xbb\xbf"
+    csv_bytes = bom_prefix + csv_text.encode("utf-8")
+
+    response = make_response(csv_bytes)
+    response.headers["Content-Disposition"] = (
+        "attachment; filename=benutzer_vorlage.csv"
+    )
+    response.headers["Content-Type"] = "text/csv; charset=utf-8"
+    return response
+
+
+@users_bp.route("/api/users/import", methods=["POST"])
+@requires_permission("manage_users")
+def import_users_csv():
+    if "file" not in request.files:
+        return jsonify({"error": "Keine Datei hochgeladen"}), 400
+
+    file = request.files["file"]
+    if not file.filename.endswith(".csv"):
+        return jsonify({"error": "Bitte eine .csv-Datei hochladen"}), 400
+
+    stream = file.stream.read().decode("utf-8-sig")
+    lines = stream.splitlines()
+    reader = csv.reader(lines, delimiter=";")
+
+    header_found = False
+    imported_count = 0
+    skipped = []
+    errors = []
+
+    # Bestehende Daten aus DB
+    existing_usernames = {u.username.lower() for u in User.query.all()}
+    companies = {c.name: c.id for c in Company.query.all()}
+    roles = {r.name: r.id for r in Role.query.all()}
+
+    # QR‑Code Nummern vorbereiten
+    used_qrs = {
+        int(u.qr_code.replace("usr", ""))
+        for u in User.query.all()
+        if u.qr_code.startswith("usr") and u.qr_code.replace("usr", "").isdigit()
+    }
+    next_qr_num = 1
+
+    def next_qr():
+        nonlocal next_qr_num
+        while next_qr_num in used_qrs:
+            next_qr_num += 1
+        used_qrs.add(next_qr_num)
+        return f"usr{next_qr_num:04d}"
+
+    for idx, row in enumerate(reader):
+        line_num = idx + 1
+        if not row or row[0].startswith("#"):
+            continue
+
+        # Header überspringen
+        if not header_found:
+            expected_header = [
+                "benutzername",
+                "vorname",
+                "nachname",
+                "firma",
+                "rolle",
+                "passwort",
+            ]
+            normalized = [c.strip().lower() for c in row]
+            if normalized != expected_header:
+                return (
+                    jsonify(
+                        {
+                            "error": "Ungültige CSV-Struktur. Erwartet: Benutzername;Vorname;Nachname;Firma;Rolle;Passwort"
+                        }
+                    ),
+                    400,
+                )
+            header_found = True
+            continue
+
+        if len(row) < 6:
+            errors.append({"row": line_num, "reason": "Zu wenige Spalten"})
+            continue
+
+        username, first_name, last_name, company_name, role_name, password = [
+            c.strip() for c in row
+        ]
+
+        # Pflichtfelder prüfen
+        if not username or not password:
+            errors.append(
+                {"row": line_num, "reason": "Benutzername oder Passwort fehlt"}
+            )
+            continue
+
+        # Duplikate prüfen
+        if username.lower() in existing_usernames:
+            skipped.append(
+                {"row": line_num, "reason": "Benutzername bereits vorhanden"}
+            )
+            continue
+
+        # Firma prüfen
+        company_id = None
+        if company_name:
+            company_id = companies.get(company_name)
+            if not company_id:
+                errors.append(
+                    {"row": line_num, "reason": f"Ungültige Firma: '{company_name}'"}
+                )
+                continue
+
+        # Rolle prüfen
+        role_id = roles.get(role_name)
+        if not role_id:
+            errors.append(
+                {"row": line_num, "reason": f"Ungültige Rolle: '{role_name}'"}
+            )
+            continue
+
+        # Benutzer anlegen
+        new_user = User(
+            username=username,
+            first_name=first_name or None,
+            last_name=last_name or None,
+            company_id=company_id,
+            password=generate_password_hash(password),
+            qr_code=next_qr(),
+            role_id=role_id,
+        )
+
+        db.session.add(new_user)
+        existing_usernames.add(username.lower())
+        imported_count += 1
+
+    db.session.commit()
+
+    return (
+        jsonify(
+            {"imported_count": imported_count, "skipped": skipped, "errors": errors}
+        ),
+        200,
+    )

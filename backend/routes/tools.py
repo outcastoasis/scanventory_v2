@@ -1,5 +1,5 @@
 # backend/routes/tools.py
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 from models import (
     db,
     Tool,
@@ -13,6 +13,8 @@ from utils.permissions import requires_permission, get_token_payload
 from datetime import datetime
 from pytz import timezone
 import pytz
+import csv
+from io import StringIO, BytesIO
 
 tools_bp = Blueprint("tools", __name__)
 
@@ -414,3 +416,134 @@ def create_category():
     db.session.add(new_category)
     db.session.commit()
     return jsonify(new_category.serialize()), 201
+
+
+@tools_bp.route("/api/tools/template", methods=["GET"])
+@requires_permission("manage_tools")
+def export_tool_csv_template():
+    categories = ToolCategory.query.order_by(ToolCategory.name.asc()).all()
+    category_names = [c.name for c in categories]
+
+    # CSV in StringIO schreiben
+    output = StringIO()
+    writer = csv.writer(output, delimiter=";")
+
+    # Kommentarzeile mit Kategorien (enthält evtl. Umlaute)
+    writer.writerow([f"# Gültige Kategorien: {', '.join(category_names)}"])
+    writer.writerow(["Name", "Kategorie"])
+
+    csv_text = output.getvalue()
+    output.close()
+
+    # UTF‑8 mit BOM kodieren
+    bom_prefix = b"\xef\xbb\xbf"
+    csv_bytes = bom_prefix + csv_text.encode("utf-8")
+
+    # Response mit BOM
+    response = make_response(csv_bytes)
+    response.headers["Content-Disposition"] = (
+        "attachment; filename=werkzeug_vorlage.csv"
+    )
+    response.headers["Content-Type"] = "text/csv; charset=utf-8"
+    return response
+
+
+@tools_bp.route("/api/tools/import", methods=["POST"])
+@requires_permission("manage_tools")
+def import_tools_csv():
+    if "file" not in request.files:
+        return jsonify({"error": "Keine Datei hochgeladen"}), 400
+
+    file = request.files["file"]
+    if not file.filename.endswith(".csv"):
+        return jsonify({"error": "Bitte eine .csv-Datei hochladen"}), 400
+
+    stream = file.stream.read().decode("utf-8-sig")  # UTF-8 mit BOM
+    lines = stream.splitlines()
+
+    reader = csv.reader(lines, delimiter=";")
+    skipped = []
+    errors = []
+    imported_count = 0
+    header_found = False
+
+    tools_existing = {t.name.lower() for t in Tool.query.all()}
+    categories = {c.name: c.id for c in ToolCategory.query.all()}
+
+    # QR-Code Logik vorbereiten
+    used_qrs = {
+        int(t.qr_code.replace("tool", ""))
+        for t in Tool.query.all()
+        if t.qr_code.startswith("tool") and t.qr_code.replace("tool", "").isdigit()
+    }
+    next_qr_num = 1
+
+    def next_qr():
+        nonlocal next_qr_num
+        while next_qr_num in used_qrs:
+            next_qr_num += 1
+        used_qrs.add(next_qr_num)
+        return f"tool{next_qr_num:04d}"
+
+    for idx, row in enumerate(reader):
+        line_num = idx + 1
+
+        # Kommentarzeile oder leer → überspringen
+        if not row or row[0].startswith("#"):
+            continue
+
+        # Header-Zeile erkennen
+        if not header_found:
+            if len(row) < 2 or row[0].strip().lower() != "name":
+                return (
+                    jsonify(
+                        {
+                            "error": "Ungültige CSV-Struktur. Erste Datenzeile muss 'Name;Kategorie' sein."
+                        }
+                    ),
+                    400,
+                )
+            header_found = True
+            continue
+
+        if len(row) < 2:
+            errors.append({"row": line_num, "reason": "Zu wenige Spalten"})
+            continue
+
+        name, category_name = row[0].strip(), row[1].strip()
+
+        if not name:
+            errors.append({"row": line_num, "reason": "Name fehlt"})
+            continue
+
+        if name.lower() in tools_existing:
+            skipped.append({"row": line_num, "reason": "Name bereits vorhanden"})
+            continue
+
+        category_id = categories.get(category_name)
+        if not category_id:
+            errors.append(
+                {"row": line_num, "reason": f"Ungültige Kategorie: '{category_name}'"}
+            )
+            continue
+
+        # Werkzeug anlegen
+        tool = Tool(
+            name=name,
+            qr_code=next_qr(),
+            category_id=category_id,
+            status="available",
+            is_borrowed=False,
+        )
+        db.session.add(tool)
+        tools_existing.add(name.lower())
+        imported_count += 1
+
+    db.session.commit()
+
+    return (
+        jsonify(
+            {"imported_count": imported_count, "skipped": skipped, "errors": errors}
+        ),
+        200,
+    )

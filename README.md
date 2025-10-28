@@ -280,7 +280,7 @@ sudo nginx -t && sudo systemctl restart nginx
 
 ## 💡 Weitere Ideen & geplante Features
 
-- CSV-Import für Benutzer und Werkzeuge
+- [x] CSV-Import für Benutzer und Werkzeuge
 - Fehler-Log-Anzeige im Adminpanel
 - Responsive Redesign für mobile Geräte
 - Notizen für reservationen fixen -> werden aktuell nicht gespeichert

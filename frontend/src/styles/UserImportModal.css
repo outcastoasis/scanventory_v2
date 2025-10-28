@@ -1,0 +1,94 @@
+.user-importmodal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.user-importmodal-container {
+  background: white;
+  padding: 30px 40px;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.user-import-modal h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.user-import-note {
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+  color: #444;
+}
+
+.user-import-note i {
+  color: #777;
+  font-size: 0.85rem;
+}
+
+.user-import-button {
+  margin-top: 15px;
+  padding: 10px 16px;
+  background-color: #0078d7;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.user-import-button:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+.user-import-error {
+  margin-top: 15px;
+  color: #c0392b;
+  font-weight: bold;
+}
+
+.user-import-result {
+  margin-top: 20px;
+  background: #f5f5f5;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.user-import-result h4,
+.user-import-result h5 {
+  margin-bottom: 5px;
+  margin-top: 10px;
+}
+
+.user-import-result ul {
+  padding-left: 20px;
+  margin: 5px 0;
+}
+
+.user-import-result li {
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.user-import-close {
+  margin-top: 20px;
+  background: #ccc;
+  color: black;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}

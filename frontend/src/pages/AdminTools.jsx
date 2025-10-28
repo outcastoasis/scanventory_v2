@@ -7,7 +7,9 @@ import { saveAs } from "file-saver";
 import QRCode from "qrcode";
 import QrModal from "../components/QrModal";
 import "../styles/AdminTools.css";
+import "../styles/ToolImportModal.css";
 import { getToken } from "../utils/authUtils";
+import ToolImportModal from "../components/ToolImportModal";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -22,6 +24,8 @@ export default function AdminTools() {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [qrTool, setQrTool] = useState(null);
   const [permissions, setPermissions] = useState({});
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const navigate = useNavigate();
 
@@ -183,6 +187,39 @@ export default function AdminTools() {
     saveAs(content, "tool_qr_codes.zip");
   };
 
+  const handleExportCsvTemplate = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/tools/template`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (!res.ok) throw new Error("Fehler beim Export der Vorlage");
+      const blob = await res.blob();
+      saveAs(blob, "werkzeug_vorlage.csv");
+    } catch (err) {
+      alert("Export fehlgeschlagen: " + err.message);
+    }
+  };
+
+  const fetchTools = () => {
+    setLoading(true);
+    fetch(`${API_URL}/api/tools`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    })
+      .then((r) => {
+        if (!r.ok) throw new Error("Fehler beim Abrufen der Werkzeuge");
+        return r.json();
+      })
+      .then((data) => {
+        setTools(data);
+        setLoading(false);
+      })
+      .catch((e) => {
+        console.error(e);
+        setError("Fehler beim Laden der Werkzeuge.");
+        setLoading(false);
+      });
+  };
+
   return (
     <div className="tools-page">
       <div className="tools-header">
@@ -198,9 +235,23 @@ export default function AdminTools() {
       ) : (
         <>
           <div className="tools-actions">
-            <button className="tools-add-button" onClick={handleCreate}>
-              + Neues Werkzeug
-            </button>
+            <div
+              className="tools-add-dropdown"
+              onMouseEnter={() => setShowDropdown(true)}
+              onMouseLeave={() => setShowDropdown(false)}
+            >
+              <button className="tools-add-button">+ Neues Werkzeug</button>
+
+              {showDropdown && (
+                <div className="tools-dropdown-menu">
+                  <button onClick={handleCreate}>Einzelnes Werkzeug</button>
+                  <button onClick={() => setShowImportModal(true)}>
+                    CSV importieren
+                  </button>
+                </div>
+              )}
+            </div>
+
             <input
               className="tools-search"
               type="text"
@@ -219,6 +270,18 @@ export default function AdminTools() {
               }
             >
               QR-Massenexport
+            </button>
+            <button
+              className="tools-export-button"
+              onClick={handleExportCsvTemplate}
+              disabled={permissions.manage_tools !== "true"}
+              title={
+                permissions.manage_tools === "true"
+                  ? "CSV-Vorlage herunterladen"
+                  : "Keine Berechtigung"
+              }
+            >
+              CSV-Vorlage
             </button>
           </div>
 
@@ -374,6 +437,25 @@ export default function AdminTools() {
                     ? prev.map((t) => (t.id === saved.id ? saved : t))
                     : [...prev, saved]
                 );
+              }}
+            />
+          </div>
+        </div>
+      )}
+      {showImportModal && (
+        <div
+          className="tool-importmodal-overlay"
+          onClick={() => setShowImportModal(false)}
+        >
+          <div
+            className="tools-import-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ToolImportModal
+              onClose={() => {
+                setShowImportModal(false);
+                // Seite aktualisieren
+                fetchTools();
               }}
             />
           </div>

@@ -8,6 +8,7 @@ import QRCode from "qrcode";
 import QrModal from "../components/QrModal";
 import "../styles/AdminUsers.css";
 import { getToken } from "../utils/authUtils";
+import UserImportModal from "../components/UserImportModal";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -22,6 +23,8 @@ function AdminUsers() {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [permissions, setPermissions] = useState({});
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const navigate = useNavigate();
 
@@ -52,13 +55,10 @@ function AdminUsers() {
     fetchCurrentUser();
   }, []);
 
-  useEffect(() => {
-    if (currentUserId === null) return;
-
+  const fetchUsers = () => {
+    setLoading(true);
     fetch(`${API_URL}/api/users`, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-      },
+      headers: { Authorization: `Bearer ${getToken()}` },
     })
       .then((res) => {
         if (!res.ok) throw new Error("Fehler beim Abrufen der Benutzer");
@@ -73,6 +73,11 @@ function AdminUsers() {
         setError("Fehler beim Laden der Benutzer.");
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    if (currentUserId === null) return;
+    fetchUsers();
   }, [currentUserId]);
 
   const handleDelete = (id) => {
@@ -221,6 +226,19 @@ function AdminUsers() {
     saveAs(content, "qr_codes.zip");
   };
 
+  const handleExportCsvTemplate = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/users/template`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (!res.ok) throw new Error("Fehler beim Export der Vorlage");
+      const blob = await res.blob();
+      saveAs(blob, "benutzer_vorlage.csv");
+    } catch (err) {
+      alert("Export fehlgeschlagen: " + err.message);
+    }
+  };
+
   return (
     <div className="users-page">
       <div className="users-header">
@@ -236,9 +254,23 @@ function AdminUsers() {
       ) : (
         <>
           <div className="users-actions">
-            <button className="users-add-button" onClick={handleCreate}>
-              + Neuer Benutzer
-            </button>
+            <div
+              className="users-add-dropdown"
+              onMouseEnter={() => setShowDropdown(true)}
+              onMouseLeave={() => setShowDropdown(false)}
+            >
+              <button className="users-add-button">+ Neuer Benutzer</button>
+
+              {showDropdown && (
+                <div className="users-dropdown-menu">
+                  <button onClick={handleCreate}>Einzeln erfassen</button>
+                  <button onClick={() => setShowImportModal(true)}>
+                    CSV importieren
+                  </button>
+                </div>
+              )}
+            </div>
+
             <input
               className="users-search"
               type="text"
@@ -257,6 +289,18 @@ function AdminUsers() {
               }
             >
               QR-Massenexport
+            </button>
+            <button
+              className="users-export-button"
+              onClick={handleExportCsvTemplate}
+              disabled={permissions.manage_users !== "true"}
+              title={
+                permissions.manage_users === "true"
+                  ? "CSV-Vorlage herunterladen"
+                  : "Keine Berechtigung"
+              }
+            >
+              CSV-Vorlage
             </button>
           </div>
 
@@ -432,6 +476,24 @@ function AdminUsers() {
                 } else {
                   setUsers([...users, savedUser]);
                 }
+              }}
+            />
+          </div>
+        </div>
+      )}
+      {showImportModal && (
+        <div
+          className="user-importmodal-overlay"
+          onClick={() => setShowImportModal(false)}
+        >
+          <div
+            className="user-importmodal-container"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <UserImportModal
+              onClose={() => {
+                setShowImportModal(false);
+                fetchUsers();
               }}
             />
           </div>

@@ -1,0 +1,40 @@
+/* === ToolImportModal.css === */
+
+.tool-importmodal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tool-importmodal-container {
+  background: white;
+  padding: 2rem;
+  max-width: 500px;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.tool-importmodal-container h3 {
+  margin-top: 0;
+}
+
+.tool-importmodal-container button {
+  margin-top: 1rem;
+}
+
+.tool-importmodal-error {
+  color: red;
+  margin-top: 0.5rem;
+}
+
+.tool-importmodal-container .import-result-title {
+  margin-top: 1rem;
+  margin-bottom: 0.3rem;
+}
