@@ -1,9 +1,17 @@
+/* ================================
+   Scanventory Home.css (aufgeräumt)
+   ================================ */
+
+/* ---------- Layout ---------- */
 .home-container {
   width: 100%;
   max-width: 1000px;
   margin: 2rem auto;
   padding: 1rem;
   font-family: "Segoe UI", sans-serif;
+  background: #f8fafc;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 @media (min-width: 1081px) {
@@ -12,18 +20,24 @@
   }
 }
 
+/* ---------- Header ---------- */
 .home-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  flex-wrap: nowrap; /* wichtig: kein Umbruch */
+  flex-wrap: nowrap;
   gap: 1rem;
   margin-bottom: 1.5rem;
+  background: #ffffff;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .home-header h1 {
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 700;
+  color: #1f2937;
   margin: 0;
 }
 
@@ -31,8 +45,7 @@
   flex-shrink: 0;
 }
 
-/* Login */
-
+/* ---------- Login ---------- */
 .login-wrapper {
   display: flex;
   justify-content: flex-end;
@@ -40,7 +53,6 @@
   min-width: 250px;
 }
 
-/* Login-Box */
 .login-box {
   display: flex;
   flex-wrap: wrap;
@@ -49,50 +61,34 @@
 }
 
 .login-box input {
-  padding: 6px 8px;
-  font-size: 0.9rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 1rem;
   border: 1px solid #d1d5db;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 .login-box button {
-  padding: 6px 12px;
-  border: none;
-  background-color: #2563eb;
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
   color: white;
-  border-radius: 4px;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
   transition: background 0.2s ease;
 }
 
 .login-box button:hover {
-  background-color: #1e40af;
+  background: linear-gradient(90deg, #1d4ed8, #1e40af);
 }
 
-/* Login merken Checkbox */
 .remember-me {
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 0.9rem;
   white-space: nowrap;
-}
-
-/* Mobil: Login unter Titel, aber rechtsbündig */
-@media (max-width: 1015px) {
-  .login-box {
-    flex-direction: column;
-    align-items: flex-end;
-  }
-
-  .login-box input,
-  .login-box button {
-    max-width: 280px;
-  }
-
-  .remember-me {
-    align-self: flex-end;
-  }
 }
 
 .login-info {
@@ -109,52 +105,60 @@
   gap: 0.5rem;
 }
 
-/* Scanner, Rückgabe & Kalender */
-
-/* Gemeinsame Kopfzeile für Scan-Status (links) & Rückgabe (rechts) */
-.home-scanner-head {
-  display: grid;
-  grid-template-columns: 1fr 150px; /* linke Fläche | rechte QR-Spalte */
-  column-gap: 1rem;
-  align-items: baseline; /* gleiche Grundlinie */
-  margin-bottom: 0.5rem;
+.login-actions button {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.95rem;
+  transition: background 0.2s ease;
 }
 
-/* Scanner + Kalender Abstände */
+.login-actions button:hover {
+  background: #e5e7eb;
+}
+
+@media (max-width: 700px) {
+  .login-actions button {
+    font-size: 0.85rem;
+    padding: 0.45rem 0.6rem;
+    white-space: nowrap;
+  }
+}
+
+/* ---------- Scanner & Rückgabe ---------- */
 .home-scanner,
 .home-calendar {
   margin-bottom: 1rem;
 }
 
-/* Titel auf eine Linie, ohne extra Margin */
+.home-scanner-head {
+  display: grid;
+  grid-template-columns: 1fr 150px;
+  column-gap: 1rem;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+
 .home-scanner-head h2,
-.home-calendar h2,
-.home-scanner-head .home-return-title {
+.home-calendar h2 {
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
 }
 
-/* Inhalt unter der Kopfzeile in denselben Spalten wie oben */
 .home-scanner-row {
   display: grid;
-  grid-template-columns: 1fr 150px; /* muss zur Kopfzeile passen */
+  grid-template-columns: 1fr 150px;
   column-gap: 1rem;
   align-items: start;
 }
 
-/* Rechte Spalte (QR) */
 .home-return {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  min-width: 0; /* Grid regelt Breite, kein zusätzliches Minimum */
-}
-
-/* Kalender-Events sollen klar klickbar sein */
-.home-calendar .clickable-event,
-.home-calendar .rbc-event {
-  cursor: pointer;
+  min-width: 0;
 }
 
 .scan-box {
@@ -169,10 +173,10 @@
   word-wrap: break-word;
   white-space: pre-wrap;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
-  position: relative; /* nötig für .return-countdown positioning */
+  position: relative;
 }
 
-/* Erfolgreicher Scan: 1s grüner Rand-Flash */
+/* Flash-Effekte */
 .scan-box.flash-success {
   animation: borderFlash 3s ease forwards;
 }
@@ -180,7 +184,7 @@
   0% {
     border-color: #10b981;
     box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45);
-    background-color: #d1fae5; /* hellgrün */
+    background-color: #d1fae5;
   }
   35% {
     border-color: #10b981;
@@ -190,11 +194,10 @@
   100% {
     border-color: #e5e7eb;
     box-shadow: none;
-    background-color: #f3f4f6; /* zurück zum Standard-Hintergrund */
+    background-color: #f3f4f6;
   }
 }
 
-/* Fehler/Abbruch: roter Rand-Flash */
 .scan-box.flash-error {
   animation: borderFlashRed 3s ease forwards;
 }
@@ -202,7 +205,7 @@
   0% {
     border-color: #ef4444;
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45);
-    background-color: #fee2e2; /* hellrot */
+    background-color: #fee2e2;
   }
   35% {
     border-color: #ef4444;
@@ -212,255 +215,10 @@
   100% {
     border-color: #e5e7eb;
     box-shadow: none;
-    background-color: #f3f4f6; /* Standard */
+    background-color: #f3f4f6;
   }
 }
 
-.return-countdown {
-  position: absolute;
-  bottom: 5px;
-  right: 10px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  padding: 2px 6px;
-  border-radius: 6px;
-  color: #333;
-}
-
-/* --- Kalender: Lösung A + Responsive --- */
-
-/* RBC (react-big-calendar) soll nicht durch äussere Styles begrenzt werden */
-.home-calendar .rbc-calendar {
-  height: 100% !important; /* Höhe kommt vom umschliessenden Div (dynamicHeight) */
-}
-
-/* Header/Labels etwas kompakter */
-.home-calendar .rbc-header {
-  padding: 6px 4px;
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-/* Eventliste pro Tag nicht beschneiden */
-.home-calendar .rbc-month-view .rbc-row-content {
-  overflow: visible !important;
-}
-
-/* Kompaktere Events, damit mehr Zeilen Platz haben */
-.home-calendar .rbc-row-segment {
-  padding: 0 2px; /* enger am Rand */
-}
-.home-calendar .rbc-event {
-  padding: 1px 4px;
-  line-height: 1.2;
-  font-size: 0.85rem;
-  border-radius: 4px;
-}
-
-/* Datumszelle dezenter, Zahl rechtsbündig mit etwas Luft */
-.home-calendar .rbc-date-cell {
-  padding: 2px 6px;
-  text-align: right;
-  font-weight: 600;
-}
-
-/* Toolbar darf umbrechen */
-.home-calendar .rbc-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-}
-
-/* Buttons enger zusammenrücken */
-.home-calendar .rbc-toolbar .rbc-btn-group > button {
-  padding: 0.25rem 0.5rem;
-}
-
-/* Styling vom Calendar-Root (statt Inline-Style) */
-.home-calendar .rbc-scanventory {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 1rem;
-}
-
-/* Agenda-View Mindesthöhe über Klasse steuern (nur falls Agenda manuell gewählt wird) */
-.home-calendar .rbc-scanventory.is-agenda {
-  min-height: 480px;
-}
-
-/* Responsiv: kleiner auf schmalen Geräten */
-@media (max-width: 540px) {
-  .home-calendar .rbc-header {
-    font-size: 0.85rem;
-    padding: 4px 2px;
-  }
-  .home-calendar .rbc-event {
-    font-size: 0.8rem;
-    padding: 1px 3px;
-    line-height: 1.15;
-  }
-  .home-calendar .rbc-toolbar {
-    font-size: 0.9rem;
-  }
-}
-
-/* Heute reserviert */
-.home-today {
-  margin-top: 1rem;
-  background: #fff;
-  border-radius: 8px;
-  padding: 1rem;
-  border: 1px solid #e5e7eb;
-}
-.home-today h2 {
-  font-size: 1.1rem;
-  margin: 0 0 0.75rem 0;
-}
-.today-empty {
-  color: #6b7280;
-  font-size: 0.95rem;
-}
-
-/* Tabelle */
-.today-table-wrap {
-  overflow-x: auto; /* horizontales Scrollen auf kleinen Screens */
-}
-.today-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.95rem;
-}
-.today-table thead th {
-  text-align: left;
-  font-weight: 600;
-  padding: 0.6rem 0.5rem;
-  border-bottom: 2px solid #e5e7eb;
-  white-space: nowrap;
-}
-.today-table tbody td {
-  padding: 0.55rem 0.5rem;
-  border-bottom: 1px solid #f1f5f9;
-  vertical-align: middle;
-}
-.today-table tbody tr:nth-child(even) {
-  background: #fafafa;
-}
-
-/* Spalten-Feintuning */
-.today-table .c-tool {
-  font-weight: 600;
-  color: #111827;
-}
-.today-table .c-user,
-.today-table .c-until {
-  color: #1f2937;
-  white-space: nowrap;
-}
-
-/* Kompakter auf sehr schmalen Screens */
-@media (max-width: 520px) {
-  .today-table thead th,
-  .today-table tbody td {
-    padding: 0.5rem 0.4rem;
-  }
-}
-/* Admin Dropdown */
-.admin-menu-wrapper {
-  position: relative;
-}
-.admin-toggle {
-  background: none;
-  border: none;
-  font-size: 1.3rem;
-  cursor: pointer;
-  padding: 0.5rem;
-}
-.admin-dropdown {
-  position: absolute;
-  top: 2.2rem;
-  right: 0;
-  background: #fff;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  display: none;
-  flex-direction: column;
-  padding: 0.5rem;
-  z-index: 100;
-}
-.admin-menu-wrapper:hover .admin-dropdown {
-  display: flex;
-}
-.admin-dropdown button {
-  background: none;
-  border: none;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.8rem;
-  cursor: pointer;
-  font-size: 0.9rem;
-  border-radius: 4px;
-  transition: background 0.2s ease;
-  width: 100%;
-  white-space: nowrap;
-}
-.admin-dropdown button:hover {
-  background: #f3f4f6;
-  font-weight: 500;
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .home-container {
-    padding: 1rem;
-  }
-  .scan-box {
-    font-size: 0.95rem;
-    padding: 0.75rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .home-scanner-row {
-    flex-direction: column;
-  }
-  .home-return {
-    min-width: 0;
-  }
-}
-
-.past-event {
-  background-color: #e0e0e0 !important; /* hellgrauer Hintergrund */
-  color: #555 !important; /* dezenter Text */
-  font-style: italic;
-}
-
-.home-manual-button {
-  display: flex;
-  justify-content: center;
-  margin: 0.5rem 0 0.5rem;
-}
-
-.manual-reservation-button {
-  background-color: #0055aa;
-  color: white;
-  font-size: 1rem;
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.manual-reservation-button:hover {
-  background-color: #004080;
-}
-
-/* Neuer visueller Countdown-Balken */
 .return-visual-wrapper {
   position: absolute;
   top: 0;
@@ -468,7 +226,7 @@
   bottom: 0;
   width: 28px;
   display: flex;
-  align-items: flex-end; /* ⬅️ ändert Richtung nach unten */
+  align-items: flex-end;
   justify-content: center;
   pointer-events: none;
 }
@@ -480,11 +238,11 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  transition: height 1s linear;
   color: white;
   font-weight: bold;
   font-size: 0.9rem;
-  height: 100%; /* default */
+  height: 100%;
+  transition: height 1s linear;
   animation: fadeInBar 0.3s ease;
 }
 
@@ -500,5 +258,348 @@
   to {
     opacity: 1;
     transform: scaleY(1);
+  }
+}
+
+/* ---------- Kalender ---------- */
+.home-calendar {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.home-calendar .rbc-calendar {
+  height: 100% !important;
+  min-width: 600px;
+}
+
+.home-calendar .rbc-toolbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.3rem;
+  scrollbar-width: none; /* Firefox */
+}
+.home-calendar .rbc-toolbar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.home-calendar .rbc-toolbar .rbc-btn-group {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+}
+
+.home-calendar .rbc-btn-group > button {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.9rem;
+  color: #1f2937;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.home-calendar .rbc-btn-group > button:hover {
+  background: #e5e7eb;
+}
+
+.home-calendar .rbc-btn-group > button.rbc-active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #1d4ed8;
+}
+
+.home-calendar .rbc-header {
+  padding: 6px 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.home-calendar .rbc-event {
+  padding: 1px 4px;
+  line-height: 1.2;
+  font-size: 0.85rem;
+  border-radius: 4px;
+}
+
+.home-calendar .rbc-date-cell {
+  padding: 2px 6px;
+  text-align: right;
+  font-weight: 600;
+}
+
+/* Agenda-View Mindesthöhe über Klasse steuern (nur falls Agenda manuell gewählt wird) */
+.home-calendar .rbc-scanventory.is-agenda {
+  min-height: 300px;
+}
+
+/* Mobile: Buttons kleiner, aber horizontal scrollbar */
+@media (max-width: 600px) {
+  .home-calendar .rbc-toolbar {
+    justify-content: flex-start;
+    padding: 0.2rem 0.4rem;
+    align-content: flex-start;
+    align-items: flex-start;
+  }
+  .home-calendar .rbc-btn-group > button {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* ---------- Tabelle Heute ---------- */
+.home-today {
+  margin-top: 1rem;
+  background: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.today-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.today-table {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.today-table th,
+.today-table td {
+  padding: 0.55rem 0.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.today-table thead th {
+  font-weight: 600;
+  border-bottom: 2px solid #e5e7eb;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.today-table tr:nth-child(even) {
+  background: #fafafa;
+}
+
+/* ---------- Buttons ---------- */
+.home-manual-button {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0;
+}
+
+.manual-reservation-button {
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  color: white;
+  font-size: 1.05rem;
+  padding: 0.75rem 1.4rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.manual-reservation-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* ---------- Admin Dropdown ---------- */
+.admin-menu-wrapper {
+  position: relative;
+}
+
+.admin-toggle {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.admin-dropdown {
+  position: absolute;
+  top: 2.2rem;
+  right: 0;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  display: none;
+  flex-direction: column;
+  padding: 0.5rem;
+  z-index: 100;
+}
+
+.admin-menu-wrapper:hover .admin-dropdown {
+  display: flex;
+}
+
+.admin-dropdown button {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.admin-dropdown button:hover {
+  background: #f3f4f6;
+  font-weight: 500;
+}
+
+/* ---------- Zustände ---------- */
+.past-event {
+  background-color: #e0e0e0 !important;
+  color: #555 !important;
+  font-style: italic;
+}
+
+/* ---------- Media Queries ---------- */
+@media (max-width: 1015px) {
+  .login-box {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  .login-box input,
+  .login-box button {
+    max-width: 280px;
+  }
+  .remember-me {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-container {
+    max-width: 100%;
+    padding: 0.5rem;
+  }
+  .home-header,
+  .home-scanner-row {
+    flex-wrap: wrap;
+  }
+  .home-return {
+    align-items: center;
+    margin-top: 0.5rem;
+  }
+  .scan-box {
+    font-size: 0.95rem;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .home-scanner-head,
+  .home-scanner-row {
+    display: none;
+  }
+  .home-container {
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .home-header {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 1rem 0.5rem;
+  }
+  .manual-reservation-button {
+    width: 100%;
+    border-radius: 8px;
+  }
+  .home-calendar {
+    padding: 0.5rem;
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .login-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .login-box {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+    background: none;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .login-box input {
+    width: 100%;
+    max-width: 300px;
+    font-size: 1rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+  }
+
+  .login-box button {
+    margin-top: 0.2rem;
+    font-size: 1rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #2563eb, #1d4ed8);
+    font-weight: 600;
+  }
+
+  .remember-me {
+    margin-top: 0.2rem;
+    font-size: 0.9rem;
+    color: #374151;
+    align-self: flex-start;
+  }
+
+  .help-nav-button {
+    align-self: flex-start;
+    padding: 0.4rem 0.5rem;
+  }
+  .duration-modal {
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .duration-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+  .duration-tile canvas {
+    width: 100px !important;
+    height: 100px !important;
   }
 }

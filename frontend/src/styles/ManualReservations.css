@@ -1,11 +1,17 @@
-/* styles/ManualReservations.css */
+/* ================================
+   Scanventory – ManualReservations.css (modern & responsive)
+   ================================ */
 
+/* ---------- Grundlayout ---------- */
 .manualres-container {
   width: 100%;
   max-width: 1000px;
   margin: 2rem auto;
   padding: 1rem;
   font-family: "Segoe UI", sans-serif;
+  background: #f8fafc;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 @media (min-width: 1081px) {
@@ -14,24 +20,32 @@
   }
 }
 
+/* ---------- Header ---------- */
 .manualres-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
+  gap: 1rem;
   margin-bottom: 1.5rem;
+  background: #ffffff;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .manualres-header h1 {
   font-size: 1.8rem;
+  font-weight: 700;
+  color: #1f2937;
   margin: 0;
 }
 
 .manualres-logininfo {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 1rem;
-  margin-top: 0.5rem;
 }
 
 .manualres-user {
@@ -39,99 +53,315 @@
 }
 
 .manualres-actions button {
-  background-color: #f2f2f2;
-  color: #333;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.95rem;
+  color: #1f2937;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background 0.2s ease;
 }
 
 .manualres-actions button:hover {
-  background-color: #ddd;
+  background: #e5e7eb;
 }
 
+/* ---------- Steuerbereich ---------- */
 .manualres-controls {
+  background: #ffffff;
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
   margin-bottom: 1.5rem;
-  background: #f9f9f9;
-  padding: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
 }
 
 .manualres-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 1rem;
-  flex-wrap: wrap;
 }
 
 .manualres-row label {
-  font-weight: bold;
+  font-weight: 600;
   font-size: 0.95rem;
+  color: #374151;
 }
 
+.manualres-row input,
+.manualres-row .react-datepicker-wrapper input {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.95rem;
+  background: #f9fafb;
+  color: #111827;
+  width: 220px;
+}
+
+.manualres-row button {
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1.3rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.manualres-row button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* ---------- Rückmeldungen ---------- */
 .manualres-message {
   margin-top: 1rem;
   padding: 0.75rem 1rem;
-  background: #eef3ff;
-  border: 1px solid #d8e1ff;
   border-radius: 6px;
   font-size: 0.95rem;
+  font-weight: 500;
 }
 
+.manualres-message:empty {
+  display: none;
+}
+
+.manualres-message:not(:empty) {
+  background: #eef3ff;
+  border: 1px solid #d8e1ff;
+  color: #1e3a8a;
+}
+
+/* ---------- Tabelle / Werkzeugliste ---------- */
 .manualres-tablewrap {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   overflow-x: auto;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
-  background: #fff;
+  -webkit-overflow-scrolling: touch;
 }
 
 .manualres-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 0.5rem;
   min-width: 640px;
 }
 
 .manualres-table th,
 .manualres-table td {
-  padding: 0.6rem 0.8rem;
-  border: 1px solid #e0e0e0;
-  text-align: left;
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
   font-size: 0.95rem;
 }
 
 .manualres-table th {
-  background-color: #f9f9f9;
-  font-weight: bold;
+  background: #f9fafb;
+  color: #1f2937;
+  font-weight: 600;
+  text-align: left;
 }
 
+.manualres-table tr {
+  transition: background 0.15s ease;
+}
+
+.manualres-table tr:hover {
+  background: #f3f4f6;
+}
+
+/* Checkbox modernisieren */
+.manualres-table input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #2563eb;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.manualres-table input[type="checkbox"]:hover {
+  transform: scale(1.1);
+}
+
+.manualres-table .tool-name {
+  font-weight: 600;
+  color: #111827;
+}
+
+.manualres-table .tool-category {
+  color: #4b5563;
+  font-size: 0.9rem;
+}
+
+/* ---------- Reservieren-Button ---------- */
 .manualres-reserve-button {
-  margin-top: 1rem;
   text-align: right;
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  border-radius: 0 0 10px 10px;
 }
 
 .manualres-reserve-button button {
-  background-color: #1976d2;
-  color: white;
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  color: #fff;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  border-radius: 8px;
+  padding: 0.7rem 1.4rem;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 0.95rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .manualres-reserve-button button:hover {
-  background-color: #155aa8;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background-color: #ccc !important;
-  color: #666 !important;
-  border-color: #aaa !important;
+}
+
+/* ---------- Mobile Kartenansicht ---------- */
+@media (max-width: 650px) {
+  .manualres-container {
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0.5rem;
+  }
+
+  .manualres-header {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0.8rem 0.5rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .manualres-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .manualres-logininfo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .manualres-controls {
+    padding: 0.8rem;
+  }
+
+  .manualres-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.8rem;
+  }
+
+  .manualres-row label {
+    font-size: 0.9rem;
+  }
+
+  .manualres-row input,
+  .manualres-row .react-datepicker-wrapper input {
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  /* Kartenlayout für Werkzeuge */
+  .manualres-table {
+    display: block;
+    border: none;
+    min-width: unset;
+  }
+
+  .manualres-table thead {
+    display: none;
+  }
+
+  .manualres-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .manualres-table tr {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    padding: 0.9rem 1rem;
+    position: relative;
+  }
+
+  .manualres-table td {
+    border: none;
+    padding: 0.3rem 0;
+    font-size: 0.95rem;
+  }
+
+  /* Checkbox und Titel nebeneinander */
+  .manualres-table td:first-child {
+    position: absolute;
+    top: 0.9rem;
+    right: 1rem;
+    margin: 0;
+  }
+
+  .manualres-table input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    accent-color: #2563eb;
+    cursor: pointer;
+  }
+
+  /* Name fett, etwas Abstand zur Checkbox */
+  .manualres-table td:nth-child(2) {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: #111827;
+    padding-right: 2rem; /* Platz für Checkbox */
+  }
+
+  .manualres-table td:nth-child(3) {
+    color: #374151;
+    font-size: 0.9rem;
+  }
+
+  .manualres-table td:last-child {
+    color: #6b7280;
+    font-size: 0.9rem;
+  }
+
+  .manualres-table tr.selected {
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+  }
+
+  .manualres-reserve-button {
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .manualres-reserve-button button {
+    width: 100%;
+    border-radius: 8px;
+  }
+
+  .manualres-reserve-button {
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .manualres-reserve-button button {
+    width: 100%;
+    border-radius: 8px;
+  }
 }
