@@ -100,7 +100,7 @@
   width: 220px;
 }
 
-.manualres-row button {
+.manualres-button {
   background: linear-gradient(90deg, #2563eb, #1d4ed8);
   color: #fff;
   border: none;
@@ -112,7 +112,7 @@
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.manualres-row button:hover {
+.manualres-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }

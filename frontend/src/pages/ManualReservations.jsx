@@ -176,7 +176,7 @@ function ManualReservations() {
             placeholderText="Enddatum & Zeit wählen"
           />
 
-          <button onClick={searchAvailableTools} disabled={loading}>
+          <button className="manualres-button" onClick={searchAvailableTools} disabled={loading}>
             Werkzeuge suchen
           </button>
         </div>
