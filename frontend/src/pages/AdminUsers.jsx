@@ -304,6 +304,99 @@ function AdminUsers() {
             </button>
           </div>
 
+          {/* ---------- Mobile Header Akkordeon ---------- */}
+          <div className="users-mobile-header">
+            <button
+              className="users-mobile-toggle"
+              onClick={() =>
+                document
+                  .querySelector(".users-mobile-panel")
+                  .classList.toggle("open")
+              }
+            >
+              Filter & Aktionen anzeigen
+            </button>
+
+            <div className="users-mobile-panel">
+              <button className="users-add-button" onClick={handleCreate}>
+                + Neuer Benutzer
+              </button>
+              <button
+                className="users-export-button"
+                onClick={handleExportAllQR}
+                disabled={permissions.export_qr_codes !== "true"}
+              >
+                QR-Massenexport
+              </button>
+              <button
+                className="users-export-button"
+                onClick={handleExportCsvTemplate}
+                disabled={permissions.manage_users !== "true"}
+              >
+                CSV-Vorlage
+              </button>
+              <input
+                className="users-search"
+                type="text"
+                placeholder="Suche nach Benutzer..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* ---------- Mobile Card Ansicht ---------- */}
+          <div className="users-list-mobile">
+            {sortedUsers.map((u) => (
+              <div className="user-card" key={u.id}>
+                <div className="user-card-header">
+                  <h3>
+                    {u.first_name || "-"} {u.last_name || "-"}
+                  </h3>
+                  <span className={`user-role-tag ${u.role}`}>{u.role}</span>
+                </div>
+                <div className="user-card-body">
+                  <p>
+                    <strong>ID:</strong> {u.id}
+                  </p>
+                  <p>
+                    <strong>Benutzername:</strong> {u.username}
+                  </p>
+                  <p>
+                    <strong>Firma:</strong> {u.company_name || "-"}
+                  </p>
+                  <p>
+                    <strong>QR-Code:</strong> {u.qr_code}
+                  </p>
+                  <p>
+                    <strong>Erstellt:</strong>{" "}
+                    {u.created_at?.slice(0, 10) || "-"}
+                  </p>
+                </div>
+                <div className="user-card-actions">
+                  <button
+                    className="users-edit-button"
+                    onClick={() => handleEdit(u)}
+                  >
+                    Bearbeiten
+                  </button>
+                  <button
+                    className="users-delete-button"
+                    onClick={() => handleDelete(u.id)}
+                  >
+                    Löschen
+                  </button>
+                  <button
+                    className="users-qr-button"
+                    onClick={() => setSelectedUser(u)}
+                  >
+                    QR anzeigen
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
           <table className="users-table">
             <thead>
               <tr>

@@ -119,6 +119,31 @@ function StaticQrCodesTable() {
         </tbody>
       </table>
 
+      {/* Spezielle QR-Codes (Mobile Kartenansicht) */}
+      <div className="adminpanel-list-mobile">
+        {staticCodes.map((code) => (
+          <div className="adminpanel-card" key={code.id}>
+            <div className="adminpanel-card-header">
+              <h3>{code.name}</h3>
+              <span>ID {code.id}</span>
+            </div>
+            <div className="adminpanel-card-body">
+              <p>
+                <strong>Beschreibung:</strong> {code.title}
+              </p>
+            </div>
+            <div className="adminpanel-card-actions">
+              <button
+                className="tools-edit-button"
+                onClick={() => setSelectedCode(code)}
+              >
+                QR anzeigen
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
       {selectedCode && (
         <div className="qr-modal-overlay">
           <div className="qr-modal">

@@ -309,7 +309,7 @@ function AdminPanel() {
       {/* Kategorien */}
       <div className="adminpanel-section">
         <h3 className="adminpanel-section-title">Kategorien</h3>
-        <div className="tools-actions">
+        <div className="adminpanel-actions">
           <button className="tools-add-button" onClick={handleCreateCategory}>
             + Kategorie hinzufügen
           </button>
@@ -378,10 +378,35 @@ function AdminPanel() {
         </table>
       </div>
 
+      <div className="adminpanel-list-mobile">
+        {sortedCategories.map((cat) => (
+          <div className="adminpanel-card" key={cat.id}>
+            <div className="adminpanel-card-header">
+              <h3>{cat.name}</h3>
+              <span>ID {cat.id}</span>
+            </div>
+            <div className="adminpanel-card-actions">
+              <button
+                className="tools-edit-button"
+                onClick={() => handleEditCategory(cat)}
+              >
+                Bearbeiten
+              </button>
+              <button
+                className="tools-delete-button"
+                onClick={() => handleDeleteCategory(cat.id)}
+              >
+                Löschen
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Firmen */}
       <div className="adminpanel-section">
         <h3 className="adminpanel-section-title">Firmen</h3>
-        <div className="tools-actions">
+        <div className="adminpanel-actions">
           <button className="tools-add-button" onClick={handleCreateCompany}>
             + Firma hinzufügen
           </button>
@@ -448,6 +473,31 @@ function AdminPanel() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="adminpanel-list-mobile">
+        {sortedCompanies.map((comp) => (
+          <div className="adminpanel-card" key={comp.id}>
+            <div className="adminpanel-card-header">
+              <h3>{comp.name}</h3>
+              <span>ID {comp.id}</span>
+            </div>
+            <div className="adminpanel-card-actions">
+              <button
+                className="tools-edit-button"
+                onClick={() => handleEditCompany(comp)}
+              >
+                Bearbeiten
+              </button>
+              <button
+                className="tools-delete-button"
+                onClick={() => handleDeleteCompany(comp.id)}
+              >
+                Löschen
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
       <StaticQrCodesTable />
@@ -558,6 +608,38 @@ function AdminPanel() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="adminpanel-list-mobile">
+        {sortedReservations.map((r) => (
+          <div className="adminpanel-card" key={r.id}>
+            <div className="adminpanel-card-header">
+              <h3>
+                #{r.id} – {r.tool?.name}
+              </h3>
+            </div>
+            <div className="adminpanel-card-body">
+              <p>
+                <strong>Benutzer:</strong> {r.user?.username}
+              </p>
+              <p>
+                <strong>Start:</strong>{" "}
+                {r.start?.slice(0, 16).replace("T", " ")}
+              </p>
+              <p>
+                <strong>Ende:</strong> {r.end?.slice(0, 16).replace("T", " ")}
+              </p>
+            </div>
+            <div className="adminpanel-card-actions">
+              <button
+                className="tools-delete-button"
+                onClick={() => handleDeleteReservation(r.id)}
+              >
+                Löschen
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="adminpanel-section">

@@ -234,6 +234,7 @@ export default function AdminTools() {
         <p className="tools-loading">Lade Werkzeuge...</p>
       ) : (
         <>
+          {/* ---------- Aktionen / Filter ---------- */}
           <div className="tools-actions">
             <div
               className="tools-add-dropdown"
@@ -259,30 +260,63 @@ export default function AdminTools() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+
             <button
               className="tools-export-button"
               onClick={handleExportAllQR}
               disabled={permissions.export_qr_codes !== "true"}
-              title={
-                permissions.export_qr_codes === "true"
-                  ? "QR-Codes exportieren"
-                  : "Keine Berechtigung für Export"
-              }
             >
               QR-Massenexport
             </button>
+
             <button
               className="tools-export-button"
               onClick={handleExportCsvTemplate}
               disabled={permissions.manage_tools !== "true"}
-              title={
-                permissions.manage_tools === "true"
-                  ? "CSV-Vorlage herunterladen"
-                  : "Keine Berechtigung"
-              }
             >
               CSV-Vorlage
             </button>
+          </div>
+
+          {/* ---------- Mobile Akkordeon-Leiste ---------- */}
+          <div className="tools-mobile-header">
+            <button
+              className="tools-mobile-toggle"
+              onClick={() =>
+                document
+                  .querySelector(".tools-mobile-panel")
+                  .classList.toggle("open")
+              }
+            >
+              Filter & Aktionen anzeigen
+            </button>
+
+            <div className="tools-mobile-panel">
+              <button className="tools-add-button" onClick={handleCreate}>
+                + Neues Werkzeug
+              </button>
+              <button
+                className="tools-export-button"
+                onClick={handleExportAllQR}
+                disabled={permissions.export_qr_codes !== "true"}
+              >
+                QR-Massenexport
+              </button>
+              <button
+                className="tools-export-button"
+                onClick={handleExportCsvTemplate}
+                disabled={permissions.manage_tools !== "true"}
+              >
+                CSV-Vorlage
+              </button>
+              <input
+                className="tools-search"
+                type="text"
+                placeholder="Suche nach Werkzeug..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
           </div>
 
           <table className="tools-table">
@@ -414,6 +448,63 @@ export default function AdminTools() {
             </tbody>
           </table>
 
+          {/* === Mobile Card Ansicht === */}
+          <div className="tools-list-mobile">
+            {sorted.map((t) => (
+              <div className="tool-card" key={t.id}>
+                <div className="tool-card-header">
+                  <h3>{t.name}</h3>
+                  <span
+                    className={`tool-status ${
+                      t.is_borrowed ? "borrowed" : "available"
+                    }`}
+                  >
+                    {t.is_borrowed
+                      ? "ausgeliehen"
+                      : t.status === "available" || !t.status
+                      ? "verfügbar"
+                      : t.status}
+                  </span>
+                </div>
+                <div className="tool-card-body">
+                  <p>
+                    <strong>ID:</strong> {t.id}
+                  </p>
+                  <p>
+                    <strong>QR-Code:</strong> {t.qr_code}
+                  </p>
+                  <p>
+                    <strong>Kategorie:</strong> {t.category_name || "-"}
+                  </p>
+                  <p>
+                    <strong>Erstellt:</strong>{" "}
+                    {t.created_at?.slice(0, 10) || "-"}
+                  </p>
+                </div>
+                <div className="tool-card-actions">
+                  <button
+                    className="tools-edit-button"
+                    onClick={() => handleEdit(t)}
+                  >
+                    Bearbeiten
+                  </button>
+                  <button
+                    className="tools-delete-button"
+                    onClick={() => handleDelete(t.id)}
+                  >
+                    Löschen
+                  </button>
+                  <button
+                    className="tools-qr-button"
+                    onClick={() => setQrTool(t)}
+                  >
+                    QR anzeigen
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
           {qrTool && (
             <QrModal
               tool={qrTool}
@@ -447,10 +538,7 @@ export default function AdminTools() {
           className="tool-importmodal-overlay"
           onClick={() => setShowImportModal(false)}
         >
-          <div
-            className="tools-import-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div onClick={(e) => e.stopPropagation()}>
             <ToolImportModal
               onClose={() => {
                 setShowImportModal(false);

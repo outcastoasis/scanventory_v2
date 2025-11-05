@@ -194,6 +194,45 @@ export default function AdminPermissions() {
             />
           </div>
 
+          <div className="permissions-mobile-search">
+            <input
+              className="permissions-search"
+              type="text"
+              placeholder="Suche nach Recht..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          {/* ---------- Mobile Kartenansicht ---------- */}
+          <div className="permissions-list-mobile">
+            {filtered.map((perm) => (
+              <div className="permission-card" key={perm.id}>
+                <div className="permission-card-header">
+                  <h3>{perm.key}</h3>
+                  <span>ID {perm.id}</span>
+                </div>
+                <div className="permission-card-body">
+                  {roles.map((r) => (
+                    <p key={r.id}>
+                      <strong>{r.name}: </strong>
+                      <select
+                        value={matrix[perm.key]?.[r.name] ?? "false"}
+                        onChange={(e) =>
+                          updateCell(r.name, perm.key, e.target.value)
+                        }
+                      >
+                        <option value="true">true</option>
+                        <option value="false">false</option>
+                        <option value="self_only">self_only</option>
+                      </select>
+                    </p>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
           <table className="permissions-table">
             <thead>
               <tr>
