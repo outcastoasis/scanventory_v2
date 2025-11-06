@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import "../styles/AdminPermissions.css";
 import PermissionForm from "../components/PermissionForm";
 import { getToken } from "../utils/authUtils";
+import AdminDropdown from "../components/AdminDropdown";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -15,15 +16,15 @@ export default function AdminPermissions() {
     const checkAccess = async () => {
       try {
         const res = await fetch(`${API_URL}/api/me`, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-          },
+          headers: { Authorization: `Bearer ${getToken()}` },
         });
 
         const data = await res.json();
 
         if (data.permissions?.access_admin_panel !== "true") {
           navigate("/");
+        } else {
+          setUserPermissions(data.permissions || {});
         }
       } catch (err) {
         navigate("/");
@@ -45,6 +46,7 @@ export default function AdminPermissions() {
 
   const [showForm, setShowForm] = useState(false);
   const [editingPermission, setEditingPermission] = useState(null);
+  const [userPermissions, setUserPermissions] = useState({});
 
   // Daten laden
   useEffect(() => {
@@ -181,12 +183,15 @@ export default function AdminPermissions() {
     <div className="permissions-page">
       <div className="permissions-header">
         <h2 className="permissions-title">Rechteverwaltung</h2>
-        <button
-          className="permissions-back-button"
-          onClick={() => navigate("/")}
-        >
-          ← Zurück zur Startseite
-        </button>
+        <div className="permissions-header-actions">
+          <AdminDropdown permissions={userPermissions} />
+          <button
+            className="permissions-back-button"
+            onClick={() => navigate("/")}
+          >
+            ← Zurück zur Startseite
+          </button>
+        </div>
       </div>
 
       {error && <p className="permissions-error">{error}</p>}

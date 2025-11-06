@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import "../styles/AdminPanel.css";
 import { getToken } from "../utils/authUtils";
 import StaticQrCodesTable from "../components/StaticQrCodesTable";
+import AdminDropdown from "../components/AdminDropdown";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -298,12 +299,15 @@ function AdminPanel() {
     <div className="adminpanel-page">
       <div className="adminpanel-header">
         <h2 className="adminpanel-title">Admin-Panel</h2>
-        <button
-          className="adminpanel-back-button"
-          onClick={() => navigate("/")}
-        >
-          ← Zurück zur Startseite
-        </button>
+        <div className="adminpanel-header-actions">
+          <AdminDropdown permissions={permissions} />
+          <button
+            className="adminpanel-back-button"
+            onClick={() => navigate("/")}
+          >
+            ← Zurück zur Startseite
+          </button>
+        </div>
       </div>
 
       {/* Kategorien */}

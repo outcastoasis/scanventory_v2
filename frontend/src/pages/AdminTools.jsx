@@ -10,6 +10,7 @@ import "../styles/AdminTools.css";
 import "../styles/ToolImportModal.css";
 import { getToken } from "../utils/authUtils";
 import ToolImportModal from "../components/ToolImportModal";
+import AdminDropdown from "../components/AdminDropdown";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -224,9 +225,12 @@ export default function AdminTools() {
     <div className="tools-page">
       <div className="tools-header">
         <h2 className="tools-title">Werkzeugverwaltung</h2>
-        <button className="tools-back-button" onClick={() => navigate("/")}>
-          ← Zurück zur Startseite
-        </button>
+        <div className="tools-header-actions">
+          <AdminDropdown permissions={permissions} />
+          <button className="tools-back-button" onClick={() => navigate("/")}>
+            ← Zurück zur Startseite
+          </button>
+        </div>
       </div>
 
       {error && <p className="tools-error">{error}</p>}

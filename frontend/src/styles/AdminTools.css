@@ -542,3 +542,10 @@ button:disabled {
     display: block;
   }
 }
+
+.tools-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-left: auto;
+}

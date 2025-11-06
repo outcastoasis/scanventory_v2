@@ -9,6 +9,7 @@ import QrModal from "../components/QrModal";
 import "../styles/AdminUsers.css";
 import { getToken } from "../utils/authUtils";
 import UserImportModal from "../components/UserImportModal";
+import AdminDropdown from "../components/AdminDropdown";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -243,9 +244,12 @@ function AdminUsers() {
     <div className="users-page">
       <div className="users-header">
         <h2 className="users-title">Benutzerverwaltung</h2>
-        <button className="users-back-button" onClick={() => navigate("/")}>
-          ← Zurück zur Startseite
-        </button>
+        <div className="users-header-actions">
+          <AdminDropdown permissions={permissions} />
+          <button className="users-back-button" onClick={() => navigate("/")}>
+            ← Zurück zur Startseite
+          </button>
+        </div>
       </div>
 
       {error && <p className="users-error">{error}</p>}

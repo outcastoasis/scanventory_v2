@@ -288,3 +288,10 @@
     min-width: 100px;
   }
 }
+
+.adminpanel-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-left: auto;
+}
