@@ -10,6 +10,29 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default function AdminPermissions() {
   const navigate = useNavigate();
 
+  // Zugriff prüfen – analog AdminPanel
+  useEffect(() => {
+    const checkAccess = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/me`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        });
+
+        const data = await res.json();
+
+        if (data.permissions?.access_admin_panel !== "true") {
+          navigate("/");
+        }
+      } catch (err) {
+        navigate("/");
+      }
+    };
+
+    checkAccess();
+  }, []);
+
   const [roles, setRoles] = useState([]); // [{id,name}]
   const [permissions, setPermissions] = useState([]); // [{id,key}]
   const [matrix, setMatrix] = useState({}); // { permKey: { roleName: "true|false|self_only" } }

@@ -1,7 +1,11 @@
 # backend/routes/users.py
 from flask import Blueprint, request, jsonify, make_response
 from models import db, User, Role, Company
-from utils.permissions import requires_permission, get_token_payload
+from utils.permissions import (
+    requires_permission,
+    get_token_payload,
+    requires_any_permission,
+)
 from werkzeug.security import generate_password_hash
 import csv
 from io import StringIO, BytesIO
@@ -203,14 +207,14 @@ def get_next_user_qr():
 
 # Company routes
 @users_bp.route("/api/companies", methods=["GET"])
-@requires_permission("manage_users")
+@requires_any_permission("access_admin_panel", "manage_users")
 def list_companies():
     companies = Company.query.order_by(Company.name.asc()).all()
     return jsonify([c.serialize() for c in companies])
 
 
 @users_bp.route("/api/companies", methods=["POST"])
-@requires_permission("manage_users")
+@requires_any_permission("access_admin_panel", "manage_users")
 def create_company():
     data = request.get_json() or {}
     name = data.get("name", "").strip()
@@ -228,7 +232,7 @@ def create_company():
 
 
 @users_bp.route("/api/companies/<int:comp_id>", methods=["PATCH"])
-@requires_permission("manage_users")
+@requires_any_permission("access_admin_panel", "manage_users")
 def update_company(comp_id):
     company = Company.query.get_or_404(comp_id)
     data = request.get_json() or {}
@@ -243,7 +247,7 @@ def update_company(comp_id):
 
 
 @users_bp.route("/api/companies/<int:comp_id>", methods=["DELETE"])
-@requires_permission("manage_users")
+@requires_any_permission("access_admin_panel", "manage_users")
 def delete_company(comp_id):
     company = Company.query.get_or_404(comp_id)
 

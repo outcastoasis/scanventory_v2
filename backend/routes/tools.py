@@ -9,7 +9,11 @@ from models import (
     Permission,
     ToolCategory,
 )
-from utils.permissions import requires_permission, get_token_payload
+from utils.permissions import (
+    requires_permission,
+    get_token_payload,
+    requires_any_permission,
+)
 from datetime import datetime
 from pytz import timezone
 import pytz
@@ -358,7 +362,7 @@ def get_tool_info(qr_code):
 
 
 @tools_bp.route("/api/categories", methods=["GET"])
-@requires_permission("manage_tools")
+@requires_any_permission("access_admin_panel", "manage_tools")
 def list_categories():
 
     categories = ToolCategory.query.order_by(ToolCategory.name.asc()).all()
@@ -366,7 +370,7 @@ def list_categories():
 
 
 @tools_bp.route("/api/categories/<int:cat_id>", methods=["PATCH"])
-@requires_permission("manage_tools")
+@requires_any_permission("access_admin_panel", "manage_tools")
 def update_category(cat_id):
 
     category = ToolCategory.query.get_or_404(cat_id)
@@ -383,7 +387,7 @@ def update_category(cat_id):
 
 
 @tools_bp.route("/api/categories/<int:cat_id>", methods=["DELETE"])
-@requires_permission("manage_tools")
+@requires_any_permission("access_admin_panel", "manage_tools")
 def delete_category(cat_id):
 
     category = ToolCategory.query.get_or_404(cat_id)
@@ -399,7 +403,7 @@ def delete_category(cat_id):
 
 
 @tools_bp.route("/api/categories", methods=["POST"])
-@requires_permission("manage_tools")
+@requires_any_permission("access_admin_panel", "manage_tools")
 def create_category():
 
     data = request.get_json() or {}

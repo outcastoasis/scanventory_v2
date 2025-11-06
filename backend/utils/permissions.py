@@ -68,3 +68,31 @@ def requires_permission(permission_key):
         return decorated_function
 
     return decorator
+
+
+def requires_any_permission(*required_keys):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            payload = get_token_payload()
+            if not payload:
+                return jsonify({"error": "Nicht authentifiziert"}), 401
+
+            user = User.query.get(payload["user_id"])
+            if not user or not user.role:
+                return jsonify({"error": "Zugriff verweigert"}), 403
+
+            user_perms = {
+                rp.permission.key
+                for rp in user.role.permissions
+                if rp.value.lower() == "true"
+            }
+
+            if not any(key in user_perms for key in required_keys):
+                return jsonify({"error": "Zugriff verweigert"}), 403
+
+            return f(*args, **kwargs)
+
+        return wrapper
+
+    return decorator

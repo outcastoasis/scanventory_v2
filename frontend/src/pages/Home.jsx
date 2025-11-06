@@ -68,6 +68,7 @@ function Home() {
   const returnTimerRef = useRef(null);
   const [returnCountdown, setReturnCountdown] = useState(null);
   const returnCountdownIntervalRef = useRef(null);
+  const [permissions, setPermissions] = useState({});
 
   // Grünes aufleuchten bei erfolgreichen Scan
   useEffect(() => {
@@ -193,15 +194,32 @@ function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(loginData),
     })
-      .then((res) => {
+      .then(async (res) => {
         if (!res.ok) throw new Error("Login fehlgeschlagen");
-        return res.json();
-      })
-      .then((data) => {
+        const data = await res.json();
+
+        // Token & Basisdaten speichern
         setToken(data.token, rememberMe);
         setLoggedInUser(data.username);
         setRole(data.role);
         setLoginData({ username: "", password: "" });
+
+        // Berechtigungen separat aus /api/me laden
+        try {
+          const meRes = await fetch(`${API_URL}/api/me`, {
+            headers: {
+              Authorization: `Bearer ${data.token}`,
+            },
+          });
+          const meData = await meRes.json();
+          if (meRes.ok) {
+            setPermissions(meData.permissions || {});
+          }
+        } catch (err) {
+          console.error("Fehler beim Laden der Rechte:", err);
+        }
+
+        // Seite neu laden (optional)
         setTimeout(() => window.location.reload(), 50);
       })
       .catch(() => alert("❌ Ungültiger Login"));
@@ -499,6 +517,19 @@ function Home() {
           setLoggedInUser(decoded.username || "");
           setRole(decoded.role);
 
+          fetch(`${API_URL}/api/me`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.permissions) setPermissions(data.permissions);
+            })
+            .catch((err) =>
+              console.error("Fehler beim Abrufen der Berechtigungen:", err)
+            );
+
           const timeout = decoded.exp * 1000 - Date.now();
           const logoutTimer = setTimeout(() => {
             clearToken();
@@ -606,22 +637,26 @@ function Home() {
               Angemeldet als: <strong>{loggedInUser}</strong>
             </div>
             <div className="login-actions">
-              {(role === "admin" || role === "supervisor") && (
+              {(permissions.manage_users === "true" ||
+                permissions.manage_tools === "true" ||
+                permissions.access_admin_panel === "true") && (
                 <div className="admin-menu-wrapper">
                   <button className="admin-toggle">
                     <FontAwesomeIcon icon={faCog} />
                   </button>
                   <div className="admin-dropdown">
-                    <button onClick={() => (window.location.href = "/tools")}>
-                      <FontAwesomeIcon icon={faTools} /> Werkzeuge
-                    </button>
-                    {role === "admin" && (
+                    {permissions.manage_tools === "true" && (
+                      <button onClick={() => (window.location.href = "/tools")}>
+                        <FontAwesomeIcon icon={faTools} /> Werkzeuge
+                      </button>
+                    )}
+                    {permissions.manage_users === "true" && (
+                      <button onClick={() => (window.location.href = "/users")}>
+                        <FontAwesomeIcon icon={faUser} /> Benutzer
+                      </button>
+                    )}
+                    {permissions.access_admin_panel === "true" && (
                       <>
-                        <button
-                          onClick={() => (window.location.href = "/users")}
-                        >
-                          <FontAwesomeIcon icon={faUser} /> Benutzer
-                        </button>
                         <button
                           onClick={() =>
                             (window.location.href = "/permissions")
