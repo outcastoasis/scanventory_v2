@@ -282,11 +282,11 @@ sudo nginx -t && sudo systemctl restart nginx
 
 - [x] CSV-Import für Benutzer und Werkzeuge
 - Fehler-Log-Anzeige im Adminpanel
-- Responsive Redesign für mobile Geräte
+- [x] Responsive Redesign für mobile Geräte
 - Notizen für reservationen fixen -> werden aktuell nicht gespeichert
 - create_reservations Rechte in manuelle reservation einbauen, damit auch Admins oder Supervisor für andere User reservieren können.
 - "Last Login" Datum bei Profilen einfügen und speichern für Kontrolle auf inaktive Konten.
-- Admin Buttons abhängig von Rollen machen (sichtbarkeit der Adminpages je nach berechtigungen des eingeloggten Users)
+- [x] Admin Buttons abhängig von Rollen machen (sichtbarkeit der Adminpages je nach berechtigungen des eingeloggten Users)
 - Reservationen bearbeiten wenn möglich mit "isediting" versehen. Dass popup bei anderen dann ebenfalls für bearbeitung geblockt ist
 - alle User können alle Rückgaben tätigen (momentan wenn user eingeloggt nur die eigenen)
 - Fehler abfangen, wenn User gelöscht wird mit aktuellen Reservationen -> zus. Reservationen dieses Users mitlöschen
