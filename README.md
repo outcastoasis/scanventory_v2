@@ -289,7 +289,7 @@ sudo nginx -t && sudo systemctl restart nginx
 - [x] Admin Buttons abhängig von Rollen machen (sichtbarkeit der Adminpages je nach berechtigungen des eingeloggten Users)
 - Reservationen bearbeiten wenn möglich mit "isediting" versehen. Dass popup bei anderen dann ebenfalls für bearbeitung geblockt ist
 - alle User können alle Rückgaben tätigen (momentan wenn user eingeloggt nur die eigenen)
-- Fehler abfangen, wenn User gelöscht wird mit aktuellen Reservationen -> zus. Reservationen dieses Users mitlöschen
+- [x] Fehler abfangen, wenn User gelöscht wird mit aktuellen Reservationen -> Fehlermeldung, um 90 Tage zu warten (damit alle Reservationen gelöscht sind danach)
 
 ---
 

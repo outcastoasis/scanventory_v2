@@ -90,19 +90,28 @@ function AdminUsers() {
     if (confirm("Benutzer wirklich löschen?")) {
       fetch(`${API_URL}/api/users/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
+        headers: { Authorization: `Bearer ${getToken()}` },
       })
         .then(async (res) => {
-          const data = await res.json();
-          if (!res.ok) {
-            throw new Error(data.error || "Fehler beim Löschen.");
+          let data = {};
+          try {
+            data = await res.json();
+          } catch (e) {
+            // Falls Backend nichts sendet
           }
+
+          if (!res.ok) {
+            // Backend sendet: { error: "..."}
+            alert(data.error || "Löschen nicht möglich.");
+            return;
+          }
+
+          // Erfolgreich → UI aktualisieren
           setUsers(users.filter((u) => u.id !== id));
         })
         .catch((err) => {
-          alert(err.message);
+          // Netzwerkfehler / CORS / Server down
+          alert("Serverfehler: " + err.message);
         });
     }
   };

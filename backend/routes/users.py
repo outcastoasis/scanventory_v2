@@ -1,6 +1,6 @@
 # backend/routes/users.py
 from flask import Blueprint, request, jsonify, make_response
-from models import db, User, Role, Company
+from models import db, User, Role, Company, Reservation
 from utils.permissions import (
     requires_permission,
     get_token_payload,
@@ -168,6 +168,17 @@ def delete_user(user_id):
     user = User.query.get(user_id)
     if not user:
         return jsonify({"error": "Benutzer nicht gefunden"}), 404
+
+    active_reservations = Reservation.query.filter_by(user_id=user_id).count()
+    if active_reservations > 0:
+        return (
+            jsonify(
+                {
+                    "error": "Benutzer kann nicht gelöscht werden, da noch Reservationen vorhanden sind. Warte mindestens 90 Tage seit der letzten Reservation, bevor du den Benutzer löschst."
+                }
+            ),
+            400,
+        )
 
     db.session.delete(user)
     db.session.commit()
