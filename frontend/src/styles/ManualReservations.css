@@ -98,6 +98,17 @@
   width: 220px;
 }
 
+.manualres-row select {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.95rem;
+  background: #f9fafb;
+  color: #111827;
+  width: 220px;
+  max-width: 100%;
+}
+
 .manualres-button {
   background: linear-gradient(90deg, #2563eb, #1d4ed8);
   color: #fff;
@@ -361,5 +372,10 @@ button:disabled {
   .manualres-reserve-button button {
     width: 100%;
     border-radius: 8px;
+  }
+
+  .manualres-row select {
+    width: 100%;
+    font-size: 1rem;
   }
 }

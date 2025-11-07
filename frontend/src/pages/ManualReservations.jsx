@@ -15,6 +15,9 @@ function ManualReservations() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [hasSetStartDefault, setHasSetStartDefault] = useState(false);
+  const [permissions, setPermissions] = useState({});
+  const [availableUsers, setAvailableUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
   const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$|^\/+/, "");
 
@@ -46,6 +49,31 @@ function ManualReservations() {
         : { role: "guest" },
     [loggedInUser]
   );
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+
+    fetchWithAuth(`${API_URL}/api/role-permissions/current`)
+      .then((res) => (res.ok ? res.json() : {}))
+      .then((data) => {
+        setPermissions(data);
+
+        if (data.create_reservations === "true") {
+          fetchWithAuth(`${API_URL}/api/users`)
+            .then((res) => res.json())
+            .then((users) => {
+              setAvailableUsers(users);
+              setSelectedUserId(currentUser.id); // ✅ Hier Standard setzen
+            });
+        } else {
+          setSelectedUserId(currentUser.id); // ✅ Auch für self_only absichern
+        }
+      })
+      .catch(() => {
+        setPermissions({});
+        setSelectedUserId(currentUser.id); // Fallback
+      });
+  }, [currentUser]);
 
   const searchAvailableTools = async () => {
     setTools([]);
@@ -90,7 +118,10 @@ function ManualReservations() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            user_id: currentUser.id,
+            user_id:
+              permissions.create_reservations === "true"
+                ? selectedUserId || currentUser.id
+                : currentUser.id,
             tool_id: toolId,
             start_time: start.toISOString(),
             end_time: end.toISOString(),
@@ -111,6 +142,33 @@ function ManualReservations() {
     }
   };
 
+  const groupedUsersByCompany = useMemo(() => {
+    const groups = {};
+    for (const user of availableUsers) {
+      const company = user.company_name || "Andere";
+      if (!groups[company]) groups[company] = [];
+      groups[company].push(user);
+    }
+
+    // Optional: alphabetisch nach Firma und Name sortieren
+    const sortedGroups = {};
+    Object.keys(groups)
+      .sort((a, b) => a.localeCompare(b))
+      .forEach((company) => {
+        sortedGroups[company] = groups[company].sort((a, b) => {
+          const nameA = `${a.first_name || ""} ${
+            a.last_name || ""
+          }`.toLowerCase();
+          const nameB = `${b.first_name || ""} ${
+            b.last_name || ""
+          }`.toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+      });
+
+    return sortedGroups;
+  }, [availableUsers]);
+
   return (
     <div className="manualres-container">
       <header className="manualres-header">
@@ -126,7 +184,9 @@ function ManualReservations() {
             </div>
           )}
           <div className="manualres-actions">
-            <button onClick={() => (window.location.href = "/")}>← Zurück zur Startseite</button>
+            <button onClick={() => (window.location.href = "/")}>
+              ← Zurück zur Startseite
+            </button>
           </div>
         </div>
       </header>
@@ -176,7 +236,35 @@ function ManualReservations() {
             placeholderText="Enddatum & Zeit wählen"
           />
 
-          <button className="manualres-button" onClick={searchAvailableTools} disabled={loading}>
+          {permissions.create_reservations === "true" && (
+            <div className="manualres-row">
+              <label>Für Benutzer:</label>
+              <select
+                value={selectedUserId || ""}
+                onChange={(e) => setSelectedUserId(e.target.value)}
+              >
+                <option value="">-- Benutzer auswählen --</option>
+                {Object.entries(groupedUsersByCompany).map(
+                  ([company, users]) => (
+                    <optgroup key={company} label={company}>
+                      {users.map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {user.first_name || ""} {user.last_name || ""} (
+                          {company})
+                        </option>
+                      ))}
+                    </optgroup>
+                  )
+                )}
+              </select>
+            </div>
+          )}
+
+          <button
+            className="manualres-button"
+            onClick={searchAvailableTools}
+            disabled={loading}
+          >
             Werkzeuge suchen
           </button>
         </div>

@@ -283,7 +283,7 @@ sudo nginx -t && sudo systemctl restart nginx
 - [x] CSV-Import für Benutzer und Werkzeuge
 - Fehler-Log-Anzeige im Adminpanel
 - [x] Responsive Redesign für mobile Geräte
-- Notizen für reservationen fixen -> werden aktuell nicht gespeichert
+- Notizen für reservationen fixen -> werden aktuell nicht gespeichert -> Muss in Datenbank erweitert werden
 - create_reservations Rechte in manuelle reservation einbauen, damit auch Admins oder Supervisor für andere User reservieren können.
 - "Last Login" Datum bei Profilen einfügen und speichern für Kontrolle auf inaktive Konten.
 - [x] Admin Buttons abhängig von Rollen machen (sichtbarkeit der Adminpages je nach berechtigungen des eingeloggten Users)

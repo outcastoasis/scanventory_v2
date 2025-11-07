@@ -211,7 +211,7 @@ export default function ReservationPopup({
         {!!error && <div className="alert alert-error">{error}</div>}
         {!isLoggedIn && (
           <div className="alert alert-warning">
-            Bitte anmelden, um zu reservieren.
+            Bitte anmelden, um zu bearbeiten.
           </div>
         )}
 
