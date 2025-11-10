@@ -283,10 +283,11 @@ sudo nginx -t && sudo systemctl restart nginx
 - Fehler-Log-Anzeige im Adminpanel -> Muss in Datenbank erweitert werden
 - Notizen für reservationen fixen -> werden aktuell nicht gespeichert -> Muss in Datenbank erweitert werden
 - "Last Login" Datum bei Profilen einfügen und speichern für Kontrolle auf inaktive Konten. -> Muss in Datenbank erweitert werden
-- Reservationen bearbeiten wenn möglich mit "isediting" versehen. Dass popup bei anderen dann ebenfalls für bearbeitung geblockt ist
-- alle User können alle Rückgaben tätigen (momentan wenn user eingeloggt nur die eigenen)
+- Reservationen bearbeiten wenn möglich mit "isediting" versehen. Dass popup bei anderen dann ebenfalls für bearbeitung geblockt ist. -> Muss in Datenbank erweitert werden
+- Passwort ändern funktion einbauen wenn eingeloggt. Sonst hinweis, dass der Admin das PW zurücksetzen muss
+- [x] alle User können alle Rückgaben tätigen (momentan wenn user eingeloggt nur die eigenen)
 - [x] Fehler abfangen, wenn User gelöscht wird mit aktuellen Reservationen -> Fehlermeldung, um 90 Tage zu warten (damit alle Reservationen gelöscht sind danach)
-- [x] CSV-Import für Benutzer und Werkzeuge 
+- [x] CSV-Import für Benutzer und Werkzeuge
 - [x] Responsive Redesign für mobile Geräte
 - [x] create_reservations Rechte in manuelle reservation einbauen, damit auch Admins oder Supervisor für andere User reservieren können.
 - [x] Admin Buttons abhängig von Rollen machen (sichtbarkeit der Adminpages je nach berechtigungen des eingeloggten Users)

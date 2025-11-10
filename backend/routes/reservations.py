@@ -367,13 +367,6 @@ def delete_reservation(res_id):
 @reservation_bp.route("/return-tool", methods=["PATCH", "POST"])
 def return_tool():
     """Werkzeug zurückgeben – setzt Endzeit auf jetzt, aber nur wenn aktuell ausgeliehen."""
-    try:
-        payload = get_token_payload()
-        user_id = payload["user_id"] if payload else None
-    except Exception:
-        user_id = None
-
-    # Eingabedaten lesen (JSON oder Form)
     data = request.get_json(silent=True) or request.form or {}
     tool_code = data.get("tool", "").strip().lower()
     if not tool_code:
@@ -393,17 +386,6 @@ def return_tool():
         .order_by(Reservation.start_time.desc())
         .first()
     )
-
-    # Berechtigungen prüfen (nur wenn eingeloggter User)
-    if user_id:
-        val = _role_value_for(user_id, "edit_reservations")
-        if val == "false":
-            return jsonify({"error": "Keine Berechtigung"}), 403
-        if val == "self_only" and active_res and active_res.user_id != user_id:
-            return (
-                jsonify({"error": "Keine Berechtigung für fremde Reservationen"}),
-                403,
-            )
 
     if active_res:
         # Rückgabe durchführen
