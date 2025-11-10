@@ -75,3 +75,45 @@ def get_me():
             "user_id": user.id,
         }
     )
+
+
+from werkzeug.security import check_password_hash, generate_password_hash
+from utils.auth_utils import get_current_user
+
+
+@auth_bp.route("/change-password", methods=["POST"])
+def change_password():
+    user_info = get_current_user()
+    if not user_info:
+        return jsonify({"error": "Nicht eingeloggt"}), 401
+
+    data = request.get_json() or {}
+    old_pw = data.get("old_password", "")
+    new_pw = data.get("new_password", "")
+
+    user = user_info["user"]
+
+    # Altes Passwort prüfen
+    if not check_password_hash(user.password, old_pw):
+        return jsonify({"error": "Altes Passwort ist falsch"}), 400
+
+    # Passwort-Richtlinien prüfen
+    if (
+        len(new_pw) < 8
+        or not any(c.isdigit() for c in new_pw)
+        or not any(c.isupper() for c in new_pw)
+    ):
+        return (
+            jsonify(
+                {
+                    "error": "Passwort muss mind. 8 Zeichen lang sein, eine Zahl und einen Grossbuchstaben enthalten."
+                }
+            ),
+            400,
+        )
+
+    # Neues Passwort setzen
+    user.password = generate_password_hash(new_pw)
+    db.session.commit()
+
+    return jsonify({"message": "Passwort erfolgreich geändert"}), 200

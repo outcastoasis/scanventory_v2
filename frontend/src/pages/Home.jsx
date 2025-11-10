@@ -63,6 +63,30 @@ function Home() {
   const [scannedUser, setScannedUser] = useState(null);
   const [scannedTool, setScannedTool] = useState(null);
 
+  const [showChangePw, setShowChangePw] = useState(false);
+  const [pwData, setPwData] = useState({ old_password: "", new_password: "" });
+  const [changingPw, setChangingPw] = useState(false);
+
+  const handleChangePassword = async () => {
+    setChangingPw(true);
+    try {
+      const res = await fetchWithAuth(`${API_URL}/api/change-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pwData),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Fehler beim Speichern");
+      alert("✅ Passwort erfolgreich geändert");
+      setShowChangePw(false);
+      setPwData({ old_password: "", new_password: "" });
+    } catch (err) {
+      alert("❌ " + err.message);
+    } finally {
+      setChangingPw(false);
+    }
+  };
+
   const [flashOK, setFlashOK] = useState(false);
 
   const returnTimerRef = useRef(null);
@@ -601,17 +625,30 @@ function Home() {
                   setLoginData({ ...loginData, username: e.target.value })
                 }
               />
-              <input
-                type="password"
-                placeholder="Passwort"
-                value={loginData.password}
-                onChange={(e) =>
-                  setLoginData({ ...loginData, password: e.target.value })
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleLogin();
-                }}
-              />
+
+              <div className="password-with-forgot">
+                <input
+                  type="password"
+                  placeholder="Passwort"
+                  value={loginData.password}
+                  onChange={(e) =>
+                    setLoginData({ ...loginData, password: e.target.value })
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleLogin();
+                  }}
+                />
+                <div className="forgot-password-wrapper">
+                  <span className="forgot-password-text">
+                    Passwort vergessen?
+                  </span>
+                  <div className="forgot-password-tooltip">
+                    Melden Sie sich beim Systemadministrator, um Ihr
+                    Passwort zurückzusetzen.
+                  </div>
+                </div>
+              </div>
+
               <label className="remember-me">
                 <input
                   type="checkbox"
@@ -622,8 +659,9 @@ function Home() {
               </label>
               <button onClick={handleLogin}>Login</button>
             </div>
+
             <button
-              className="admin-toggle help-nav-button"
+              className="admin-toggle-help help-nav-button"
               onClick={() => (window.location.href = "/help")}
               title="Hilfe / Anleitung"
               aria-label="Hilfe / Anleitung"
@@ -636,6 +674,12 @@ function Home() {
             <div className="user-label">
               Angemeldet als: <strong>{loggedInUser}</strong>
             </div>
+            <button
+              className="change-password-btn"
+              onClick={() => setShowChangePw(true)}
+            >
+              Passwort ändern
+            </button>
             <div className="login-actions">
               {(permissions.manage_users === "true" ||
                 permissions.manage_tools === "true" ||
@@ -682,7 +726,7 @@ function Home() {
               </button>
 
               <button
-                className="admin-toggle help-nav-button"
+                className="admin-toggle-help help-nav-button"
                 onClick={() => (window.location.href = "/help")}
                 title="Hilfe / Anleitung"
                 aria-label="Hilfe / Anleitung"
@@ -808,6 +852,54 @@ function Home() {
                   style={{ width: "140px", height: "140px" }}
                 />
                 <span className="duration-tile-label">Abbrechen</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showChangePw && (
+        <div
+          className="pw-overlay"
+          onClick={(e) => {
+            if (e.target.classList.contains("pw-overlay"))
+              setShowChangePw(false);
+          }}
+        >
+          <div className="pw-modal">
+            <h3>Passwort ändern</h3>
+            <input
+              type="password"
+              placeholder="Altes Passwort"
+              value={pwData.old_password}
+              onChange={(e) =>
+                setPwData({ ...pwData, old_password: e.target.value })
+              }
+            />
+            <input
+              type="password"
+              placeholder="Neues Passwort"
+              value={pwData.new_password}
+              onChange={(e) =>
+                setPwData({ ...pwData, new_password: e.target.value })
+              }
+            />
+            <p className="pw-hint">
+              Das Passwort muss mindestens 8 Zeichen, eine Zahl und einen
+              Grossbuchstaben enthalten.
+            </p>
+            <div className="pw-buttons">
+              <button
+                className="pw-save-btn"
+                onClick={handleChangePassword}
+                disabled={changingPw}
+              >
+                {changingPw ? "Speichern..." : "Speichern"}
+              </button>
+              <button
+                className="pw-cancel-btn"
+                onClick={() => setShowChangePw(false)}
+              >
+                Abbrechen
               </button>
             </div>
           </div>
