@@ -197,6 +197,22 @@ function AdminPanel() {
       return 0;
     });
 
+  // Pagination für Reservationen
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const totalPages = Math.ceil(sortedReservations.length / itemsPerPage);
+
+  // Sichtbare Einträge
+  const paginatedReservations = sortedReservations.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   // --- Actions ---
   const handleDeleteReservation = async (id) => {
     if (!confirm("Reservation wirklich löschen?")) return;
@@ -593,7 +609,7 @@ function AdminPanel() {
             </tr>
           </thead>
           <tbody>
-            {sortedReservations.map((r) => (
+            {paginatedReservations.map((r) => (
               <tr key={r.id}>
                 <td>{r.id}</td>
                 <td>{r.user?.username}</td>
@@ -612,10 +628,29 @@ function AdminPanel() {
             ))}
           </tbody>
         </table>
+        <div className="adminpanel-pagination">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            ← Zurück
+          </button>
+
+          <span>
+            Seite {currentPage} von {totalPages}
+          </span>
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Weiter →
+          </button>
+        </div>
       </div>
 
       <div className="adminpanel-list-mobile">
-        {sortedReservations.map((r) => (
+        {paginatedReservations.map((r) => (
           <div className="adminpanel-card" key={r.id}>
             <div className="adminpanel-card-header">
               <h3>
