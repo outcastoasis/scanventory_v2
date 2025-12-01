@@ -125,7 +125,6 @@ npm run dev
 ```ini
 # frontend/.env
 VITE_API_URL=http://localhost:5050
-# VITE_API_URL=http://server-scanventory (wenn auf RPI installiert -> Hostname von Server-RPI)
 ```
 
 Frontend erreichbar unter: [http://localhost:5173](http://localhost:5173)
@@ -146,7 +145,6 @@ sudo apt install git python3 python3-pip python3-venv nginx nodejs npm sqlite3 -
 ### 2. Projekt klonen
 
 ```bash
-cd /opt
 sudo git clone https://github.com/outcastoasis/scanventory_v2.git
 sudo chown -R $USER:$USER scanventory_v2
 ```
@@ -179,20 +177,32 @@ python3 app.py
 ### 6. Gunicorn Service einrichten
 
 ```bash
-sudo nano /etc/systemd/system/scanventory.service
+sudo nano /etc/systemd/system/scanventory_v2.service
 ```
 
 **Inhalt:**
 
 ```
 [Unit]
-Description=Scanventory Gunicorn
+Description=Scanventory v2 Flask Backend with Gunicorn
 After=network.target
 
 [Service]
 User=pi
-WorkingDirectory=/opt/scanventory_v2/backend
-ExecStart=/opt/scanventory_v2/backend/venv/bin/gunicorn -w 4 -b 127.0.0.1:8000 app:app
+Group=www-data
+
+# KORREKTER Pfad zum Backend
+WorkingDirectory=/home/pi/scanventory_v2/backend
+
+# KORREKTER Pfad zum venv-Binary-Ordner
+Environment="PATH=/home/pi/scanventory_v2/backend/venv/bin"
+
+# KORREKTER Pfad zu gunicorn
+ExecStart=/home/pi/scanventory_v2/backend/venv/bin/gunicorn \
+    --workers 3 \
+    --bind unix:/run/scanventory_v2/scanventory_v2.sock \
+    "app:create_app()"
+
 Restart=always
 
 [Install]
@@ -202,14 +212,18 @@ WantedBy=multi-user.target
 Service starten:
 
 ```bash
-sudo systemctl daemon-reload && sudo systemctl enable --now scanventory
+sudo mkdir -p /run
+sudo systemctl daemon-reload
+sudo systemctl enable scanventory_v2
+sudo systemctl start scanventory_v2
+sudo systemctl status scanventory_v2
 ```
 
 ### 7. Frontend vorbereiten
 
 ```ini
 # Datei: frontend/.env
-VITE_API_URL=http://server-scanventory
+VITE_API_URL=http://localhost:5050
 ```
 
 ```bash
@@ -221,7 +235,7 @@ npm run build
 ### 8. Nginx konfigurieren
 
 ```bash
-sudo nano /etc/nginx/sites-available/scanventory
+sudo nano /etc/nginx/sites-available/scanventory_v2
 ```
 
 **Inhalt:**
@@ -229,26 +243,30 @@ sudo nano /etc/nginx/sites-available/scanventory
 ```
 server {
     listen 80;
-    server_name server-scanventory;
+    server_name _;
 
-    root /opt/scanventory_v2/frontend/dist;
+    # React-Frontend
+    root /home/pi/scanventory_v2/frontend/dist;
     index index.html;
 
-    location /api {
-        proxy_pass http://127.0.0.1:8000/api;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-
+    # React Dateirouting
     location / {
         try_files $uri /index.html;
+    }
+
+    # API an Gunicorn weiterleiten
+    location /api {
+        proxy_pass http://unix:/run/scanventory_v2/scanventory_v2.sock;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
     }
 }
 ```
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/scanventory /etc/nginx/sites-enabled/
+sudo chmod o+rx /home/pi
+sudo ln -s /etc/nginx/sites-available/scanventory_v2 /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl restart nginx
 ```
 
