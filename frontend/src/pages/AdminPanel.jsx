@@ -5,7 +5,7 @@ import { getToken } from "../utils/authUtils";
 import StaticQrCodesTable from "../components/StaticQrCodesTable";
 import AdminDropdown from "../components/AdminDropdown";
 
-const API_URL = import.meta.env.VITE_API_URL;
+import API_URL from "../config/api";
 
 function AdminPanel() {
   const navigate = useNavigate();

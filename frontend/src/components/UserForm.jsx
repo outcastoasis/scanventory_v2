@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import "../styles/AdminUsers.css";
 import { getToken } from "../utils/authUtils";
 
-const API_URL = import.meta.env.VITE_API_URL;
+import API_URL from "../config/api";
 
 function UserForm({ user, onClose, onSave }) {
   const [username, setUsername] = useState(user?.username || "");

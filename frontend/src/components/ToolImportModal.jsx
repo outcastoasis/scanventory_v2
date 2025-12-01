@@ -2,7 +2,7 @@ import { useState } from "react";
 import "../styles/ToolImportModal.css";
 import { getToken } from "../utils/authUtils";
 
-const API_URL = import.meta.env.VITE_API_URL;
+import API_URL from "../config/api";
 
 export default function ToolImportModal({ onClose }) {
   const [selectedFile, setSelectedFile] = useState(null);

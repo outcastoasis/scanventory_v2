@@ -11,7 +11,7 @@ import { getToken } from "../utils/authUtils";
 import UserImportModal from "../components/UserImportModal";
 import AdminDropdown from "../components/AdminDropdown";
 
-const API_URL = import.meta.env.VITE_API_URL;
+import API_URL from "../config/api";
 
 function AdminUsers() {
   const [users, setUsers] = useState([]);

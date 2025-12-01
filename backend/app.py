@@ -1,3 +1,4 @@
+# backend/app.py
 from flask import Flask
 from flask_cors import CORS
 from models import db
@@ -37,19 +38,8 @@ app.config.from_object(Config())
 # DB & CORS
 db.init_app(app)
 migrate = Migrate(app, db)
-CORS(
-    app,
-    supports_credentials=True,
-    resources={
-        r"/api/*": {
-            "origins": [
-                "http://localhost:5173",
-                "http://127.0.0.1:5173",
-                "http://server-scanventory",
-            ]
-        }
-    },
-)
+CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "*"}})
+
 
 # Blueprints registrieren
 app.register_blueprint(reservation_bp, url_prefix="/api/reservations")
@@ -97,10 +87,14 @@ scheduler.add_job(
     seconds=30,
 )
 
-if __name__ == "__main__":
+
+def create_app():
     with app.app_context():
         db.create_all()
         create_initial_data(app)
         _job_reset_expired_borrowed_tools()
+    return app
 
-    app.run(debug=True, port=5050)
+
+if __name__ == "__main__":
+    create_app().run(debug=True, port=5050)

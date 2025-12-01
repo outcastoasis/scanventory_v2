@@ -6,7 +6,7 @@ import PermissionForm from "../components/PermissionForm";
 import { getToken } from "../utils/authUtils";
 import AdminDropdown from "../components/AdminDropdown";
 
-const API_URL = import.meta.env.VITE_API_URL;
+import API_URL from "../config/api";
 
 export default function AdminPermissions() {
   const navigate = useNavigate();
