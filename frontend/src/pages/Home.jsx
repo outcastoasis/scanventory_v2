@@ -643,8 +643,8 @@ function Home() {
                     Passwort vergessen?
                   </span>
                   <div className="forgot-password-tooltip">
-                    Melden Sie sich beim Systemadministrator, um Ihr
-                    Passwort zurückzusetzen.
+                    Melden Sie sich beim Systemadministrator, um Ihr Passwort
+                    zurückzusetzen.
                   </div>
                 </div>
               </div>
