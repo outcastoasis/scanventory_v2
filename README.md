@@ -191,13 +191,10 @@ After=network.target
 User=pi
 Group=www-data
 
-# KORREKTER Pfad zum Backend
 WorkingDirectory=/home/pi/scanventory_v2/backend
 
-# KORREKTER Pfad zum venv-Binary-Ordner
-Environment="PATH=/home/pi/scanventory_v2/backend/venv/bin"
+Environment="PATH=/home/pi/scanventory_v2/backend/venv/bin:/usr/bin:/bin"
 
-# KORREKTER Pfad zu gunicorn
 ExecStart=/home/pi/scanventory_v2/backend/venv/bin/gunicorn \
     --workers 3 \
     --bind unix:/run/scanventory_v2/scanventory_v2.sock \
@@ -207,12 +204,14 @@ Restart=always
 
 [Install]
 WantedBy=multi-user.target
+
 ```
 
 Service starten:
 
 ```bash
-sudo mkdir -p /run
+sudo mkdir -p /run/scanventory_v2
+sudo chown pi:www-data /run/scanventory_v2
 sudo systemctl daemon-reload
 sudo systemctl enable scanventory_v2
 sudo systemctl start scanventory_v2
