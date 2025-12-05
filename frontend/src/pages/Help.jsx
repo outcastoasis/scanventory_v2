@@ -26,11 +26,9 @@ export default function Help() {
         <section>
           <h2>Überblick</h2>
           <p>
-            Scanventory ist ein webbasiertes Werkzeugverwaltungssystem. Es
-            ermöglicht dir, Werkzeuge zu reservieren, auszugeben und
-            zurückzugeben – per Weboberfläche oder QR-Code-Scan. Alle Benutzer
-            sehen jederzeit den Kalender, in dem alle Reservierungen sichtbar
-            sind.
+            Mithilfe von diesem Tool "Scanventory" kannst du Werkzeuge in der
+            Werkstatt reservieren und ausleihen. Die Bedienung erfolgt entweder
+            über das Scannen von QR-Codes oder über die Weboberfläche.
           </p>
         </section>
 
