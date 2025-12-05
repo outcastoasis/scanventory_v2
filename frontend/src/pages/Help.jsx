@@ -59,8 +59,7 @@ export default function Help() {
           <h4>Mit WEB-Oberfläche</h4>
           <ol>
             <li>
-              Rufe folgende Adresse in deinem Webbrowser auf:
-              http://localhost:5173/
+              Rufe folgende Adresse in deinem Webbrowser auf: http://pizol
             </li>
             <li>Melde dich mit deinem Login an</li>
             <li>Gehe auf «+ Manuelle Reservation»</li>
@@ -82,14 +81,13 @@ export default function Help() {
           <p>Beachte: du kannst nur deine eigenen Einträge bearbeiten</p>
           <ol>
             <li>
-              Rufe folgende Adresse in deinem Webbrowser auf:
-              http://localhost:5173/
+              Rufe folgende Adresse in deinem Webbrowser auf: http://pizol
             </li>
             <li>Melde dich mit deinem Login an</li>
             <li>
               Wähle im Kalender den Eintrag aus welchen du bearbeiten willst
             </li>
-            <li>Ändere die Ausleihdauer und füge optional eine Notiz ein</li>
+            <li>Ändere die Ausleihdauer</li>
             <li>Speichere deine Änderungen</li>
             <li>Bearbeitung abgeschlossen</li>
           </ol>
@@ -106,97 +104,6 @@ export default function Help() {
             <li>Scanne das Werkzeug, welches du zurückgeben möchtest</li>
             <li>Rückgabe abgeschlossen</li>
           </ol>
-        </section>
-
-        {/* Rollen & Rechte */}
-        <section>
-          <h2>Übersicht zu Berechtigungen und Kalenderansicht</h2>
-          <p>
-            Grundprinzip: Alle sehen alles – aber nur bestimmte Rollen dürfen
-            etwas ändern.
-          </p>
-          <br></br>
-          <h4>Rollen und Rechte</h4>
-          <div className="table-wrap">
-            <table className="table">
-              <caption className="sr-only">
-                Rollen mit Beschreibung und Zugriffsrechten
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">Rolle</th>
-                  <th scope="col">Beschreibung</th>
-                  <th scope="col">Zugriffsrechte</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <th scope="row">Admin</th>
-                  <td>Vollzugriff auf alle Funktionen</td>
-                  <td>Benutzer-, Werkzeug- und Rechteverwaltung</td>
-                </tr>
-                <tr>
-                  <th scope="row">Supervisor</th>
-                  <td>Verantwortlicher für Werkzeuge</td>
-                  <td>Alle Reservierungen bearbeiten, Werkzeuge verwalten</td>
-                </tr>
-                <tr>
-                  <th scope="row">User</th>
-                  <td>Normale Benutzer</td>
-                  <td>Eigene Reservierungen erstellen/bearbeiten</td>
-                </tr>
-                <tr>
-                  <th scope="row">Guest</th>
-                  <td>Nur lesender Zugriff</td>
-                  <td>Kalender anzeigen</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <br></br>
-          <h4>Kalenderansicht</h4>
-          <p>
-            Die Kalenderansicht zeigt alle Reservierungen an – unabhängig vom
-            Login. Jeder Benutzer kann den aktuellen Belegungsplan der Werkzeuge
-            einsehen.
-          </p>
-
-          <div className="table-wrap">
-            <table className="table">
-              <caption className="sr-only">
-                Sichtbarkeit und Aktionen je Status/Rolle
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">Status</th>
-                  <th scope="col">Sichtbarkeit</th>
-                  <th scope="col">Aktionen</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <th scope="row">Nicht eingeloggt / QR-Scan</th>
-                  <td>Alle Reservierungen sichtbar</td>
-                  <td>Werkzeuge scannen, ausleihen, zurückgeben</td>
-                </tr>
-                <tr>
-                  <th scope="row">Eingeloggt (User)</th>
-                  <td>Alle sichtbar</td>
-                  <td>Eigene Reservierungen erstellen/bearbeiten</td>
-                </tr>
-                <tr>
-                  <th scope="row">Supervisor</th>
-                  <td>Alle sichtbar</td>
-                  <td>Alle Reservierungen bearbeiten, Werkzeuge verwalten</td>
-                </tr>
-                <tr>
-                  <th scope="row">Admin</th>
-                  <td>Alle sichtbar</td>
-                  <td>Alles bearbeiten, Benutzer- &amp; Rechte verwalten</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
         </section>
       </main>
     </div>
