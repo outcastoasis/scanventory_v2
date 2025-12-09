@@ -166,6 +166,23 @@ function AdminUsers() {
   const handleExportAllQR = async () => {
     const zip = new JSZip();
 
+    function wrapLines(ctx, text, maxWidth) {
+      const words = text.split(" ");
+      const lines = [];
+      let line = "";
+      for (let w of words) {
+        const test = line + w + " ";
+        if (ctx.measureText(test).width > maxWidth && line !== "") {
+          lines.push(line.trim());
+          line = w + " ";
+        } else {
+          line = test;
+        }
+      }
+      if (line) lines.push(line.trim());
+      return lines;
+    }
+
     for (const user of sortedUsers) {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
@@ -173,67 +190,79 @@ function AdminUsers() {
       const qrSize = 200;
       const padding = 20;
 
-      // Textbreiten vorher messen
-      ctx.font = "bold 25px Arial";
-      const name = `${user.first_name || ""} ${user.last_name || ""}`;
-      const nameWidth = ctx.measureText(name).width;
+      const code = user.qr_code;
+      const line1 = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+      const line2 = user.company_name || "";
 
-      ctx.font = "20px Arial";
-      const qrCodeWidth = ctx.measureText(user.qr_code).width;
-      const companyWidth = user.company_name
-        ? ctx.measureText(user.company_name).width
-        : 0;
+      const maxWidth = 450;
+      const lineHeight = 34;
+      const DPI_SCALE = 3;
 
-      const maxTextWidth = Math.max(qrCodeWidth, nameWidth, companyWidth);
+      // Zeilen berechnen
+      ctx.font = "26px Arial";
+      const codeLines = wrapLines(ctx, code, maxWidth);
 
-      // Dynamische Breite
-      const canvasWidth = qrSize + padding * 3 + maxTextWidth;
-      const canvasHeight = 250;
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
+      ctx.font = "bold 40px Arial";
+      const nameLines = wrapLines(ctx, line1, maxWidth);
 
-      // Hintergrund komplett weiss
+      ctx.font = "26px Arial";
+      const catLines = line2 ? wrapLines(ctx, line2, maxWidth) : [];
+
+      const allLines = [
+        ...codeLines.map((t) => ({ text: t, font: "26px Arial" })),
+        ...nameLines.map((t) => ({ text: t, font: "bold 40px Arial" })),
+        ...catLines.map((t) => ({ text: t, font: "26px Arial" })),
+      ];
+
+      // Gesamthöhe berechnen
+      const totalTextHeight = allLines.length * lineHeight;
+
+      // ----- DYNAMISCHE TEXTBREITE -----
+      let longestWidth = 0;
+      for (const line of allLines) {
+        ctx.font = line.font;
+        const w = ctx.measureText(line.text).width;
+        if (w > longestWidth) longestWidth = w;
+      }
+
+      // Canvas width = QR + padding + tatsächliche Textbreite
+      const dynamicTextWidth = longestWidth;
+      const canvasWidth = qrSize + padding * 3 + dynamicTextWidth;
+
+      // Canvas height bleibt wie vorher
+      const availableHeight = Math.max(260, totalTextHeight + 80);
+
+      canvas.width = canvasWidth * DPI_SCALE;
+      canvas.height = availableHeight * DPI_SCALE;
+
+      ctx.scale(DPI_SCALE, DPI_SCALE);
       ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+      ctx.fillRect(0, 0, canvasWidth, availableHeight);
 
-      // QR Code vorbereiten und zeichnen
+      // QR randlos
       const qrCanvas = document.createElement("canvas");
-      await QRCode.toCanvas(qrCanvas, user.qr_code, {
-        width: qrSize,
-        margin: 1,
-      });
-      ctx.drawImage(qrCanvas, padding, 20);
+      await QRCode.toCanvas(qrCanvas, code, { width: qrSize, margin: 0 });
+      ctx.drawImage(qrCanvas, padding, (availableHeight - qrSize) / 2);
 
+      // Text ausrichten
+      let y = (availableHeight - totalTextHeight) / 2;
       const textX = qrSize + padding * 2;
-      const textY = 100;
 
-      // Weisser Hintergrund hinter Textbereich
-      const boxPadding = 12;
-      const textBoxWidth = maxTextWidth + boxPadding * 2;
-      const textBoxHeight = 90;
-      ctx.fillStyle = "white";
-      ctx.fillRect(textX - boxPadding, textY - 40, textBoxWidth, textBoxHeight);
+      for (const line of allLines) {
+        ctx.font = line.font;
+        ctx.fillStyle = "black";
+        ctx.fillText(line.text, textX, y);
+        y += lineHeight;
+      }
 
-      // Text zeichnen
-      ctx.fillStyle = "black";
-      ctx.font = "20px Arial";
-      ctx.fillText(user.qr_code, textX, textY);
-      ctx.font = "bold 25px Arial";
-      ctx.fillText(name, textX, textY + 30);
-      ctx.font = "20px Arial";
-      if (user.company_name) ctx.fillText(user.company_name, textX, textY + 60);
-
-      // Export vorbereiten
       const dataUrl = canvas.toDataURL("image/png");
-      const base64 = dataUrl.split(",")[1];
-      const filename = `${user.qr_code}_${user.company_name || ""}_${
-        user.first_name || ""
-      }_${user.last_name || ""}.png`;
-      zip.file(filename, base64, { base64: true });
+
+      const filename = `${user.qr_code}_${line1.replace(/\s+/g, "_")}.png`;
+      zip.file(filename, dataUrl.split(",")[1], { base64: true });
     }
 
     const content = await zip.generateAsync({ type: "blob" });
-    saveAs(content, "qr_codes.zip");
+    saveAs(content, "user_qr_codes.zip");
   };
 
   const handleExportCsvTemplate = async () => {

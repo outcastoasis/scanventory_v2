@@ -127,63 +127,105 @@ export default function AdminTools() {
 
   const handleExportAllQR = async () => {
     const zip = new JSZip();
+
+    // Hilfsfunktion wie in QrModal
+    function wrapLines(ctx, text, maxWidth) {
+      const words = text.split(" ");
+      const lines = [];
+      let line = "";
+
+      for (let w of words) {
+        const test = line + w + " ";
+        if (ctx.measureText(test).width > maxWidth && line !== "") {
+          lines.push(line.trim());
+          line = w + " ";
+        } else {
+          line = test;
+        }
+      }
+      if (line) lines.push(line.trim());
+      return lines;
+    }
+
     for (const tool of sorted) {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      const qrSize = 200,
-        padding = 20;
 
-      ctx.font = "bold 25px Arial";
-      const name = tool.name || "";
-      const nameWidth = ctx.measureText(name).width;
+      const qrSize = 200;
+      const padding = 20;
 
-      ctx.font = "20px Arial";
-      const codeWidth = ctx.measureText(tool.qr_code || "").width;
-      const catWidth = tool.category_name
-        ? ctx.measureText(tool.category_name).width
-        : 0;
+      const code = tool.qr_code || "";
+      const line1 = tool.name || "";
+      const line2 = tool.category_name || "";
 
-      const maxTextWidth = Math.max(codeWidth, nameWidth, catWidth);
-      const canvasWidth = qrSize + padding * 3 + maxTextWidth;
-      const canvasHeight = 250;
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
+      // Neue Werte aus QrModal
+      const maxWidth = 450;
+      const lineHeight = 34;
+      const DPI_SCALE = 3;
+
+      // Zeilen berechnen
+      ctx.font = "26px Arial";
+      const codeLines = wrapLines(ctx, code, maxWidth);
+
+      ctx.font = "bold 40px Arial";
+      const nameLines = wrapLines(ctx, line1, maxWidth);
+
+      ctx.font = "26px Arial";
+      const catLines = line2 ? wrapLines(ctx, line2, maxWidth) : [];
+
+      const allLines = [
+        ...codeLines.map((t) => ({ text: t, font: "26px Arial" })),
+        ...nameLines.map((t) => ({ text: t, font: "bold 40px Arial" })),
+        ...catLines.map((t) => ({ text: t, font: "26px Arial" })),
+      ];
+
+      // Gesamthöhe berechnen
+      const totalTextHeight = allLines.length * lineHeight;
+
+      // ----- DYNAMISCHE TEXTBREITE -----
+      let longestWidth = 0;
+      for (const line of allLines) {
+        ctx.font = line.font;
+        const w = ctx.measureText(line.text).width;
+        if (w > longestWidth) longestWidth = w;
+      }
+
+      // Canvas width = QR + padding + tatsächliche Textbreite
+      const dynamicTextWidth = longestWidth;
+      const canvasWidth = qrSize + padding * 3 + dynamicTextWidth;
+
+      // Canvas height bleibt wie vorher
+      const availableHeight = Math.max(260, totalTextHeight + 80);
+
+      // DPI-Skalierter Canvas
+      canvas.width = canvasWidth * DPI_SCALE;
+      canvas.height = availableHeight * DPI_SCALE;
+      ctx.scale(DPI_SCALE, DPI_SCALE);
 
       ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+      ctx.fillRect(0, 0, canvasWidth, availableHeight);
 
+      // QR-Code randlos
       const qrCanvas = document.createElement("canvas");
-      await QRCode.toCanvas(qrCanvas, tool.qr_code || "", {
-        width: qrSize,
-        margin: 1,
-      });
-      ctx.drawImage(qrCanvas, padding, 20);
+      await QRCode.toCanvas(qrCanvas, code, { width: qrSize, margin: 0 });
+      ctx.drawImage(qrCanvas, padding, (availableHeight - qrSize) / 2);
 
-      const textX = qrSize + padding * 2,
-        textY = 100;
-      const boxPadding = 12,
-        textBoxWidth = maxTextWidth + boxPadding * 2,
-        textBoxHeight = 90;
-      ctx.fillStyle = "white";
-      ctx.fillRect(textX - boxPadding, textY - 40, textBoxWidth, textBoxHeight);
+      // Vertikal zentrierter Text
+      const textX = qrSize + padding * 2;
+      let y = (availableHeight - totalTextHeight) / 2;
 
-      ctx.fillStyle = "black";
-      ctx.font = "20px Arial";
-      ctx.fillText(tool.qr_code || "", textX, textY);
-      ctx.font = "bold 25px Arial";
-      ctx.fillText(name, textX, textY + 30);
-      ctx.font = "20px Arial";
-      if (tool.category_name)
-        ctx.fillText(tool.category_name, textX, textY + 60);
+      for (const line of allLines) {
+        ctx.font = line.font;
+        ctx.fillStyle = "black";
+        ctx.fillText(line.text, textX, y);
+        y += lineHeight;
+      }
 
       const dataUrl = canvas.toDataURL("image/png");
-      const base64 = dataUrl.split(",")[1];
-      const filename = `${tool.qr_code || "tool"}_${name.replace(
-        /\s+/g,
-        "_"
-      )}.png`;
-      zip.file(filename, base64, { base64: true });
+      const filename = `${tool.qr_code}_${tool.name.replace(/\s+/g, "_")}.png`;
+      zip.file(filename, dataUrl.split(",")[1], { base64: true });
     }
+
     const content = await zip.generateAsync({ type: "blob" });
     saveAs(content, "tool_qr_codes.zip");
   };
