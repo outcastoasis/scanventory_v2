@@ -78,6 +78,8 @@ class Reservation(db.Model):
     confirmed = db.Column(db.Boolean, default=False)  # Bestätigung der Ausleihe
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    note = db.Column(db.Text, nullable=True)
+
 
 # Logs (optional)
 class Log(db.Model):

@@ -173,6 +173,29 @@ button:focus,
   outline-offset: 1px;
 }
 
+/* ---------- Notizfeld (Textarea) ---------- */
+.note-textarea {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.95rem;
+  background: #f9fafb;
+  color: #111827;
+  width: 100%;
+  min-height: 70px; /* Grundhöhe */
+  max-height: 200px; /* damit es nicht unendlich wächst */
+  resize: vertical; /* Benutzer darf Höhe selber ändern */
+  line-height: 1.4;
+  overflow-y: auto;
+  white-space: pre-wrap; /* Zeilenumbruch */
+  word-break: break-word; /* Lange Wörter umbrechen */
+}
+
+.note-textarea:disabled {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
 /* ---------- Mobile Anpassungen ---------- */
 @media (max-width: 600px) {
   .modal {

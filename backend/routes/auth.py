@@ -38,7 +38,7 @@ def login():
             "user_id": user.id,
             "username": user.username,
             "role": role,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=12),
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7),
         },
         os.getenv("SECRET_KEY", "fallback_key"),
         algorithm="HS256",

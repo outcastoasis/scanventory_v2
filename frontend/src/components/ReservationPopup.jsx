@@ -198,7 +198,7 @@ export default function ReservationPopup({
   }`;
 
   const disabledSave = busy || !isLoggedIn || !canEditReservation || !tool;
-  const noteTemporarilyLocked = true;
+  const noteTemporarilyLocked = false;
 
   return (
     <div className="modal-backdrop" onClick={() => !busy && onClose?.()}>
@@ -264,12 +264,12 @@ export default function ReservationPopup({
 
         <div className="modal-row">
           <label>Notiz:</label>
-          <input
-            type="text"
+          <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Aktuell nicht implementiert"
-            disabled={busy || noteTemporarilyLocked}
+            placeholder="Notiz eingeben..."
+            disabled={busy || !canEditReservation || !isLoggedIn}
+            className="note-textarea"
           />
         </div>
 
