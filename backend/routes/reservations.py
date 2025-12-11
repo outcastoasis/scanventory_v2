@@ -6,6 +6,7 @@ from dateutil.parser import isoparse
 from pytz import timezone
 import pytz
 from utils.permissions import get_token_payload
+from utils.logger import write_log
 
 reservation_bp = Blueprint("reservations", __name__)
 
@@ -49,10 +50,15 @@ def _parse_to_utc(val):
     try:
         dt = isoparse(str(val))
         if dt.tzinfo is None:
-            # lokale Zeit (z. B. "2025-10-14 08:00")
+            # lokale Zeit (z. B. "2025-10-14 08:00")
             dt = zurich.localize(dt)
         return dt.astimezone(pytz.utc).replace(tzinfo=None)
-    except Exception:
+
+    except Exception as e:
+        write_log(
+            level="error",
+            message=f"Invalid datetime format in _parse_to_utc: '{val}', error: {e}",
+        )
         raise ValueError("Ungültiges Zeitformat")
 
 
@@ -115,7 +121,8 @@ def create_reservation():
                 end_local = zurich.localize(end_local)
             start_utc = start_local.astimezone(pytz.utc).replace(tzinfo=None)
             end_utc = end_local.astimezone(pytz.utc).replace(tzinfo=None)
-        except Exception:
+        except Exception as e:
+            write_log("error", f"Invalid manual reservation date: {e}", user_id)
             return jsonify({"error": "Ungültige Datumsangabe"}), 400
 
         if start_utc >= end_utc:
@@ -124,6 +131,7 @@ def create_reservation():
         user = User.query.get(user_id_direct)
         tool = Tool.query.get(tool_id_direct)
         if not user or not tool:
+            write_log("error", "User or tool not found for manual reservation", user_id)
             return jsonify({"error": "Benutzer oder Werkzeug nicht gefunden"}), 404
 
         # Überschneidungen prüfen
@@ -285,7 +293,10 @@ def update_reservation(res_id):
             if new_start and res.start_time != new_start:
                 res.start_time = new_start
                 changed = True
-        except Exception:
+        except Exception as e:
+            write_log(
+                "error", f"Invalid start_time in update_reservation: {e}", user_id
+            )
             return jsonify({"error": "Invalid start_time"}), 400
 
     if "end_time" in data and data["end_time"]:
@@ -294,7 +305,8 @@ def update_reservation(res_id):
             if new_end and res.end_time != new_end:
                 res.end_time = new_end
                 changed = True
-        except Exception:
+        except Exception as e:
+            write_log("error", f"Invalid end_time in update_reservation: {e}", user_id)
             return jsonify({"error": "Invalid end_time"}), 400
 
     if "note" in data:
@@ -351,6 +363,7 @@ def delete_reservation(res_id):
 
     val = _role_value_for(user_id, "edit_reservations")
     if val == "false":
+        write_log("error", f"Unauthorized delete attempt for res {res_id}", user_id)
         return jsonify({"error": "Keine Berechtigung"}), 403
     if val == "self_only" and res.user_id != user_id:
         return jsonify({"error": "Nur eigene Reservationen löschbar"}), 403
@@ -377,6 +390,7 @@ def return_tool():
 
     tool = Tool.query.filter_by(qr_code=tool_code).first()
     if not tool:
+        write_log("error", f"Return failed: Tool '{tool_code}' not found")
         return jsonify({"error": "Tool not found"}), 404
 
     now_utc = datetime.utcnow()

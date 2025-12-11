@@ -19,6 +19,7 @@ from pytz import timezone
 import pytz
 import csv
 from io import StringIO, BytesIO
+from utils.logger import write_log
 
 tools_bp = Blueprint("tools", __name__)
 
@@ -80,12 +81,14 @@ def get_available_tools():
     perm = Permission.query.filter_by(key="create_reservations").first()
     user = User.query.get(user_id)
     if not perm or not user:
+        write_log("error", "Permission lookup failed in available-tools", user_id)
         return jsonify({"error": "Keine Berechtigung"}), 403
 
     rp = RolePermission.query.filter_by(
         role_id=user.role_id, permission_id=perm.id
     ).first()
     if not rp or rp.value == "false":
+        write_log("error", "User lacks create_reservations permission", user_id)
         return jsonify({"error": "Keine Berechtigung für Reservation"}), 403
 
     # Start-/Endzeit validieren
@@ -106,7 +109,8 @@ def get_available_tools():
 
         start_utc = start_local.astimezone(pytz.utc).replace(tzinfo=None)
         end_utc = end_local.astimezone(pytz.utc).replace(tzinfo=None)
-    except Exception:
+    except Exception as e:
+        write_log("error", f"Invalid date format in available-tools: {e}", user_id)
         return jsonify({"error": "Ungültiges Datumsformat"}), 400
 
     if start_utc >= end_utc:
@@ -172,6 +176,7 @@ def list_tools():
 def get_tool_by_qr(qr_code):
     tool = Tool.query.filter(Tool.qr_code.ilike(qr_code)).first()
     if not tool:
+        write_log("error", f"Tool not found via QR: {qr_code}")
         return jsonify({"error": "Werkzeug nicht gefunden"}), 404
 
     return jsonify(
@@ -205,6 +210,7 @@ def create_tool():
         return jsonify({"error": "Name und QR-Code sind Pflichtfelder."}), 400
 
     if Tool.query.filter_by(qr_code=qr_code).first():
+        write_log("error", f"Duplicate QR in create_tool: {qr_code}")
         return jsonify({"error": "QR-Code existiert bereits."}), 409
 
     tool = Tool(
@@ -247,6 +253,7 @@ def update_tool(tool_id):
     if "qr_code" in data:
         new_qr = data["qr_code"]
         if new_qr != tool.qr_code and Tool.query.filter_by(qr_code=new_qr).first():
+            write_log("error", f"Duplicate QR in update_tool: {new_qr}")
             return jsonify({"error": "QR-Code existiert bereits."}), 409
         tool.qr_code = new_qr
 
@@ -275,9 +282,11 @@ def update_tool(tool_id):
 def delete_tool(tool_id):
     tool = Tool.query.get(tool_id)
     if not tool:
+        write_log("error", f"Delete failed: Tool {tool_id} not found")
         return jsonify({"error": "Werkzeug nicht gefunden"}), 404
 
     if tool.is_borrowed:
+        write_log("error", f"Delete failed: Tool {tool_id} is currently borrowed")
         return (
             jsonify(
                 {"error": "Werkzeug ist ausgeliehen und kann nicht gelöscht werden."}
@@ -395,6 +404,7 @@ def delete_category(cat_id):
     # Prüfen, ob noch Tools mit dieser Kategorie existieren
     tools_with_category = Tool.query.filter_by(category_id=category.id).first()
     if tools_with_category:
+        write_log("error", f"Delete failed: Category {cat_id} still in use")
         return jsonify({"error": "Kategorie wird noch verwendet."}), 400
 
     db.session.delete(category)
@@ -499,6 +509,7 @@ def import_tools_csv():
         # Header-Zeile erkennen
         if not header_found:
             if len(row) < 2 or row[0].strip().lower() != "name":
+                write_log("error", "Invalid CSV structure in tool import")
                 return (
                     jsonify(
                         {
@@ -522,12 +533,19 @@ def import_tools_csv():
 
         if name.lower() in tools_existing:
             skipped.append({"row": line_num, "reason": "Name bereits vorhanden"})
+            write_log(
+                "error", f"Tool name duplicate in CSV import: '{name}' (row {line_num})"
+            )
             continue
 
         category_id = categories.get(category_name)
         if not category_id:
             errors.append(
                 {"row": line_num, "reason": f"Ungültige Kategorie: '{category_name}'"}
+            )
+            write_log(
+                "error",
+                f"Invalid category in CSV import: '{category_name}' (row {line_num})",
             )
             continue
 

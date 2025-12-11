@@ -10,6 +10,7 @@ from werkzeug.security import generate_password_hash
 import csv
 from io import StringIO, BytesIO
 from datetime import datetime
+from utils.logger import write_log
 
 users_bp = Blueprint("users", __name__)
 
@@ -44,6 +45,7 @@ def get_users():
 def get_user_by_qr(qr_code):
     user = User.query.filter(User.qr_code.ilike(qr_code)).first()
     if not user:
+        write_log("error", f"User not found via QR: {qr_code}")
         return jsonify({"error": "Benutzer nicht gefunden"}), 404
 
     user.last_active = datetime.utcnow()
@@ -72,13 +74,16 @@ def create_user():
     role_name = data.get("role")
 
     if not all([username, password, qr_code, role_name]):
+        write_log("error", "User creation failed: missing required fields")
         return jsonify({"error": "Fehlende Felder"}), 400
 
     if User.query.filter_by(username=username).first():
+        write_log("error", f"Duplicate username in create_user: {username}")
         return jsonify({"error": "Benutzername existiert bereits"}), 409
 
     role = Role.query.filter_by(name=role_name).first()
     if not role:
+        write_log("error", f"Invalid role in create_user: {role_name}")
         return jsonify({"error": "Rolle existiert nicht"}), 400
 
     company = Company.query.get(company_id) if company_id else None
@@ -133,6 +138,8 @@ def update_user(user_id):
 
     if "company_id" in data:
         company = Company.query.get(data["company_id"])
+        if not company:
+            write_log("error", f"Invalid company in update_user: {data['company_id']}")
         user.company_id = company.id if company else None
 
     if "password" in data and data["password"]:
@@ -143,7 +150,9 @@ def update_user(user_id):
 
     if "role" in data:
         role = Role.query.filter_by(name=data["role"]).first()
-        if role:
+        if not role:
+            write_log("error", f"Invalid role in update_user: {data['role']}")
+        else:
             user.role_id = role.id
 
     db.session.commit()
@@ -175,14 +184,17 @@ def delete_user(user_id):
         return jsonify({"error": "Nicht autorisiert"}), 401
 
     if user_id == payload["user_id"]:
+        write_log("error", f"Self delete attempt by user {user_id}")
         return jsonify({"error": "Du kannst dich nicht selbst löschen."}), 400
 
     user = User.query.get(user_id)
     if not user:
+        write_log("error", f"User delete failed: user {user_id} not found")
         return jsonify({"error": "Benutzer nicht gefunden"}), 404
 
     active_reservations = Reservation.query.filter_by(user_id=user_id).count()
     if active_reservations > 0:
+        write_log("error", f"Delete failed: user {user_id} still has reservations")
         return (
             jsonify(
                 {
@@ -276,6 +288,7 @@ def delete_company(comp_id):
 
     # 🔄 Neue Prüfung über FK (nicht mehr Name!)
     if User.query.filter_by(company_id=comp_id).first():
+        write_log("error", f"Delete failed: company {comp_id} still used by users")
         return jsonify({"error": "Firma wird noch verwendet."}), 400
 
     db.session.delete(company)
@@ -378,6 +391,7 @@ def import_users_csv():
             ]
             normalized = [c.strip().lower() for c in row]
             if normalized != expected_header:
+                write_log("error", "Invalid CSV structure in user import")
                 return (
                     jsonify(
                         {
@@ -391,6 +405,7 @@ def import_users_csv():
 
         if len(row) < 6:
             errors.append({"row": line_num, "reason": "Zu wenige Spalten"})
+            write_log("error", f"Too few columns in CSV import (row {line_num})")
             continue
 
         username, first_name, last_name, company_name, role_name, password = [
@@ -402,12 +417,19 @@ def import_users_csv():
             errors.append(
                 {"row": line_num, "reason": "Benutzername oder Passwort fehlt"}
             )
+            write_log(
+                "error", f"Missing username/password in user import row {line_num}"
+            )
             continue
 
         # Duplikate prüfen
         if username.lower() in existing_usernames:
             skipped.append(
                 {"row": line_num, "reason": "Benutzername bereits vorhanden"}
+            )
+            write_log(
+                "error",
+                f"Duplicate username in CSV import: {username} (row {line_num})",
             )
             continue
 
@@ -419,6 +441,10 @@ def import_users_csv():
                 errors.append(
                     {"row": line_num, "reason": f"Ungültige Firma: '{company_name}'"}
                 )
+                write_log(
+                    "error",
+                    f"Invalid company in CSV import: {company_name} (row {line_num})",
+                )
                 continue
 
         # Rolle prüfen
@@ -426,6 +452,9 @@ def import_users_csv():
         if not role_id:
             errors.append(
                 {"row": line_num, "reason": f"Ungültige Rolle: '{role_name}'"}
+            )
+            write_log(
+                "error", f"Invalid role in CSV import: {role_name} (row {line_num})"
             )
             continue
 

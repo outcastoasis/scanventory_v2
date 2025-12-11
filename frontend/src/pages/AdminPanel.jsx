@@ -11,6 +11,7 @@ function AdminPanel() {
   const navigate = useNavigate();
   const [permissions, setPermissions] = useState({});
   const [loading, setLoading] = useState(true);
+  const [logs, setLogs] = useState([]);
 
   // Kategorien
   const [categories, setCategories] = useState([]);
@@ -76,6 +77,11 @@ function AdminPanel() {
     })
       .then((res) => res.json())
       .then(setReservations);
+    fetch(`${API_URL}/api/logs`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    })
+      .then((res) => res.json())
+      .then(setLogs);
   }, [loading]);
 
   // --- Sortier-Handler ---
@@ -209,9 +215,24 @@ function AdminPanel() {
     currentPage * itemsPerPage
   );
 
+  // Pagination für Logs
+  const [logPage, setLogPage] = useState(1);
+  const logsPerPage = 10;
+
+  const totalLogPages = Math.ceil(logs.length / logsPerPage);
+
+  const paginatedLogs = logs.slice(
+    (logPage - 1) * logsPerPage,
+    logPage * logsPerPage
+  );
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
+
+  useEffect(() => {
+    setLogPage(1);
+  }, [logs]);
 
   // --- Actions ---
   const handleDeleteReservation = async (id) => {
@@ -683,9 +704,48 @@ function AdminPanel() {
 
       <div className="adminpanel-section">
         <h3 className="adminpanel-section-title">Fehler-Logs</h3>
-        <p className="adminpanel-placeholder">
-          Log-Anzeige ist noch nicht implementiert.
-        </p>
+
+        <table className="adminpanel-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>User</th>
+              <th>Aktion</th>
+              <th>Details</th>
+              <th>Zeit</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedLogs.map((log) => (
+              <tr key={log.id}>
+                <td>{log.id}</td>
+                <td>{log.username}</td>
+                <td>{log.action}</td>
+                <td>{log.details}</td>
+                <td>{log.timestamp.replace("T", " ").slice(0, 16)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="adminpanel-pagination">
+          <button
+            disabled={logPage === 1}
+            onClick={() => setLogPage((p) => p - 1)}
+          >
+            ← Zurück
+          </button>
+
+          <span>
+            Seite {logPage} von {totalLogPages}
+          </span>
+
+          <button
+            disabled={logPage === totalLogPages}
+            onClick={() => setLogPage((p) => p + 1)}
+          >
+            Weiter →
+          </button>
+        </div>
       </div>
     </div>
   );

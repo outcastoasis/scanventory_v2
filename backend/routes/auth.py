@@ -9,6 +9,7 @@ from utils.permissions import get_token_payload
 from werkzeug.security import check_password_hash, generate_password_hash
 from utils.auth_utils import get_current_user
 from datetime import datetime, timedelta
+from utils.logger import write_log
 
 load_dotenv()  # .env-Datei laden
 
