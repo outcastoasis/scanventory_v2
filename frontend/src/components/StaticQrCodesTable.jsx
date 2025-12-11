@@ -23,6 +23,12 @@ const staticCodes = [
     qr_code: "http://pizol/mobile",
     title: "Mobile-Ansicht → Heutige Reservationen",
   },
+  {
+    id: 4,
+    name: "Mail-Feedback senden",
+    qr_code: "mailto:jascha.bucher@rebsamen.net?subject=Scanventory%20Feedback",
+    title: "Mail-Feedback senden",
+  },
 ];
 
 import API_URL from "../config/api";
