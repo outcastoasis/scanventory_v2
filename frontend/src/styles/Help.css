@@ -180,3 +180,13 @@
 .table tbody tr:nth-child(even) th[scope="row"] {
   background: #fafafa;
 }
+
+.help-feedback-button {
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.help-feedback-button:hover {
+  background: #1d4ed8;
+}

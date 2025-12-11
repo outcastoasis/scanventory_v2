@@ -13,6 +13,17 @@ export default function Help() {
           Seite drucken
         </button>
         <button
+          className="help-feedback-button"
+          onClick={() =>
+            (window.location.href =
+              "mailto:jascha.bucher@rebsamen.net?subject=Scanventory%20Feedback")
+          }
+          title="Feedback senden"
+        >
+          Feedback
+        </button>
+
+        <button
           className="help-back-button"
           onClick={() => (window.location.href = "/")}
           aria-label="Zurück zur Startseite"
@@ -29,6 +40,11 @@ export default function Help() {
             Mithilfe von diesem Tool "Scanventory" kannst du Werkzeuge in der
             Werkstatt reservieren und ausleihen. Die Bedienung erfolgt entweder
             über das Scannen von QR-Codes oder über die Weboberfläche.
+          </p>
+          <br />
+          <p>
+            Beachte: Damit du per WEB-Oferfläche auf das Tool zugreifen kannst,
+            musst du dich im internen Netzwerk der Rebsamen AG befinden.
           </p>
         </section>
 
@@ -57,7 +73,18 @@ export default function Help() {
           <h4>Mit WEB-Oberfläche</h4>
           <ol>
             <li>
-              Rufe folgende Adresse in deinem Webbrowser auf: http://pizol
+              Rufe folgende Adresse in deinem Webbrowser auf:{" "}
+              <a href="http://pizol/" target="_blank" rel="noopener noreferrer">
+                http://pizol/
+              </a>{" "}
+              oder{" "}
+              <a
+                href="http://192.168.240.96/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                http://192.168.240.96/
+              </a>
             </li>
             <li>Melde dich mit deinem Login an</li>
             <li>Gehe auf «+ Manuelle Reservation»</li>
@@ -79,7 +106,18 @@ export default function Help() {
           <p>Beachte: du kannst nur deine eigenen Einträge bearbeiten</p>
           <ol>
             <li>
-              Rufe folgende Adresse in deinem Webbrowser auf: http://pizol
+              Rufe folgende Adresse in deinem Webbrowser auf:{" "}
+              <a href="http://pizol/" target="_blank" rel="noopener noreferrer">
+                http://pizol/
+              </a>{" "}
+              oder{" "}
+              <a
+                href="http://192.168.240.96/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                http://192.168.240.96/
+              </a>
             </li>
             <li>Melde dich mit deinem Login an</li>
             <li>
