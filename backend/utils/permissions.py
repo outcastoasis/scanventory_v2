@@ -33,7 +33,7 @@ def requires_permission(permission_key):
             if not payload:
                 return jsonify({"error": "Nicht autorisiert"}), 401
 
-            user = User.query.get(payload["user_id"])
+            user = db.session.get(User, payload["user_id"])
             if not user:
                 return jsonify({"error": "Benutzer nicht gefunden"}), 401
 
@@ -78,7 +78,7 @@ def requires_any_permission(*required_keys):
             if not payload:
                 return jsonify({"error": "Nicht authentifiziert"}), 401
 
-            user = User.query.get(payload["user_id"])
+            user = db.session.get(User, payload["user_id"])
             if not user or not user.role:
                 return jsonify({"error": "Zugriff verweigert"}), 403
 

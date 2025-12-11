@@ -171,6 +171,9 @@ def create_reservation():
             return jsonify({"error": "Nur QR-Scan erlaubt ohne Login"}), 401
 
     user = User.query.filter_by(qr_code=user_code).first()
+    if user:
+        user.last_active = datetime.utcnow()
+        db.session.commit()
     if not user:
         user = User(qr_code=user_code, username=user_code)
         db.session.add(user)

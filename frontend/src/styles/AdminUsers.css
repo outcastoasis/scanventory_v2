@@ -546,3 +546,25 @@ button:disabled {
   gap: 0.8rem;
   margin-left: auto;
 }
+
+/* ----- Last Login Status ----- */
+.last-login-good {
+  color: #16a34a; /* Grün */
+  font-weight: 600;
+}
+
+.last-login-warn {
+  color: #d97706; /* Orange */
+  font-weight: 600;
+}
+
+.last-login-bad {
+  color: #b91c1c; /* Rot */
+  font-weight: 600;
+}
+
+.last-login-never {
+  color: #6b7280; /* Grau */
+  font-weight: 600;
+  font-style: italic;
+}

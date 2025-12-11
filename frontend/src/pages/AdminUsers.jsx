@@ -134,6 +134,26 @@ function AdminUsers() {
     setSortConfig({ key, direction });
   };
 
+  const formatLastActive = (isoString) => {
+    if (!isoString)
+      return { text: "Nie", css: "last-login-never", days: Infinity };
+
+    const last = new Date(isoString);
+    const now = new Date();
+    const diffDays = Math.floor((now - last) / (1000 * 60 * 60 * 24));
+
+    let css = "";
+    if (diffDays <= 7) css = "last-login-good";
+    else if (diffDays <= 30) css = "last-login-warn";
+    else css = "last-login-bad";
+
+    return {
+      text: `${diffDays} Tage`,
+      css,
+      days: diffDays,
+    };
+  };
+
   const filteredUsers = users.filter((u) => {
     const term = searchTerm.toLowerCase();
     return (
@@ -144,20 +164,32 @@ function AdminUsers() {
       (u.company_name && u.company_name.toLowerCase().includes(term)) ||
       u.qr_code.toLowerCase().includes(term) ||
       u.role.toLowerCase().includes(term) ||
+      (u.last_active && u.last_active.toLowerCase().includes(term)) ||
       (u.created_at && u.created_at.toLowerCase().includes(term))
     );
   });
 
   const sortedUsers = [...filteredUsers].sort((a, b) => {
     if (!sortConfig.key) return 0;
-    const valA = a[sortConfig.key]?.toString().toLowerCase();
-    const valB = b[sortConfig.key]?.toString().toLowerCase();
-    const dir = sortConfig.direction === "asc" ? 1 : -1;
+
+    // Spezialfall: last_active → sortiere nach Tagen
+    if (sortConfig.key === "last_active") {
+      const aDays = formatLastActive(a.last_active).days;
+      const bDays = formatLastActive(b.last_active).days;
+      return sortConfig.direction === "asc" ? aDays - bDays : bDays - aDays;
+    }
+
+    // Spezialfall: id → numerisch sortieren
     if (sortConfig.key === "id") {
       const ai = Number(a.id) || 0;
       const bi = Number(b.id) || 0;
-      return (ai - bi) * dir;
+      return sortConfig.direction === "asc" ? ai - bi : bi - ai;
     }
+
+    // Generischer Fall für alle anderen Spalten:
+    const valA = (a[sortConfig.key] || "").toString().toLowerCase();
+    const valB = (b[sortConfig.key] || "").toString().toLowerCase();
+
     if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
     if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
     return 0;
@@ -414,6 +446,12 @@ function AdminUsers() {
                     <strong>Erstellt:</strong>{" "}
                     {u.created_at?.slice(0, 10) || "-"}
                   </p>
+                  <p>
+                    <strong>Zuletzt aktiv:</strong>{" "}
+                    <span className={formatLastActive(u.last_active).css}>
+                      {formatLastActive(u.last_active).text}
+                    </span>
+                  </p>
                 </div>
                 <div className="user-card-actions">
                   <button
@@ -546,6 +584,19 @@ function AdminUsers() {
                       : "▲"}
                   </span>
                 </th>
+                <th
+                  onClick={() => handleSort("last_active")}
+                  className={sortConfig.key === "last_active" ? "sorted" : ""}
+                >
+                  Zuletzt aktiv{" "}
+                  <span className="sort-icon">
+                    {sortConfig.key === "last_active"
+                      ? sortConfig.direction === "asc"
+                        ? "▲"
+                        : "▼"
+                      : "▲"}
+                  </span>
+                </th>
                 <th>Aktionen</th>
               </tr>
             </thead>
@@ -562,6 +613,9 @@ function AdminUsers() {
                     {u.role}
                   </td>
                   <td>{u.created_at?.slice(0, 10) || "-"}</td>
+                  <td className={formatLastActive(u.last_active).css}>
+                    {formatLastActive(u.last_active).text}
+                  </td>
                   <td>
                     <button
                       className="users-edit-button"

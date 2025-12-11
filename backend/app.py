@@ -1,7 +1,7 @@
 # backend/app.py
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
-from models import db
+from models import db, User
 from routes.reservations import reservation_bp
 from routes.auth import auth_bp
 from routes.users import users_bp
@@ -9,6 +9,8 @@ from routes.tools import tools_bp
 from routes.permissions import permissions_bp
 from setup import create_initial_data
 from flask_migrate import Migrate
+from datetime import datetime, UTC
+from utils.permissions import get_token_payload
 import os
 
 # APScheduler importieren
@@ -86,6 +88,34 @@ scheduler.add_job(
     trigger="interval",
     seconds=30,
 )
+
+
+@app.before_request
+def update_last_active():
+    # Nur für API-Routen
+    if not request.path.startswith("/api/"):
+        return
+
+    payload = get_token_payload()
+    if not payload:
+        return
+
+    user = db.session.get(User, payload["user_id"])
+    if not user:
+        return
+
+    now = datetime.now(UTC)
+    # Nur aktualisieren, wenn letzte Aktivität älter als 60 Sekunden ist
+    # → schützt DB vor unnötigen Writes bei automatischen Poll-Anfragen
+    if user.last_active:
+        last = user.last_active.replace(tzinfo=UTC)
+    else:
+        last = None
+
+    # Nur wenn älter als 60 Sekunden
+    if not last or (now - last).total_seconds() > 60:
+        user.last_active = now
+        db.session.commit()
 
 
 def create_app():

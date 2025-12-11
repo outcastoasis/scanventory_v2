@@ -9,6 +9,7 @@ from utils.permissions import (
 from werkzeug.security import generate_password_hash
 import csv
 from io import StringIO, BytesIO
+from datetime import datetime
 
 users_bp = Blueprint("users", __name__)
 
@@ -30,6 +31,8 @@ def get_users():
                 "qr_code": u.qr_code,
                 "role": u.role.name,
                 "created_at": u.created_at.isoformat() if u.created_at else None,
+                "last_login": u.last_login.isoformat() if u.last_login else None,
+                "last_active": u.last_active.isoformat() if u.last_active else None,
             }
             for u in users
         ]
@@ -42,6 +45,9 @@ def get_user_by_qr(qr_code):
     user = User.query.filter(User.qr_code.ilike(qr_code)).first()
     if not user:
         return jsonify({"error": "Benutzer nicht gefunden"}), 404
+
+    user.last_active = datetime.utcnow()
+    db.session.commit()
 
     return jsonify(
         {
@@ -100,6 +106,10 @@ def create_user():
                 "company_name": user.company_ref.name if user.company_ref else None,
                 "qr_code": user.qr_code,
                 "role": role.name,
+                "last_login": user.last_login.isoformat() if user.last_login else None,
+                "last_active": (
+                    user.last_active.isoformat() if user.last_active else None
+                ),
                 "created_at": user.created_at.isoformat() if user.created_at else None,
             }
         ),
@@ -148,6 +158,8 @@ def update_user(user_id):
             "company_name": user.company_ref.name if user.company_ref else None,
             "qr_code": user.qr_code,
             "role": user.role.name,
+            "last_login": user.last_login.isoformat() if user.last_login else None,
+            "last_active": user.last_active.isoformat() if user.last_active else None,
             "created_at": user.created_at.isoformat() if user.created_at else None,
         }
     )

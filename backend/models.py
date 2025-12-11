@@ -49,6 +49,8 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     reservations = db.relationship("Reservation", backref="user", lazy=True)
+    last_login = db.Column(db.DateTime, nullable=True)
+    last_active = db.Column(db.DateTime, nullable=True)
     logs = db.relationship("Log", backref="user", lazy=True)
 
 
