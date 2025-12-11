@@ -163,21 +163,3 @@ def create_initial_data(app):
             print(f"Supervisor-Benutzer '{supervisor_username}' wurde erstellt.")
         else:
             print("Supervisor-Benutzer existiert bereits.")
-
-        # === Testuser anlegen ===
-        if not User.query.filter_by(username=testuser_username).first():
-            test_user = User(
-                username=testuser_username,
-                first_name="Test",
-                last_name="User",
-                company_id=admin_company.id,
-                password=generate_password_hash(testuser_password),
-                qr_code=testuser_qr,
-                role_id=role_objs["user"].id,
-                created_at=datetime.utcnow(),
-            )
-            db.session.add(test_user)
-            db.session.commit()
-            print(f"Test-Benutzer '{testuser_username}' wurde erstellt.")
-        else:
-            print("Test-Benutzer existiert bereits.")
