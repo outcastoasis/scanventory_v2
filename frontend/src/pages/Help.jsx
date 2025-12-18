@@ -43,8 +43,9 @@ export default function Help() {
           </p>
           <br />
           <p>
-            Beachte: Damit du per WEB-Oferfläche auf das Tool zugreifen kannst,
-            musst du dich im internen Netzwerk der Rebsamen AG befinden.
+            Beachte: Damit du per WEB-Oberfläche auf das Tool zugreifen kannst,
+            musst du dich im internen Netzwerk der Rebsamen AG befinden (WLAN
+            oder Kabel).
           </p>
         </section>
 
@@ -56,7 +57,7 @@ export default function Help() {
           </p>
           <br></br>
 
-          <h4>Mit QR-Code</h4>
+          <h4>Mit QR-Code (Pro Gerät alle Schritte separat)</h4>
           <ol>
             <li>Scanne den QR-Code für deinen User</li>
             <li>
@@ -130,7 +131,7 @@ export default function Help() {
         </section>
 
         <section>
-          <h2>Werkzeug zurückgeben</h2>
+          <h2>Werkzeug zurückgeben (Pro Gerät alle Schritte separat)</h2>
           <p>
             Die Rückgabe erfolgt ausschliesslich über den QR-Code Scan. Somit
             müssen die Werkzeuge zurück in die Werkstatt gebracht werden.
