@@ -20,7 +20,7 @@ const staticCodes = [
   {
     id: 3,
     name: "Mobile-Ansicht",
-    qr_code: "http://pizol/mobile",
+    qr_code: "http://192.168.240.96/mobile",
     title: "Mobile-Ansicht → Heutige Reservationen",
   },
   {
