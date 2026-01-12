@@ -20,6 +20,7 @@ function QrModal({ user, tool, onClose, canDownload = false }) {
       ? `${user.first_name || ""} ${user.last_name || ""}`.trim()
       : tool?.name || "";
 
+    const lineUsername = user ? (user.username || "").trim() : "";
     const line2 = user ? user.company_name : tool?.category_name || "";
     const code = subject.qr_code || "";
 
@@ -53,12 +54,18 @@ function QrModal({ user, tool, onClose, canDownload = false }) {
     ctx.font = "bold 40px Arial";
     const nameLines = wrapLines(ctx, line1, maxWidth);
 
+    ctx.font = "italic 26px Arial";
+    const usernameLines = lineUsername
+      ? wrapLines(ctx, lineUsername, maxWidth)
+      : [];
+
     ctx.font = "26px Arial";
     const catLines = line2 ? wrapLines(ctx, line2, maxWidth) : [];
 
     const allLines = [
       ...codeLines.map((t) => ({ text: t, font: "26px Arial" })),
       ...nameLines.map((t) => ({ text: t, font: "bold 40px Arial" })),
+      ...usernameLines.map((t) => ({ text: t, font: "italic 26px Arial" })),
       ...catLines.map((t) => ({ text: t, font: "26px Arial" })),
     ];
 

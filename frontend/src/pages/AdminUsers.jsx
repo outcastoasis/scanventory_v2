@@ -224,6 +224,7 @@ function AdminUsers() {
 
       const code = user.qr_code;
       const line1 = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+      const lineUsername = (user.username || "").trim();
       const line2 = user.company_name || "";
 
       const maxWidth = 450;
@@ -237,12 +238,18 @@ function AdminUsers() {
       ctx.font = "bold 40px Arial";
       const nameLines = wrapLines(ctx, line1, maxWidth);
 
+      ctx.font = "italic 26px Arial";
+      const usernameLines = lineUsername
+        ? wrapLines(ctx, lineUsername, maxWidth)
+        : [];
+
       ctx.font = "26px Arial";
       const catLines = line2 ? wrapLines(ctx, line2, maxWidth) : [];
 
       const allLines = [
         ...codeLines.map((t) => ({ text: t, font: "26px Arial" })),
         ...nameLines.map((t) => ({ text: t, font: "bold 40px Arial" })),
+        ...usernameLines.map((t) => ({ text: t, font: "italic 26px Arial" })),
         ...catLines.map((t) => ({ text: t, font: "26px Arial" })),
       ];
 
