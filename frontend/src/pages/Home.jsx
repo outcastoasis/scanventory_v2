@@ -26,6 +26,9 @@ import {
   faPlus,
   faSignOutAlt,
   faWrench,
+  faEye,
+  faEyeSlash,
+  faBars,
 } from "@fortawesome/free-solid-svg-icons";
 
 function Home() {
@@ -64,22 +67,53 @@ function Home() {
   const [scannedTool, setScannedTool] = useState(null);
 
   const [showChangePw, setShowChangePw] = useState(false);
-  const [pwData, setPwData] = useState({ old_password: "", new_password: "" });
+  const [pwData, setPwData] = useState({
+    old_password: "",
+    new_password: "",
+    confirm_password: "",
+  });
+
+  const [pwShow, setPwShow] = useState({
+    old: false,
+    nw: false,
+    confirm: false,
+  });
   const [changingPw, setChangingPw] = useState(false);
 
+  const [me, setMe] = useState(null);
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileMenuRef = useRef(null);
+
+  // 3) handleChangePassword anpassen (ersetzt deine aktuelle Funktion)
   const handleChangePassword = async () => {
+    if (!pwData.new_password || !pwData.confirm_password) {
+      alert("❌ Bitte neues Passwort zweimal eingeben.");
+      return;
+    }
+    if (pwData.new_password !== pwData.confirm_password) {
+      alert("❌ Neues Passwort stimmt nicht ueberein.");
+      return;
+    }
+
     setChangingPw(true);
     try {
       const res = await fetchWithAuth(`${API_URL}/api/change-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(pwData),
+        body: JSON.stringify({
+          old_password: pwData.old_password,
+          new_password: pwData.new_password,
+        }),
       });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Fehler beim Speichern");
+
       alert("✅ Passwort erfolgreich geändert");
       setShowChangePw(false);
-      setPwData({ old_password: "", new_password: "" });
+      setPwData({ old_password: "", new_password: "", confirm_password: "" });
+      setPwShow({ old: false, nw: false, confirm: false });
     } catch (err) {
       alert("❌ " + err.message);
     } finally {
@@ -155,14 +189,14 @@ function Home() {
   function DurationQrTile({ days, onPick }) {
     const id = useMemo(
       () => `durqr-${days}-${Math.random().toString(36).slice(2)}`,
-      [days]
+      [days],
     );
 
     useEffect(() => {
       const canvas = document.getElementById(id);
       if (!canvas) return;
       QRCode.toCanvas(canvas, `dur${days}`, { width: 140, margin: 1 }).catch(
-        () => {}
+        () => {},
       );
     }, [id, days]);
 
@@ -170,7 +204,7 @@ function Home() {
       const canvas = document.getElementById("cancel-qr");
       if (!canvas) return;
       QRCode.toCanvas(canvas, "cancel", { width: 140, margin: 1 }).catch(
-        () => {}
+        () => {},
       );
     }, []);
 
@@ -238,6 +272,7 @@ function Home() {
           const meData = await meRes.json();
           if (meRes.ok) {
             setPermissions(meData.permissions || {});
+            setMe(meData.user || null);
           }
         } catch (err) {
           console.error("Fehler beim Laden der Rechte:", err);
@@ -254,6 +289,110 @@ function Home() {
     setRole(null);
     clearToken();
     setTimeout(() => window.location.reload(), 50);
+  };
+
+  const downloadMyQr = async () => {
+    if (!me?.qr_code) return;
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    const qrSize = 200;
+    const padding = 20;
+
+    const line1 = `${me.first_name || ""} ${me.last_name || ""}`.trim();
+    const lineUsername = (me.username || "").trim();
+    const line2 = me.company_name || "";
+    const code = me.qr_code || "";
+
+    function wrapLines(ctx, text, maxWidth) {
+      const words = String(text || "").split(" ");
+      const lines = [];
+      let line = "";
+
+      for (let w of words) {
+        const test = line + w + " ";
+        if (ctx.measureText(test).width > maxWidth && line !== "") {
+          lines.push(line.trim());
+          line = w + " ";
+        } else {
+          line = test;
+        }
+      }
+      if (line) lines.push(line.trim());
+      return lines;
+    }
+
+    const maxWidth = 450;
+    const lineHeight = 34;
+
+    ctx.font = "26px Arial";
+    const codeLines = wrapLines(ctx, code, maxWidth);
+
+    ctx.font = "bold 40px Arial";
+    const nameLines = wrapLines(ctx, line1, maxWidth);
+
+    ctx.font = "italic 26px Arial";
+    const usernameLines = lineUsername
+      ? wrapLines(ctx, lineUsername, maxWidth)
+      : [];
+
+    ctx.font = "26px Arial";
+    const catLines = line2 ? wrapLines(ctx, line2, maxWidth) : [];
+
+    const allLines = [
+      ...codeLines.map((t) => ({ text: t, font: "26px Arial" })),
+      ...nameLines.map((t) => ({ text: t, font: "bold 40px Arial" })),
+      ...usernameLines.map((t) => ({ text: t, font: "italic 26px Arial" })),
+      ...catLines.map((t) => ({ text: t, font: "26px Arial" })),
+    ];
+
+    const totalTextHeight = allLines.length * lineHeight;
+
+    let longestWidth = 0;
+    for (const line of allLines) {
+      ctx.font = line.font;
+      const w = ctx.measureText(line.text).width;
+      if (w > longestWidth) longestWidth = w;
+    }
+
+    const canvasWidth = qrSize + padding * 3 + longestWidth;
+    const availableHeight = Math.max(260, totalTextHeight + 80);
+
+    const DPI_SCALE = 3;
+    canvas.width = canvasWidth * DPI_SCALE;
+    canvas.height = availableHeight * DPI_SCALE;
+    ctx.scale(DPI_SCALE, DPI_SCALE);
+
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvasWidth, availableHeight);
+
+    const qrCanvas = document.createElement("canvas");
+    await QRCode.toCanvas(qrCanvas, code, { width: qrSize, margin: 0 });
+
+    ctx.drawImage(qrCanvas, padding, (availableHeight - qrSize) / 2);
+
+    const textX = qrSize + padding * 2;
+    const startY = (availableHeight - totalTextHeight) / 2;
+
+    let y = startY;
+    for (const line of allLines) {
+      ctx.font = line.font;
+      ctx.fillStyle = "black";
+      ctx.fillText(line.text, textX, y);
+      y += lineHeight;
+    }
+
+    const base =
+      `${me.qr_code}_${me.company_name || ""}_${me.first_name || ""}_${me.last_name || ""}`.replace(
+        /\s+/g,
+        "_",
+      );
+
+    const link = document.createElement("a");
+    link.download = `${base}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
   };
 
   const handleScan = async (scannedCode) => {
@@ -329,7 +468,7 @@ function Home() {
         setScannedUser(foundUser);
         triggerFlash("success");
         setMessage(
-          `Benutzer erkannt: ${foundUser.first_name} ${foundUser.last_name}, ${foundUser.qr_code}`
+          `Benutzer erkannt: ${foundUser.first_name} ${foundUser.last_name}, ${foundUser.qr_code}`,
         );
       } catch {
         setMessage(`❌ Benutzer nicht gefunden: ${code}`);
@@ -351,7 +490,7 @@ function Home() {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
               body,
-            }
+            },
           );
 
           if (res.status === 404 || res.status === 405) {
@@ -361,7 +500,7 @@ function Home() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body,
-              }
+              },
             );
           }
 
@@ -372,7 +511,7 @@ function Home() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body,
-              }
+              },
             );
           }
 
@@ -396,7 +535,7 @@ function Home() {
           resetScan();
           fetchReservations();
           window.dispatchEvent(
-            new CustomEvent("scanventory:reservations:refresh")
+            new CustomEvent("scanventory:reservations:refresh"),
           );
         } catch (err) {
           setMessage(`❌ Rückgabe fehlgeschlagen: ${err.message}`);
@@ -418,7 +557,7 @@ function Home() {
           setScannedTool(foundTool);
           triggerFlash("success");
           setMessage(
-            `Werkzeug erkannt: ${foundTool.name}, ${foundTool.qr_code}`
+            `Werkzeug erkannt: ${foundTool.name}, ${foundTool.qr_code}`,
           );
 
           setShowDurationModal(true);
@@ -515,7 +654,7 @@ function Home() {
           resetScan("✅ Reservation gespeichert");
           fetchReservations();
           window.dispatchEvent(
-            new CustomEvent("scanventory:reservations:refresh")
+            new CustomEvent("scanventory:reservations:refresh"),
           );
         } catch (err) {
           setShowDurationModal(false);
@@ -549,9 +688,10 @@ function Home() {
             .then((res) => res.json())
             .then((data) => {
               if (data.permissions) setPermissions(data.permissions);
+              if (data.user) setMe(data.user);
             })
             .catch((err) =>
-              console.error("Fehler beim Abrufen der Berechtigungen:", err)
+              console.error("Fehler beim Abrufen der Berechtigungen:", err),
             );
 
           const timeout = decoded.exp * 1000 - Date.now();
@@ -606,6 +746,23 @@ function Home() {
       setReturnMode(false);
     };
   }, []);
+
+  useEffect(() => {
+    const onDown = (e) => {
+      if (!mobileMenuOpen) return;
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target)) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown);
+
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown);
+    };
+  }, [mobileMenuOpen]);
 
   return (
     <div className="home-container">
@@ -674,13 +831,25 @@ function Home() {
             <div className="user-label">
               Angemeldet als: <strong>{loggedInUser}</strong>
             </div>
-            <button
-              className="change-password-btn"
-              onClick={() => setShowChangePw(true)}
-            >
-              Passwort ändern
-            </button>
-            <div className="login-actions">
+
+            {/* Desktop-Aktionen (bleiben wie bisher sichtbar) */}
+            <div className="login-actions desktop-actions">
+              <button
+                className="change-password-btn"
+                onClick={() => setShowChangePw(true)}
+              >
+                Passwort ändern
+              </button>
+
+              <button
+                className="change-password-btn"
+                onClick={downloadMyQr}
+                disabled={!me?.qr_code}
+                title="Eigenen QR-Code herunterladen"
+              >
+                Mein QR-Code
+              </button>
+
               {(permissions.manage_users === "true" ||
                 permissions.manage_tools === "true" ||
                 permissions.access_admin_panel === "true") && (
@@ -733,6 +902,63 @@ function Home() {
               >
                 <FontAwesomeIcon icon={faQuestionCircle} />
               </button>
+            </div>
+
+            {/* Mobile Hamburger (nur auf Mobile sichtbar) */}
+            <div className="mobile-hamburger-wrapper" ref={mobileMenuRef}>
+              <button
+                className="mobile-hamburger-btn"
+                onClick={() => setMobileMenuOpen((v) => !v)}
+                aria-label="Menü öffnen"
+                title="Menü"
+              >
+                <FontAwesomeIcon icon={faBars} />
+              </button>
+
+              {mobileMenuOpen && (
+                <div className="mobile-hamburger-menu">
+                  <button
+                    className="mobile-menu-item"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setShowChangePw(true);
+                    }}
+                  >
+                    Passwort ändern
+                  </button>
+
+                  <button
+                    className="mobile-menu-item"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      downloadMyQr();
+                    }}
+                    disabled={!me?.qr_code}
+                  >
+                    Mein QR-Code
+                  </button>
+
+                  <button
+                    className="mobile-menu-item"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleLogout();
+                    }}
+                  >
+                    Logout
+                  </button>
+
+                  <button
+                    className="mobile-menu-item"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      window.location.href = "/help";
+                    }}
+                  >
+                    Hilfe / Anleitung
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -867,34 +1093,112 @@ function Home() {
         >
           <div className="pw-modal">
             <h3>Passwort ändern</h3>
-            <input
-              type="password"
-              placeholder="Altes Passwort"
-              value={pwData.old_password}
-              onChange={(e) =>
-                setPwData({ ...pwData, old_password: e.target.value })
-              }
-            />
-            <input
-              type="password"
-              placeholder="Neues Passwort"
-              value={pwData.new_password}
-              onChange={(e) =>
-                setPwData({ ...pwData, new_password: e.target.value })
-              }
-            />
+
+            <div className="pw-field">
+              <input
+                type={pwShow.old ? "text" : "password"}
+                placeholder="Altes Passwort"
+                value={pwData.old_password}
+                onChange={(e) =>
+                  setPwData({ ...pwData, old_password: e.target.value })
+                }
+              />
+              <button
+                type="button"
+                className="pw-eye-btn"
+                onClick={() => setPwShow((p) => ({ ...p, old: !p.old }))}
+                aria-label={
+                  pwShow.old
+                    ? "Altes Passwort verbergen"
+                    : "Altes Passwort anzeigen"
+                }
+                title={pwShow.old ? "Verbergen" : "Anzeigen"}
+              >
+                <FontAwesomeIcon icon={pwShow.old ? faEyeSlash : faEye} />
+              </button>
+            </div>
+
+            <div className="pw-field">
+              <input
+                type={pwShow.nw ? "text" : "password"}
+                placeholder="Neues Passwort"
+                value={pwData.new_password}
+                onChange={(e) =>
+                  setPwData({ ...pwData, new_password: e.target.value })
+                }
+              />
+              <button
+                type="button"
+                className="pw-eye-btn"
+                onClick={() => setPwShow((p) => ({ ...p, nw: !p.nw }))}
+                aria-label={
+                  pwShow.nw
+                    ? "Neues Passwort verbergen"
+                    : "Neues Passwort anzeigen"
+                }
+                title={pwShow.nw ? "Verbergen" : "Anzeigen"}
+              >
+                <FontAwesomeIcon icon={pwShow.nw ? faEyeSlash : faEye} />
+              </button>
+            </div>
+
+            <div className="pw-field">
+              <input
+                type={pwShow.confirm ? "text" : "password"}
+                placeholder="Neues Passwort bestätigen"
+                value={pwData.confirm_password}
+                onChange={(e) =>
+                  setPwData({ ...pwData, confirm_password: e.target.value })
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleChangePassword();
+                }}
+              />
+              <button
+                type="button"
+                className="pw-eye-btn"
+                onClick={() =>
+                  setPwShow((p) => ({ ...p, confirm: !p.confirm }))
+                }
+                aria-label={
+                  pwShow.confirm
+                    ? "Bestätigung verbergen"
+                    : "Bestätigung anzeigen"
+                }
+                title={pwShow.confirm ? "Verbergen" : "Anzeigen"}
+              >
+                <FontAwesomeIcon icon={pwShow.confirm ? faEyeSlash : faEye} />
+              </button>
+            </div>
+
+            {pwData.new_password &&
+              pwData.confirm_password &&
+              pwData.new_password !== pwData.confirm_password && (
+                <p className="pw-error">
+                  ❌ Die neuen Passwörter stimmen nicht ueberein.
+                </p>
+              )}
+
             <p className="pw-hint">
               Das Passwort muss mindestens 8 Zeichen, eine Zahl und einen
               Grossbuchstaben enthalten.
             </p>
+
             <div className="pw-buttons">
               <button
                 className="pw-save-btn"
                 onClick={handleChangePassword}
-                disabled={changingPw}
+                disabled={
+                  changingPw ||
+                  !pwData.old_password ||
+                  !pwData.new_password ||
+                  !pwData.confirm_password ||
+                  pwData.new_password !== pwData.confirm_password
+                }
               >
                 {changingPw ? "Speichern..." : "Speichern"}
               </button>
+
               <button
                 className="pw-cancel-btn"
                 onClick={() => setShowChangePw(false)}

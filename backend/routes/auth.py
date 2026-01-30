@@ -80,6 +80,14 @@ def get_me():
             "user_id": user.id,
             "last_login": user.last_login.isoformat() if user.last_login else None,
             "last_active": user.last_active.isoformat() if user.last_active else None,
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "company_name": user.company_ref.name if user.company_ref else None,
+                "qr_code": user.qr_code,
+            },
         }
     )
 
