@@ -18,6 +18,14 @@
   margin-top: -15px;
 }
 
+.login-form {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem; /* ggf. auf 0.8rem oder 1rem anpassen, je nach vorherigem Look */
+}
+
 /* Schlichtes, modernes "Login merken" */
 .login-remember {
   display: flex;

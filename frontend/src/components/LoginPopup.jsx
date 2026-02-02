@@ -33,7 +33,6 @@ export default function LoginPopup({
 
     const onKeyDown = (e) => {
       if (e.key === "Escape") onClose?.();
-      if (e.key === "Enter") onLogin?.();
     };
 
     window.addEventListener("keydown", onKeyDown);
@@ -54,64 +53,83 @@ export default function LoginPopup({
           <h3>Anmelden</h3>
         </div>
 
-        <input
-          ref={userRef}
-          type="text"
-          placeholder="Benutzername"
-          value={loginData.username}
-          onChange={(e) =>
-            setLoginData({ ...loginData, username: e.target.value })
-          }
-          autoComplete="username"
-        />
-
-        <div className="pw-field">
+        <form
+          className="login-form"
+          autoComplete="on"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onLogin?.();
+          }}
+        >
           <input
-            type={pwVisible ? "text" : "password"}
-            placeholder="Passwort"
-            value={loginData.password}
+            ref={userRef}
+            id="login-username"
+            name="username"
+            type="text"
+            placeholder="Benutzername"
+            value={loginData.username}
             onChange={(e) =>
-              setLoginData({ ...loginData, password: e.target.value })
+              setLoginData({ ...loginData, username: e.target.value })
             }
-            autoComplete="current-password"
+            autoComplete="username"
+            enterKeyHint="next"
           />
-          <button
-            type="button"
-            className="pw-eye-btn"
-            onClick={() => setPwVisible((s) => !s)}
-            aria-label={pwVisible ? "Passwort verbergen" : "Passwort anzeigen"}
-            title={pwVisible ? "Verbergen" : "Anzeigen"}
-          >
-            <FontAwesomeIcon icon={pwVisible ? faEyeSlash : faEye} />
-          </button>
-        </div>
 
-        <div className="forgot-password-wrapper login-forgot">
-          <span className="forgot-password-text">Passwort vergessen?</span>
-          <div className="forgot-password-tooltip">
-            Melden Sie sich beim Systemadministrator, um Ihr Passwort
-            zurückzusetzen.
+          <div className="pw-field">
+            <input
+              id="login-password"
+              name="password"
+              type={pwVisible ? "text" : "password"}
+              placeholder="Passwort"
+              value={loginData.password}
+              onChange={(e) =>
+                setLoginData({ ...loginData, password: e.target.value })
+              }
+              autoComplete="current-password"
+              enterKeyHint="go"
+            />
+
+            <button
+              type="button"
+              className="pw-eye-btn"
+              onClick={() => setPwVisible((s) => !s)}
+              aria-label={
+                pwVisible ? "Passwort verbergen" : "Passwort anzeigen"
+              }
+              title={pwVisible ? "Verbergen" : "Anzeigen"}
+              tabIndex={-1}
+            >
+              <FontAwesomeIcon icon={pwVisible ? faEyeSlash : faEye} />
+            </button>
           </div>
-        </div>
 
-        <label className="remember-me login-remember">
-          <input
-            type="checkbox"
-            checked={rememberMe}
-            onChange={() => setRememberMe(!rememberMe)}
-          />
-          Login merken
-        </label>
+          <div className="forgot-password-wrapper login-forgot">
+            <span className="forgot-password-text">Passwort vergessen?</span>
+            <div className="forgot-password-tooltip">
+              Melden Sie sich beim Systemadministrator, um Ihr Passwort
+              zurückzusetzen.
+            </div>
+          </div>
 
-        <div className="pw-buttons login-buttons">
-          <button className="pw-save-btn" type="button" onClick={onLogin}>
-            Login
-          </button>
+          <label className="remember-me login-remember">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={() => setRememberMe(!rememberMe)}
+            />
+            Login merken
+          </label>
 
-          <button className="pw-cancel-btn" type="button" onClick={onClose}>
-            Abbrechen
-          </button>
-        </div>
+          <div className="pw-buttons login-buttons">
+            <button className="pw-save-btn" type="submit">
+              Login
+            </button>
+
+            <button className="pw-cancel-btn" type="button" onClick={onClose}>
+              Abbrechen
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
