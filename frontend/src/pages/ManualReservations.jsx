@@ -19,6 +19,13 @@ function ManualReservations() {
   const [availableUsers, setAvailableUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
 
+  // ✅ Suche + Sortierung
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState({
+    key: "qr_code", // ✅ Standardspalte
+    direction: "asc",
+  });
+
   const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$|^\/+/, "");
 
   const fetchWithAuth = (url, options = {}) => {
@@ -42,12 +49,12 @@ function ManualReservations() {
     () =>
       loggedInUser
         ? {
-            id: loggedInUser.user_id, // ← HIER!
+            id: loggedInUser.user_id,
             username: loggedInUser.username,
             role: loggedInUser.role,
           }
         : { role: "guest" },
-    [loggedInUser]
+    [loggedInUser],
   );
 
   useEffect(() => {
@@ -63,15 +70,15 @@ function ManualReservations() {
             .then((res) => res.json())
             .then((users) => {
               setAvailableUsers(users);
-              setSelectedUserId(currentUser.id); // ✅ Hier Standard setzen
+              setSelectedUserId(currentUser.id);
             });
         } else {
-          setSelectedUserId(currentUser.id); // ✅ Auch für self_only absichern
+          setSelectedUserId(currentUser.id);
         }
       })
       .catch(() => {
         setPermissions({});
-        setSelectedUserId(currentUser.id); // Fallback
+        setSelectedUserId(currentUser.id);
       });
   }, [currentUser]);
 
@@ -92,6 +99,7 @@ function ManualReservations() {
       if (!res.ok) throw new Error("Fehler beim Laden verfügbarer Werkzeuge");
       const data = await res.json();
       setTools(data);
+
       if (data.length === 0)
         setMessage("Keine Werkzeuge im gewählten Zeitraum verfügbar.");
     } catch (err) {
@@ -105,7 +113,7 @@ function ManualReservations() {
     setSelectedTools((prev) =>
       prev.includes(toolId)
         ? prev.filter((id) => id !== toolId)
-        : [...prev, toolId]
+        : [...prev, toolId],
     );
   };
 
@@ -126,12 +134,14 @@ function ManualReservations() {
             start_time: start.toISOString(),
             end_time: end.toISOString(),
           }),
-        })
+        }),
       );
+
       const results = await Promise.all(promises);
       const failed = results.filter((res) => !res.ok);
       if (failed.length > 0)
         throw new Error("Mindestens eine Reservation ist fehlgeschlagen.");
+
       setMessage("✅ Reservation(en) erfolgreich gespeichert");
       setTools([]);
       setSelectedTools([]);
@@ -150,24 +160,77 @@ function ManualReservations() {
       groups[company].push(user);
     }
 
-    // Optional: alphabetisch nach Firma und Name sortieren
     const sortedGroups = {};
     Object.keys(groups)
       .sort((a, b) => a.localeCompare(b))
       .forEach((company) => {
         sortedGroups[company] = groups[company].sort((a, b) => {
-          const nameA = `${a.first_name || ""} ${
-            a.last_name || ""
-          }`.toLowerCase();
-          const nameB = `${b.first_name || ""} ${
-            b.last_name || ""
-          }`.toLowerCase();
+          const nameA =
+            `${a.first_name || ""} ${a.last_name || ""}`.toLowerCase();
+          const nameB =
+            `${b.first_name || ""} ${b.last_name || ""}`.toLowerCase();
           return nameA.localeCompare(nameB);
         });
       });
 
     return sortedGroups;
   }, [availableUsers]);
+
+  // ✅ Sort-Handler wie AdminTools
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc")
+      direction = "desc";
+    setSortConfig({ key, direction });
+  };
+
+  // ✅ Filter + Sort (wird in der Tabelle gerendert)
+  const filteredTools = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return tools;
+
+    return tools.filter((t) => {
+      return (
+        t.id?.toString().includes(term) ||
+        t.name?.toLowerCase().includes(term) ||
+        t.qr_code?.toLowerCase().includes(term) ||
+        t.category_name?.toLowerCase().includes(term)
+      );
+    });
+  }, [tools, searchTerm]);
+
+  const sortedTools = useMemo(() => {
+    const list = [...filteredTools];
+    const { key, direction } = sortConfig;
+    if (!key) return list;
+
+    const dir = direction === "asc" ? 1 : -1;
+
+    return list.sort((a, b) => {
+      if (key === "id") {
+        const ai = Number(a.id) || 0;
+        const bi = Number(b.id) || 0;
+        return (ai - bi) * dir;
+      }
+
+      const A = a[key]?.toString().toLowerCase() ?? "";
+      const B = b[key]?.toString().toLowerCase() ?? "";
+      if (A < B) return -1 * dir;
+      if (A > B) return 1 * dir;
+      return 0;
+    });
+  }, [filteredTools, sortConfig]);
+
+  // ✅ kleines Helper-Rendering fuer Sort-Icon (wie AdminTools)
+  const SortIcon = ({ colKey }) => (
+    <span className="sort-icon">
+      {sortConfig.key === colKey
+        ? sortConfig.direction === "asc"
+          ? "▼"
+          : "▲"
+        : "▼"}
+    </span>
+  );
 
   return (
     <div className="manualres-container">
@@ -202,16 +265,15 @@ function ManualReservations() {
               let newStart = new Date(date);
 
               if (!hasSetStartDefault) {
-                newStart.setHours(6, 0, 0, 0); // Nur beim ersten Mal setzen
+                newStart.setHours(6, 0, 0, 0);
                 setHasSetStartDefault(true);
               }
 
               setStart(newStart);
 
-              // Endzeit nur setzen, wenn sie leer oder vor dem Start ist
               if (!end || new Date(end) <= newStart) {
                 const newEnd = new Date(newStart);
-                newEnd.setHours(23, 45, 0, 0); // Standard-Endzeit
+                newEnd.setHours(23, 45, 0, 0);
                 setEnd(newEnd);
               }
             }}
@@ -227,7 +289,7 @@ function ManualReservations() {
             selected={end}
             onChange={(date) => {
               if (!date) return;
-              setEnd(date); // Einfach direkt übernehmen
+              setEnd(date);
             }}
             showTimeSelect
             timeFormat="HH:mm"
@@ -254,7 +316,7 @@ function ManualReservations() {
                         </option>
                       ))}
                     </optgroup>
-                  )
+                  ),
                 )}
               </select>
             </div>
@@ -273,17 +335,49 @@ function ManualReservations() {
       </section>
 
       <section className="manualres-tablewrap">
+        {/* ✅ Suchfeld nur anzeigen, wenn es Tools gibt (optional) */}
+        {tools.length > 0 && (
+          <div className="manualres-tabletools">
+            <input
+              className="manualres-search"
+              type="text"
+              placeholder="Suche (Name, QR-Code, Kategorie...)"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        )}
+
         <table className="manualres-table">
           <thead>
             <tr>
               <th>Auswahl</th>
-              <th>Name</th>
-              <th>QR-Code</th>
-              <th>Kategorie</th>
+
+              <th
+                onClick={() => handleSort("name")}
+                className={sortConfig.key === "name" ? "sorted" : ""}
+              >
+                Name <SortIcon colKey="name" />
+              </th>
+
+              <th
+                onClick={() => handleSort("qr_code")}
+                className={sortConfig.key === "qr_code" ? "sorted" : ""}
+              >
+                QR-Code <SortIcon colKey="qr_code" />
+              </th>
+
+              <th
+                onClick={() => handleSort("category_name")}
+                className={sortConfig.key === "category_name" ? "sorted" : ""}
+              >
+                Kategorie <SortIcon colKey="category_name" />
+              </th>
             </tr>
           </thead>
+
           <tbody>
-            {tools.map((tool) => (
+            {sortedTools.map((tool) => (
               <tr key={tool.id}>
                 <td>
                   <input

@@ -118,7 +118,9 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .manualres-button:hover {
@@ -154,6 +156,36 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.manualres-tabletools {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 0.9rem 1.25rem;
+}
+
+.manualres-search {
+  width: min(420px, 100%);
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.95rem;
+  background: #f9fafb;
+  color: #111827;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.manualres-search::placeholder {
+  color: #9ca3af;
+}
+
+.manualres-search:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
 .manualres-table {
   width: 100%;
   border-collapse: collapse;
@@ -173,6 +205,24 @@
   color: #1f2937;
   font-weight: 600;
   text-align: left;
+  cursor: pointer;
+}
+
+.manualres-table th.sorted {
+  background: #eef2ff;
+  color: #1e3a8a;
+}
+
+.manualres-table .sort-icon {
+  margin-left: 6px;
+  font-size: 0.85rem;
+  opacity: 0.7;
+  display: inline-block;
+  transform: translateY(-1px);
+}
+
+.manualres-table th.sorted .sort-icon {
+  opacity: 1;
 }
 
 .manualres-table tr {
@@ -206,6 +256,11 @@
   font-size: 0.9rem;
 }
 
+.manualres-table tr.selected {
+  background: #eef2ff;
+  border-left: 3px solid #2563eb;
+}
+
 /* ---------- Reservieren-Button ---------- */
 .manualres-reserve-button {
   text-align: right;
@@ -223,7 +278,9 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .manualres-reserve-button button:hover {
@@ -283,6 +340,21 @@ button:disabled {
     font-size: 1rem;
   }
 
+  .manualres-row select {
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  /* ✅ Suchfeld Mobile */
+  .manualres-tabletools {
+    padding: 0.8rem 0.8rem 0.2rem 0.8rem;
+  }
+
+  .manualres-search {
+    width: 100%;
+    font-size: 1rem;
+  }
+
   /* Kartenlayout für Werkzeuge */
   .manualres-table {
     display: block;
@@ -298,6 +370,7 @@ button:disabled {
     display: flex;
     flex-direction: column;
     gap: 0.9rem;
+    padding: 0.8rem;
   }
 
   .manualres-table tr {
@@ -336,7 +409,7 @@ button:disabled {
     font-weight: 600;
     font-size: 1.05rem;
     color: #111827;
-    padding-right: 2rem; /* Platz für Checkbox */
+    padding-right: 2rem;
   }
 
   .manualres-table td:nth-child(3) {
@@ -362,20 +435,5 @@ button:disabled {
   .manualres-reserve-button button {
     width: 100%;
     border-radius: 8px;
-  }
-
-  .manualres-reserve-button {
-    text-align: center;
-    padding: 1rem;
-  }
-
-  .manualres-reserve-button button {
-    width: 100%;
-    border-radius: 8px;
-  }
-
-  .manualres-row select {
-    width: 100%;
-    font-size: 1rem;
   }
 }
