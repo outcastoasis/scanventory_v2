@@ -1,8 +1,10 @@
-.admin-menu-wrapper {
+/* Admin Dropdown Menu Styles */
+
+.home-menu-wrapper {
   position: relative;
 }
 
-.admin-toggle {
+.home-toggle {
   background: #f3f4f6;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -11,36 +13,42 @@
   cursor: pointer;
   color: #1f2937;
 }
-
-.admin-dropdown {
+.home-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100%);
   right: 0;
-  background: white;
+  background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-  padding: 0.5rem 0;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+  padding: 0.35rem;
   display: none;
   flex-direction: column;
-  min-width: 180px;
-  z-index: 100;
+  gap: 0.25rem;
+  min-width: 200px;
+  z-index: 999;
 }
 
-.admin-menu-wrapper:hover .admin-dropdown {
+.home-menu-wrapper:hover .home-dropdown {
   display: flex;
 }
 
-.admin-dropdown button {
-  background: none;
-  border: none;
-  text-align: left;
-  padding: 0.6rem 1rem;
+.home-dropdown button {
   width: 100%;
+  text-align: left;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
   font-size: 0.95rem;
   color: #1f2937;
-  cursor: pointer;
 }
-.admin-dropdown button:hover {
+.home-dropdown button:hover {
   background: #f3f4f6;
+}
+
+.home-dropdown button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

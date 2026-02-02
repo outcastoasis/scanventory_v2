@@ -21,12 +21,12 @@ export default function AdminDropdown({ permissions = {} }) {
   if (!hasAnyPermission) return null;
 
   return (
-    <div className="admin-menu-wrapper">
-      <button className="admin-toggle">
+    <div className="home-menu-wrapper">
+      <button className="home-toggle">
         <FontAwesomeIcon icon={faCog} />
       </button>
 
-      <div className="admin-dropdown">
+      <div className="home-dropdown">
         {permissions.manage_tools === "true" && (
           <button onClick={() => navigate("/tools")}>
             <FontAwesomeIcon icon={faTools} /> Werkzeuge

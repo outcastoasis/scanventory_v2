@@ -49,6 +49,26 @@
   justify-content: flex-end;
   flex-grow: 1;
   min-width: 250px;
+  gap: 0.5rem;
+}
+
+.login-open-button {
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
+}
+
+.login-open-button:hover {
+  background: linear-gradient(90deg, #1d4ed8, #1e40af);
+  transform: translateY(-1px);
 }
 
 .login-box {
@@ -93,16 +113,35 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-weight: bold;
   flex: 1 1 auto;
   min-width: 0;
   justify-content: flex-end;
+}
+
+.login-info-left {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.user-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .login-actions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.login-info-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
 }
 
 .login-actions button {
@@ -428,11 +467,11 @@
 }
 
 /* ---------- Admin Dropdown ---------- */
-.admin-menu-wrapper {
+.home-menu-wrapper {
   position: relative;
 }
 
-.admin-toggle-help {
+.home-toggle-help {
   background: none;
   border: none;
   font-size: 1.3rem;
@@ -440,7 +479,7 @@
   padding: 0.5rem;
 }
 
-.admin-dropdown {
+.home-dropdown {
   position: absolute;
   top: 2.2rem;
   right: 0;
@@ -454,11 +493,11 @@
   z-index: 100;
 }
 
-.admin-menu-wrapper:hover .admin-dropdown {
+.home-menu-wrapper:hover .home-dropdown {
   display: flex;
 }
 
-.admin-dropdown button {
+.home-dropdown button {
   background: none;
   border: none;
   display: flex;
@@ -473,7 +512,7 @@
   white-space: nowrap;
 }
 
-.admin-dropdown button:hover {
+.home-dropdown button:hover {
   background: #f3f4f6;
   font-weight: 500;
 }
@@ -547,10 +586,11 @@
 @media (max-width: 600px) {
   .login-wrapper {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-start;
     width: 100%;
     margin-top: 0.5rem;
+    justify-content: flex-start;
   }
 
   .login-box {
@@ -822,44 +862,7 @@
   transform: translateY(-50%) !important; /* bleibt immer zentriert */
 }
 
-/* --- Mobile Hamburger: Basis (Desktop default) --- */
-.mobile-hamburger-wrapper {
-  display: none; /* nur mobile */
-  position: relative; /* Anker für absolut positioniertes Menü */
-  flex: 0 0 auto; /* verhindert, dass es den Header "zieht" */
-}
-
-/* Button */
-.mobile-hamburger-btn {
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 0.55rem 0.75rem;
-  cursor: pointer;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Dropdown: MUSS absolut sein, damit es als Overlay erscheint */
-.mobile-hamburger-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: 220px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
-  padding: 0.35rem;
-  z-index: 999; /* über Header-Inhalt */
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.mobile-menu-item {
+.menu-item {
   width: 100%;
   text-align: left;
   background: #f3f4f6;
@@ -870,11 +873,11 @@
   font-size: 0.95rem;
 }
 
-.mobile-menu-item:hover {
+.menu-item:hover {
   background: #e5e7eb;
 }
 
-.mobile-menu-item:disabled {
+.menu-item:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -896,15 +899,3 @@
     text-align: center;
   }
 }
-
-@media (max-width: 600px) {
-  .mobile-hamburger-wrapper {
-    display: inline-flex;
-    margin-left: auto;
-  }
-
-  .login-actions.desktop-actions {
-    display: none;
-  }
-}
-

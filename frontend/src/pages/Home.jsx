@@ -29,7 +29,10 @@ import {
   faEye,
   faEyeSlash,
   faBars,
+  faQrcode,
 } from "@fortawesome/free-solid-svg-icons";
+import LoginPopup from "../components/LoginPopup";
+import "../styles/LoginPopup.css";
 
 function Home() {
   const boxRef = useRef(null);
@@ -82,8 +85,7 @@ function Home() {
 
   const [me, setMe] = useState(null);
 
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const mobileMenuRef = useRef(null);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   // 3) handleChangePassword anpassen (ersetzt deine aktuelle Funktion)
   const handleChangePassword = async () => {
@@ -747,23 +749,6 @@ function Home() {
     };
   }, []);
 
-  useEffect(() => {
-    const onDown = (e) => {
-      if (!mobileMenuOpen) return;
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target)) {
-        setMobileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("touchstart", onDown);
-
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("touchstart", onDown);
-    };
-  }, [mobileMenuOpen]);
-
   return (
     <div className="home-container">
       <header className="home-header">
@@ -773,91 +758,64 @@ function Home() {
 
         {!loggedInUser ? (
           <div className="login-wrapper">
-            <div className="login-box">
-              <input
-                type="text"
-                placeholder="Benutzername"
-                value={loginData.username}
-                onChange={(e) =>
-                  setLoginData({ ...loginData, username: e.target.value })
-                }
-              />
-
-              <div className="password-with-forgot">
-                <input
-                  type="password"
-                  placeholder="Passwort"
-                  value={loginData.password}
-                  onChange={(e) =>
-                    setLoginData({ ...loginData, password: e.target.value })
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleLogin();
-                  }}
-                />
-                <div className="forgot-password-wrapper">
-                  <span className="forgot-password-text">
-                    Passwort vergessen?
-                  </span>
-                  <div className="forgot-password-tooltip">
-                    Melden Sie sich beim Systemadministrator, um Ihr Passwort
-                    zurückzusetzen.
-                  </div>
-                </div>
-              </div>
-
-              <label className="remember-me">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={() => setRememberMe(!rememberMe)}
-                />
-                Login merken
-              </label>
-              <button onClick={handleLogin}>Login</button>
-            </div>
+            <button
+              className="login-open-button"
+              type="button"
+              onClick={() => setShowLoginPopup(true)}
+              title="Anmelden"
+              aria-label="Anmelden"
+            >
+              Anmelden
+            </button>
 
             <button
-              className="admin-toggle-help help-nav-button"
+              className="home-toggle icon-button"
+              type="button"
               onClick={() => (window.location.href = "/help")}
               title="Hilfe / Anleitung"
               aria-label="Hilfe / Anleitung"
             >
               <FontAwesomeIcon icon={faQuestionCircle} />
             </button>
+
+            <LoginPopup
+              open={showLoginPopup}
+              onClose={() => setShowLoginPopup(false)}
+              loginData={loginData}
+              setLoginData={setLoginData}
+              rememberMe={rememberMe}
+              setRememberMe={setRememberMe}
+              onLogin={() => {
+                handleLogin();
+                // Popup sofort schliessen – Logik bleibt unverändert,
+                // Reload kommt wie bisher in handleLogin().
+                setShowLoginPopup(false);
+              }}
+              onHelp={() => (window.location.href = "/help")}
+            />
           </div>
         ) : (
           <div className="login-info">
-            <div className="user-label">
-              Angemeldet als: <strong>{loggedInUser}</strong>
+            {/* Links: User-Info */}
+            <div className="login-info-left">
+              <div className="user-label">
+                Angemeldet als: <strong>{loggedInUser}</strong>
+              </div>
             </div>
 
-            {/* Desktop-Aktionen (bleiben wie bisher sichtbar) */}
-            <div className="login-actions desktop-actions">
-              <button
-                className="change-password-btn"
-                onClick={() => setShowChangePw(true)}
-              >
-                Passwort ändern
-              </button>
-
-              <button
-                className="change-password-btn"
-                onClick={downloadMyQr}
-                disabled={!me?.qr_code}
-                title="Eigenen QR-Code herunterladen"
-              >
-                Mein QR-Code
-              </button>
+            {/* Rechts: Actions (Icons + Hamburger) */}
+            <div className="login-info-right">
+              {/* Desktop Icon-Actions */}
 
               {(permissions.manage_users === "true" ||
                 permissions.manage_tools === "true" ||
                 permissions.access_admin_panel === "true") && (
-                <div className="admin-menu-wrapper">
-                  <button className="admin-toggle">
+                <div className="home-menu-wrapper">
+                  <button className="home-toggle icon-button" type="button">
                     <FontAwesomeIcon icon={faCog} />
                   </button>
-                  <div className="admin-dropdown">
+
+                  <div className="home-dropdown">
                     {permissions.manage_tools === "true" && (
                       <button onClick={() => (window.location.href = "/tools")}>
                         <FontAwesomeIcon icon={faTools} /> Werkzeuge
@@ -890,75 +848,47 @@ function Home() {
                 </div>
               )}
 
-              <button onClick={handleLogout}>
-                <FontAwesomeIcon icon={faSignOutAlt} /> Logout
-              </button>
-
               <button
-                className="admin-toggle-help help-nav-button"
+                className="home-toggle icon-button"
+                type="button"
                 onClick={() => (window.location.href = "/help")}
                 title="Hilfe / Anleitung"
                 aria-label="Hilfe / Anleitung"
               >
                 <FontAwesomeIcon icon={faQuestionCircle} />
               </button>
-            </div>
 
-            {/* Mobile Hamburger (nur auf Mobile sichtbar) */}
-            <div className="mobile-hamburger-wrapper" ref={mobileMenuRef}>
-              <button
-                className="mobile-hamburger-btn"
-                onClick={() => setMobileMenuOpen((v) => !v)}
-                aria-label="Menü öffnen"
-                title="Menü"
-              >
-                <FontAwesomeIcon icon={faBars} />
-              </button>
+              <div className="home-menu-wrapper">
+                <button
+                  className="home-toggle icon-button"
+                  type="button"
+                  aria-label="Menü"
+                  title="Menü"
+                >
+                  <FontAwesomeIcon icon={faBars} />
+                </button>
 
-              {mobileMenuOpen && (
-                <div className="mobile-hamburger-menu">
+                <div className="home-dropdown">
                   <button
-                    className="mobile-menu-item"
                     onClick={() => {
-                      setMobileMenuOpen(false);
                       setShowChangePw(true);
                     }}
                   >
+                    <FontAwesomeIcon icon={faKey} />
                     Passwort ändern
                   </button>
 
-                  <button
-                    className="mobile-menu-item"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      downloadMyQr();
-                    }}
-                    disabled={!me?.qr_code}
-                  >
+                  <button onClick={downloadMyQr} disabled={!me?.qr_code}>
+                    <FontAwesomeIcon icon={faQrcode} />
                     Mein QR-Code
                   </button>
 
-                  <button
-                    className="mobile-menu-item"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      handleLogout();
-                    }}
-                  >
+                  <button onClick={handleLogout}>
+                    <FontAwesomeIcon icon={faSignOutAlt} />
                     Logout
                   </button>
-
-                  <button
-                    className="mobile-menu-item"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      window.location.href = "/help";
-                    }}
-                  >
-                    Hilfe / Anleitung
-                  </button>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         )}

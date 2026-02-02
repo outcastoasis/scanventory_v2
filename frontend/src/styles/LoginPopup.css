@@ -1,0 +1,56 @@
+/* LoginPopup nutzt absichtlich das bestehende pw-Modal Styling (pw-overlay, pw-modal, pw-field, pw-buttons, etc.) */
+
+/* kleine, spezifische Anpassungen nur fuer Login */
+.login-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.login-help-btn {
+  flex: 0 0 auto;
+}
+
+.login-forgot {
+  position: relative;
+  width: fit-content;
+  margin-top: -15px;
+}
+
+/* Schlichtes, modernes "Login merken" */
+.login-remember {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  font-size: 0.95rem;
+  color: #374151;
+  cursor: pointer;
+  user-select: none;
+  align-self: flex-start;
+}
+
+/* Checkbox dezent, aber modern */
+.login-remember input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #2563eb; /* gleiche Farbe wie Login-Button */
+  cursor: pointer;
+}
+
+.login-buttons {
+  margin-top: 0.2rem;
+}
+
+/* Mobile: Buttons untereinander (wie beim pw-modal) */
+@media (max-width: 600px) {
+  .login-buttons {
+    flex-direction: column;
+  }
+  .login-buttons .pw-save-btn,
+  .login-buttons .pw-cancel-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
