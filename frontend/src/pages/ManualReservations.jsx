@@ -4,6 +4,10 @@ import { jwtDecode } from "jwt-decode";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { getToken } from "../utils/authUtils";
+import { useLocation, useNavigate } from "react-router-dom";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSquareCheck } from "@fortawesome/free-solid-svg-icons";
 
 import "../styles/ManualReservations.css";
 
@@ -18,6 +22,21 @@ function ManualReservations() {
   const [permissions, setPermissions] = useState({});
   const [availableUsers, setAvailableUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const returnTo = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get("return"); // z.B. "/mobile/today"
+  }, [location.search]);
+
+  const handleBack = () => {
+    if (returnTo) {
+      navigate(returnTo);
+      return;
+    }
+    navigate("/"); // Fallback: Startseite
+  };
 
   // ✅ Suche + Sortierung
   const [searchTerm, setSearchTerm] = useState("");
@@ -142,7 +161,15 @@ function ManualReservations() {
       if (failed.length > 0)
         throw new Error("Mindestens eine Reservation ist fehlgeschlagen.");
 
-      setMessage("✅ Reservation(en) erfolgreich gespeichert");
+      setMessage(
+        <>
+          <FontAwesomeIcon
+            icon={faSquareCheck}
+            style={{ marginRight: "6px" }}
+          />
+          Reservation(en) erfolgreich gespeichert
+        </>,
+      );
       setTools([]);
       setSelectedTools([]);
     } catch (err) {
@@ -247,8 +274,8 @@ function ManualReservations() {
             </div>
           )}
           <div className="manualres-actions">
-            <button onClick={() => (window.location.href = "/")}>
-              ← Zurück zur Startseite
+            <button onClick={handleBack}>
+              ← {returnTo ? "Zurück" : "Zurück zur Startseite"}
             </button>
           </div>
         </div>

@@ -94,7 +94,7 @@ function Home() {
       return;
     }
     if (pwData.new_password !== pwData.confirm_password) {
-      alert("❌ Neues Passwort stimmt nicht ueberein.");
+      alert("❌ Neues Passwort stimmt nicht überein.");
       return;
     }
 
@@ -1105,7 +1105,7 @@ function Home() {
               pwData.confirm_password &&
               pwData.new_password !== pwData.confirm_password && (
                 <p className="pw-error">
-                  ❌ Die neuen Passwörter stimmen nicht ueberein.
+                  ❌ Die neuen Passwörter stimmen nicht überein.
                 </p>
               )}
 
