@@ -1,9 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  faQuestionCircle,
-  faEye,
-  faEyeSlash,
-} from "@fortawesome/free-solid-svg-icons";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "../styles/LoginPopup.css";
 import "../styles/Home.css";
@@ -56,6 +52,8 @@ export default function LoginPopup({
         <form
           className="login-form"
           autoComplete="on"
+          method="post"
+          action="/login"
           onSubmit={(e) => {
             e.preventDefault();
             onLogin?.();
@@ -73,6 +71,9 @@ export default function LoginPopup({
             }
             autoComplete="username"
             enterKeyHint="next"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
           />
 
           <div className="pw-field">
