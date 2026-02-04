@@ -1,4 +1,4 @@
-/* src/styles/Help.css */
+﻿/* src/styles/Help.css */
 
 .help-page {
   width: 100%;
@@ -18,6 +18,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.75rem;
   margin-bottom: 1.25rem;
 }
 
@@ -26,19 +27,33 @@
   margin: 0;
 }
 
-.help-back-button {
+.help-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.help-action-button {
   border: 1px solid #e3e3e7;
   background: #fff;
   border-radius: 10px;
   padding: 0.5rem 0.75rem;
   cursor: pointer;
-  transition: transform 0.08s ease, background 0.2s ease, border-color 0.2s ease;
+  min-height: 2.5rem;
+  white-space: nowrap;
+  transition:
+    transform 0.08s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
-.help-back-button:hover {
+
+.help-action-button:hover {
   background: #f7f7f9;
   border-color: #d7d7dc;
 }
-.help-back-button:active {
+
+.help-action-button:active {
   transform: translateY(1px);
 }
 
@@ -67,30 +82,36 @@
   margin: 0.4rem 0 0;
 }
 
-/* Kopfzeile mit zwei Buttons nebeneinander */
-.help-header-buttons {
-  display: flex;
-  gap: 0.5rem;
+@media (max-width: 720px) {
+  .help-page {
+    margin: 1rem auto;
+    padding: 0.75rem;
+  }
+
+  .help-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .help-header h1 {
+    font-size: 1.35rem;
+  }
+
+  .help-header-actions {
+    width: 100%;
+  }
+
+  .help-action-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .help-content section {
+    padding: 0.9rem;
+  }
 }
 
-/* PDF-Button im gleichen Stil wie Zurück */
-.help-download-button {
-  border: 1px solid #e3e3e7;
-  background: #fff;
-  border-radius: 10px;
-  padding: 0.5rem 0.75rem;
-  cursor: pointer;
-  transition: transform 0.08s ease, background 0.2s ease, border-color 0.2s ease;
-}
-.help-download-button:hover {
-  background: #f7f7f9;
-  border-color: #d7d7dc;
-}
-.help-download-button:active {
-  transform: translateY(1px);
-}
-
-/*Druckansicht – PDF-Ausgabe */
+/*Druckansicht - PDF-Ausgabe */
 @media print {
   /* Nur den Hilfetext anzeigen */
   body * {
@@ -103,7 +124,8 @@
 
   /* Buttons beim Drucken ausblenden */
   .help-back-button,
-  .help-download-button {
+  .help-download-button,
+  .help-feedback-button {
     display: none !important;
   }
 

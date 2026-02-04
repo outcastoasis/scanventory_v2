@@ -1,36 +1,38 @@
-import "./../styles/Help.css";
+﻿import "./../styles/Help.css";
 
 export default function Help() {
   return (
     <div className="help-page">
       <header className="help-header">
-        <h1>Scanventory – Benutzeranleitung</h1>
-        <button
-          className="help-download-button"
-          onClick={() => window.print()}
-          title="Als PDF speichern"
-        >
-          Seite drucken
-        </button>
-        <button
-          className="help-feedback-button"
-          onClick={() =>
-            (window.location.href =
-              "mailto:jascha.bucher@rebsamen.net?subject=Scanventory%20Feedback")
-          }
-          title="Feedback senden"
-        >
-          Feedback
-        </button>
+        <h1>Scanventory - Benutzeranleitung</h1>
+        <div className="help-header-actions">
+          <button
+            className="help-action-button help-download-button"
+            onClick={() => window.print()}
+            title="Als PDF speichern"
+          >
+            Seite drucken
+          </button>
+          <button
+            className="help-action-button help-feedback-button"
+            onClick={() =>
+              (window.location.href =
+                "mailto:jascha.bucher@rebsamen.net?subject=Scanventory%20Feedback")
+            }
+            title="Feedback senden"
+          >
+            Feedback
+          </button>
 
-        <button
-          className="help-back-button"
-          onClick={() => (window.location.href = "/")}
-          aria-label="Zurück zur Startseite"
-          title="Zurück zur Startseite"
-        >
-          ← Zurück zur Startseite
-        </button>
+          <button
+            className="help-action-button help-back-button"
+            onClick={() => (window.location.href = "/")}
+            aria-label="Zurück zur Startseite"
+            title="Zurück zur Startseite"
+          >
+            ← Zurück zur Startseite
+          </button>
+        </div>
       </header>
 
       <main className="help-content">
