@@ -301,6 +301,54 @@
   }
 }
 
+.session-visual-wrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 28px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+
+  overflow: visible; /* wichtig: Label darf links raus */
+}
+
+.session-visual-bar {
+  position: relative; /* wichtig */
+  width: 100%;
+  background-color: #2563eb;
+  border-radius: 3px 0 0 3px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 0.9rem;
+  height: 100%;
+  transition: height 1s linear;
+  animation: fadeInBar 0.3s ease;
+}
+
+.session-visual-time {
+  padding-bottom: 4px;
+}
+
+.session-visual-label {
+  position: absolute;
+  right: 34px; /* direkt links neben der Bar (28px + 6px Abstand) */
+  bottom: 4px; /* gleiche Höhe wie Sekunden */
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1;
+  white-space: nowrap;
+  max-width: 520px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ---------- Kalender ---------- */
 .home-calendar {
   background: #ffffff;

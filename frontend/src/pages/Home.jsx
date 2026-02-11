@@ -131,6 +131,85 @@ function Home() {
   const returnCountdownIntervalRef = useRef(null);
   const [permissions, setPermissions] = useState({});
 
+  // --- Borrow-Session: 60s nach User-Scan ---
+  const borrowTimerRef = useRef(null);
+  const borrowCountdownIntervalRef = useRef(null);
+  const [borrowCountdown, setBorrowCountdown] = useState(null);
+  const [borrowSessionLabel, setBorrowSessionLabel] = useState("");
+  const BORROW_SESSION_SECONDS = 30;
+  const BORROW_SESSION_MS = BORROW_SESSION_SECONDS * 1000;
+
+  const messageResetRef = useRef(null);
+
+  const clearMessageReset = () => {
+    if (messageResetRef.current) {
+      clearTimeout(messageResetRef.current);
+      messageResetRef.current = null;
+    }
+  };
+
+  const setMessageWithOptionalReset = (msg, ms) => {
+    clearMessageReset();
+    setMessage(msg);
+    if (ms && ms > 0) {
+      messageResetRef.current = setTimeout(() => {
+        setMessage("Bitte zuerst Benutzer scannen");
+        messageResetRef.current = null;
+      }, ms);
+    }
+  };
+
+  const clearBorrowSession = () => {
+    if (borrowTimerRef.current) clearTimeout(borrowTimerRef.current);
+    borrowTimerRef.current = null;
+
+    if (borrowCountdownIntervalRef.current) {
+      clearInterval(borrowCountdownIntervalRef.current);
+      borrowCountdownIntervalRef.current = null;
+    }
+    setBorrowSessionLabel("");
+    setBorrowCountdown(null);
+  };
+
+  const armBorrowSession = (userObj) => {
+    const seconds = BORROW_SESSION_SECONDS;
+
+    clearBorrowSession();
+
+    const u = userObj ?? scannedUser;
+    if (u?.first_name || u?.last_name) {
+      setBorrowSessionLabel(
+        `Ausleih-Session aktiv für ${(u.first_name || "").trim()} ${(u.last_name || "").trim()}`.trim(),
+      );
+    } else {
+      setBorrowSessionLabel("Session aktiv");
+    }
+
+    setBorrowCountdown(seconds);
+
+    let count = seconds;
+    borrowCountdownIntervalRef.current = setInterval(() => {
+      count -= 1;
+      if (count <= 0) {
+        clearInterval(borrowCountdownIntervalRef.current);
+        borrowCountdownIntervalRef.current = null;
+        setBorrowCountdown(0);
+        return;
+      }
+      setBorrowCountdown(count);
+    }, 1000);
+
+    borrowTimerRef.current = setTimeout(() => {
+      clearMessageReset();
+      setShowDurationModal(false);
+      setReturnMode(false);
+      resetScan("", { keepUser: false });
+      setMessage("Session abgelaufen – bitte Benutzer scannen");
+      triggerFlash("error");
+      clearBorrowSession();
+    }, BORROW_SESSION_MS);
+  };
+
   // Grünes aufleuchten bei erfolgreichen Scan
   useEffect(() => {
     if (scanState.user && scanState.tool) {
@@ -226,17 +305,31 @@ function Home() {
     );
   }
 
-  const resetScan = (msg = "") => {
-    setScanState({ user: null, tool: null, duration: null });
-    setScannedUser(null);
+  const resetScan = (msg = "", opts = { keepUser: false }) => {
+    const keepUser = !!opts?.keepUser;
+
+    setScanState((prev) => ({
+      user: keepUser ? prev.user : null,
+      tool: null,
+      duration: null,
+    }));
+
+    if (!keepUser) setScannedUser(null);
     setScannedTool(null);
+
     if (msg) setMessage(msg);
   };
 
   const cancelDurationSelection = () => {
+    clearMessageReset(); // <- NEU
     setShowDurationModal(false);
     setReturnMode(false);
-    resetScan("Vorgang abgebrochen. Bitte Benutzer scannen");
+
+    clearBorrowSession();
+    resetScan("Vorgang abgebrochen. Bitte Benutzer scannen", {
+      keepUser: false,
+    });
+
     triggerFlash("error");
   };
 
@@ -398,12 +491,26 @@ function Home() {
     link.click();
   };
 
+  const clearReturnCountdown = () => {
+    if (returnTimerRef.current) {
+      clearTimeout(returnTimerRef.current);
+      returnTimerRef.current = null;
+    }
+    if (returnCountdownIntervalRef.current) {
+      clearInterval(returnCountdownIntervalRef.current);
+      returnCountdownIntervalRef.current = null;
+    }
+    setReturnCountdown(null);
+  };
+
   const handleScan = async (scannedCode) => {
+    clearMessageReset();
     const code = String(scannedCode || "").toLowerCase();
     const allowed = ["usr", "tool", "dur", "cancel", "reload", "return"];
     if (!allowed.some((p) => code.startsWith(p))) return;
 
     if (code === "cancel") {
+      clearReturnCountdown();
       cancelDurationSelection();
       return;
     }
@@ -414,16 +521,14 @@ function Home() {
     }
 
     if (code === "return") {
+      clearBorrowSession();
+      clearReturnCountdown();
       setReturnMode(true);
       setShowDurationModal(false);
       triggerFlash("success");
-      resetScan("Rückgabemodus aktiviert – bitte Werkzeug scannen");
-
-      if (returnTimerRef.current) clearTimeout(returnTimerRef.current);
-      if (returnCountdownIntervalRef.current) {
-        clearInterval(returnCountdownIntervalRef.current);
-        returnCountdownIntervalRef.current = null;
-      }
+      resetScan("Rückgabemodus aktiviert – bitte Werkzeug scannen", {
+        keepUser: false,
+      });
 
       setReturnCountdown(15);
 
@@ -442,9 +547,7 @@ function Home() {
       returnCountdownIntervalRef.current = countdownInterval;
 
       returnTimerRef.current = setTimeout(() => {
-        clearInterval(countdownInterval);
-        returnCountdownIntervalRef.current = null;
-        setReturnCountdown(null);
+        clearReturnCountdown();
         setReturnMode(false);
         setShowDurationModal(false);
         setMessage("Rückgabemodus abgelaufen – bitte Benutzer scannen");
@@ -456,12 +559,7 @@ function Home() {
     }
 
     if (code.startsWith("usr")) {
-      if (returnTimerRef.current) clearTimeout(returnTimerRef.current);
-      if (returnCountdownIntervalRef.current) {
-        clearInterval(returnCountdownIntervalRef.current);
-        returnCountdownIntervalRef.current = null;
-      }
-      setReturnCountdown(null);
+      clearReturnCountdown();
       setReturnMode(false);
       try {
         const res = await fetch(`${API_URL}/api/users/qr/${code}`);
@@ -469,6 +567,8 @@ function Home() {
         const foundUser = await res.json();
         setScanState({ user: code, tool: null, duration: null });
         setScannedUser(foundUser);
+        clearBorrowSession();
+        armBorrowSession(foundUser);
         triggerFlash("success");
         setMessage(
           `Benutzer erkannt: ${foundUser.first_name} ${foundUser.last_name}, ${foundUser.qr_code}`,
@@ -481,8 +581,8 @@ function Home() {
     }
 
     if (code.startsWith("tool")) {
+      clearReturnCountdown();
       const toolCode = code;
-      setReturnCountdown(null);
 
       if (returnMode) {
         const body = JSON.stringify({ tool: toolCode });
@@ -525,15 +625,8 @@ function Home() {
 
           setMessage(`✅ Rückgabe abgeschlossen für ${toolCode}`);
           triggerFlash("success");
+          clearReturnCountdown();
           setReturnMode(false);
-          if (returnTimerRef.current) clearTimeout(returnTimerRef.current);
-          if (returnCountdownIntervalRef.current) {
-            clearInterval(returnCountdownIntervalRef.current);
-            returnCountdownIntervalRef.current = null;
-          }
-          setReturnCountdown(null);
-          setReturnMode(false);
-          setReturnCountdown(null);
           setShowDurationModal(false);
           resetScan();
           fetchReservations();
@@ -543,6 +636,7 @@ function Home() {
         } catch (err) {
           setMessage(`❌ Rückgabe fehlgeschlagen: ${err.message}`);
           triggerFlash("error");
+          clearReturnCountdown();
           setReturnMode(false);
           setShowDurationModal(false);
           resetScan();
@@ -564,9 +658,11 @@ function Home() {
           );
 
           setShowDurationModal(true);
+          armBorrowSession();
         } catch {
           setMessage(`❌ Werkzeug nicht gefunden: ${toolCode}`);
           triggerFlash("error");
+          armBorrowSession();
         }
       } else {
         try {
@@ -612,13 +708,8 @@ function Home() {
             });
           }
 
-          setMessage(msg);
+          setMessageWithOptionalReset(msg, 20000);
           triggerFlash("success");
-
-          // Nach 20 Sekunden wieder zurücksetzen
-          setTimeout(() => {
-            setMessage("Bitte zuerst Benutzer scannen");
-          }, 20000);
         } catch (err) {
           setMessage(`❌ Werkzeug nicht gefunden: ${toolCode}`);
           triggerFlash("error");
@@ -654,15 +745,23 @@ function Home() {
 
           triggerFlash("success");
           setShowDurationModal(false);
-          resetScan("✅ Reservation gespeichert");
+
+          // User behalten, nur Tool/Dauer leeren
+          resetScan("✅ Reservation gespeichert – nächstes Werkzeug scannen", {
+            keepUser: true,
+          });
+
+          armBorrowSession();
+
           fetchReservations();
           window.dispatchEvent(
             new CustomEvent("scanventory:reservations:refresh"),
           );
         } catch (err) {
           setShowDurationModal(false);
-          resetScan(`❌ ${err.message}`);
+          resetScan(`❌ ${err.message}`, { keepUser: true });
           triggerFlash("error");
+          armBorrowSession();
         }
 
         return;
@@ -740,13 +839,10 @@ function Home() {
 
   useEffect(() => {
     return () => {
-      if (returnTimerRef.current) clearTimeout(returnTimerRef.current);
-      if (returnCountdownIntervalRef.current) {
-        clearInterval(returnCountdownIntervalRef.current);
-        returnCountdownIntervalRef.current = null;
-      }
-      setReturnCountdown(null);
+      clearMessageReset();
+      clearReturnCountdown();
       setReturnMode(false);
+      clearBorrowSession();
     };
   }, []);
 
@@ -916,6 +1012,26 @@ function Home() {
                   style={{ height: `${(returnCountdown / 15) * 100}%` }}
                 >
                   <span className="return-visual-time">{returnCountdown}s</span>
+                </div>
+              </div>
+            )}
+            {borrowCountdown !== null && (
+              <div className="session-visual-wrapper">
+                {borrowSessionLabel && (
+                  <span className="session-visual-label">
+                    {borrowSessionLabel}
+                  </span>
+                )}
+
+                <div
+                  className="session-visual-bar"
+                  style={{
+                    height: `${(borrowCountdown / BORROW_SESSION_SECONDS) * 100}%`,
+                  }}
+                >
+                  <span className="session-visual-time">
+                    {borrowCountdown}s
+                  </span>
                 </div>
               </div>
             )}
