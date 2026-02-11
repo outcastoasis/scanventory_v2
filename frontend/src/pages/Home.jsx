@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useRef } from "react"; // useRef ergänzen
+// Home.jsx - Hauptseite der Scanventory App
+import { useState, useEffect, useMemo, useRef } from "react";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import ScannerHandler from "../components/ScannerHandler";
 import CalendarView from "../components/CalendarView";
