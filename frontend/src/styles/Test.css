@@ -1,0 +1,128 @@
+/* --- Custom Month View (sv-*) --- */
+.sv-month {
+  min-width: 600px;
+}
+
+.sv-month-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sv-month-header-cell {
+  padding: 6px 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.sv-month-weeks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* optisch getrennte Wochen */
+  margin-top: 6px;
+}
+
+.sv-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.sv-week-wrap {
+  position: relative;
+  height: 100%;
+}
+
+/* Multi-Day Bars: 7 Spalten, mehrere Zeilen (lanes) */
+.sv-week-bars {
+  position: absolute;
+  top: 6px; /* entspricht sv-day padding */
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  padding: 0 0; /* kein extra Padding, wir nutzen gap */
+  pointer-events: none; /* wichtig: nur Bars selber sollen klickbar sein */
+  z-index: 5;
+}
+
+.sv-day {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  height: 100%;
+  padding-top: calc(
+    6px + (var(--laneCount, 0) * 18px) + (var(--laneCount, 0) * 3px)
+  );
+}
+
+.sv-day.is-out {
+  opacity: 0.45;
+  background: #f8fafc;
+}
+
+.sv-day-number {
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-align: right;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.sv-day-events {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sv-ev {
+  text-align: left;
+  border: none;
+  cursor: pointer;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  background: #2563eb;
+  color: #fff;
+}
+
+.sv-ev:hover {
+  filter: brightness(0.95);
+}
+
+/* Bar-Style */
+.sv-bar {
+  width: 100%;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  pointer-events: auto;
+  height: 18px;
+  line-height: 18px;
+  background: #2563eb;
+  color: #fff;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Days Grid unterhalb der Bars */
+.sv-week-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  height: 100%;
+}
