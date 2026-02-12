@@ -16,10 +16,31 @@ import { getToken } from "../utils/authUtils";
 import "../styles/CalendarViewFC.css";
 
 export default function CalendarView({ reservations }) {
-  // View persistieren (FullCalendar View-Keys)
-  const initialView =
-    (typeof window !== "undefined" && localStorage.getItem("calendarView")) ||
-    "dayGridMonth";
+  // View persistieren (FullCalendar View-Keys) + Migration alter RBC-Keys
+  const normalizeView = (v) => {
+    switch (v) {
+      case "month":
+        return "dayGridMonth";
+      case "week":
+        return "timeGridWeek";
+      case "day":
+        return "timeGridDay";
+      case "agenda":
+        return "listWeek";
+      case "dayGridMonth":
+      case "timeGridWeek":
+      case "timeGridDay":
+      case "listWeek":
+        return v;
+      default:
+        return "dayGridMonth";
+    }
+  };
+
+  const storedView =
+    typeof window !== "undefined" ? localStorage.getItem("calendarView") : null;
+
+  const initialView = normalizeView(storedView);
 
   const [currentView, setCurrentView] = useState(initialView);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -28,6 +49,13 @@ export default function CalendarView({ reservations }) {
   const [popupOpen, setPopupOpen] = useState(false);
   const [popupData, setPopupData] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("calendarView", initialView);
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Token → User
   useEffect(() => {
@@ -165,7 +193,6 @@ export default function CalendarView({ reservations }) {
           const now = new Date();
           return end && end < now ? ["svfc-past"] : [];
         }}
-        
         // Event-Darstellung (wie bisher: "HH:mm – HH:mm | Tool – User")
         eventContent={(arg) => {
           const ev = arg.event;

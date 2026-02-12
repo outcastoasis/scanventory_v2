@@ -53,6 +53,7 @@
 
 .fc-h-event {
   border-radius: 6px;
+  overflow: hidden;
 }
 
 .fc-daygrid-dot-event {
@@ -67,7 +68,6 @@
   margin-top: 1px;
   font-size: 0.85rem;
 }
-
 
 /* --- TimeGrid (Woche/Tag) Verbesserungen --- */
 
