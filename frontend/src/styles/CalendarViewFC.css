@@ -1,0 +1,103 @@
+/* Scope: nur innerhalb deiner Seite */
+.svfc-wrap .fc {
+  --svfc-blue: #2563eb;
+  --svfc-gray: #cfd2d8;
+  --svfc-gray-text: #404247;
+}
+
+/* FullCalendars eigene Event-Flächen neutralisieren (betrifft DayGrid + TimeGrid + Multi-Day Bars) */
+.svfc-wrap .fc .fc-event,
+.svfc-wrap .fc .fc-daygrid-event,
+.svfc-wrap .fc .fc-timegrid-event,
+.svfc-wrap .fc .fc-daygrid-block-event,
+.svfc-wrap .fc .fc-h-event {
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+/* Dein gerendertes eventContent ist die optische Quelle */
+.svfc-wrap .svfc-ev {
+  background: var(--svfc-blue);
+  color: #fff;
+  transition:
+    background-color 120ms ease,
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+/* Hover */
+.svfc-wrap .svfc-ev:hover {
+  background: #173eaa; /* etwas dunkler als #2563eb */
+}
+/* Vergangene Events Hover */
+.svfc-wrap .svfc-ev.is-past:hover {
+  background: #9ea2ac; /* dunkleres Grau */
+}
+
+/* Vergangenheit */
+.svfc-wrap .svfc-ev.is-past {
+  background: var(--svfc-gray);
+  color: var(--svfc-gray-text);
+  opacity: 1;
+  font-style: italic;
+}
+
+.svfc-wrap .fc .fc-h-event.svfc-past,
+.svfc-wrap .fc .fc-daygrid-block-event.svfc-past {
+  border: 1px solid var(--svfc-gray) !important;
+}
+
+.svfc-wrap .fc .fc-event.svfc-past {
+  border-color: var(--svfc-gray) !important;
+}
+
+.fc-h-event {
+  border-radius: 6px;
+}
+
+.fc-daygrid-dot-event {
+  margin-top: -1px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: -1px;
+  padding: 1px;
+}
+
+.fc .fc-daygrid-event {
+  margin-top: 1px;
+  font-size: 0.85rem;
+}
+
+
+/* --- TimeGrid (Woche/Tag) Verbesserungen --- */
+
+/* FullCalendar legt innen Padding an – neutralisieren, damit dein Chip sauber passt */
+.svfc-wrap .fc .fc-timegrid-event .fc-event-main {
+  padding: 0;
+}
+
+/* Event-Fläche sauber clippen */
+.svfc-wrap .fc .fc-timegrid-event {
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+/* Dein Chip soll die ganze Höhe/Breite nutzen */
+.svfc-wrap .fc .fc-timegrid-event .svfc-ev {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+/* In der Woche ist einzeiliges "nowrap" oft zu eng -> hier erlaubt Mehrzeiligkeit */
+.svfc-wrap .fc .fc-timegrid-event .svfc-ev-text {
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* Optional: etwas bessere Lesbarkeit bei vielen Zeilen */
+.svfc-wrap .fc .fc-timegrid-event .svfc-ev {
+  line-height: 1.15;
+}
