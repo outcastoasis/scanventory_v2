@@ -1256,6 +1256,19 @@ function Home() {
           </div>
         </div>
       )}
+      <footer className="home-footer">
+        <div className="home-footer-left">
+          <span className="home-footer-app">Scanventory</span>
+          <span className="home-footer-sep">-</span>
+          <span className="home-footer-version">v1.1.0</span>
+        </div>
+
+        <div className="home-footer-right">
+          <span>Jascha Bucher</span>
+          <span className="home-footer-sep">-</span>
+          <span>{new Date().getFullYear()}</span>
+        </div>
+      </footer>
     </div>
   );
 }
