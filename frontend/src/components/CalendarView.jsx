@@ -180,12 +180,7 @@ export default function CalendarView({ reservations }) {
         slotEventOverlap={false}
         eventMinHeight={18}
         eventShortHeight={18}
-        dayHeaderFormat={{
-          weekday: "short",
-          day: "numeric",
-          month: "numeric",
-          omitCommas: true,
-        }}
+        dayHeaderFormat={{ weekday: "short" }}
         allDaySlot={false}
         nowIndicator={true}
         eventClassNames={(arg) => {

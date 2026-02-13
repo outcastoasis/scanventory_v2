@@ -59,17 +59,26 @@ export default function Help() {
           </p>
           <br></br>
 
-          <h4>Mit QR-Code (Pro Gerät alle Schritte separat)</h4>
+          <h4>Mit QR-Code</h4>
           <ol>
             <li>Scanne den QR-Code für deinen User</li>
             <li>
-              Scanne den QR-Code des Werkzeuges, welches du ausleihen willst
+              Nun hast du 30 Sek Zeit, um die Geräte zu scannen, die du
+              ausleihen möchtest. Nach jedem weiteren Scanfortschritt erneuert
+              sich diese Zeit.
+            </li>
+            <li>
+              Scanne den QR-Code des Werkzeuges, welches du ausleihen willst.
             </li>
             <li>
               Scanne den QR-Code für die Dauer (erscheinen nach Schritt 2 auf
-              dem Display)
+              dem Display).
             </li>
-            <li>Reservation abgeschlossen</li>
+            <li>Reservation abgeschlossen.</li>
+            <li>
+              (Schritt 3 - 5 wiederholen bei Bedarf, sonst Zeit auslaufen
+              lassen)
+            </li>
           </ol>
           <br></br>
 
@@ -89,18 +98,18 @@ export default function Help() {
                 http://192.168.240.96/
               </a>
             </li>
-            <li>Melde dich mit deinem Login an</li>
-            <li>Gehe auf «+ Manuelle Reservation»</li>
-            <li>Wähle die Start- und Endzeit aus und suche nach Werkzeugen</li>
+            <li>Melde dich mit deinem Login an.</li>
+            <li>Gehe auf «+ Manuelle Reservation».</li>
+            <li>Wähle die Start- und Endzeit aus und suche nach Werkzeugen.</li>
             <p>
               Beachte: Es werden dir nur Werkzeuge angezeigt, welche in dem
-              gewählten Zeitraum verfügbar sind
+              gewählten Zeitraum verfügbar sind.
             </p>
             <li>
               Wähle die Werkzeuge aus welche du reservieren möchtest und klicke
-              auf «Ausgewählte reservieren»
+              auf «Ausgewählte reservieren».
             </li>
-            <li>Reservation abgeschlossen</li>
+            <li>Reservation abgeschlossen.</li>
           </ol>
         </section>
 
@@ -122,26 +131,26 @@ export default function Help() {
                 http://192.168.240.96/
               </a>
             </li>
-            <li>Melde dich mit deinem Login an</li>
+            <li>Melde dich mit deinem Login an.</li>
             <li>
-              Wähle im Kalender den Eintrag aus welchen du bearbeiten willst
+              Wähle im Kalender den Eintrag aus welchen du bearbeiten willst.
             </li>
-            <li>Ändere die Ausleihdauer</li>
-            <li>Speichere deine Änderungen</li>
-            <li>Bearbeitung abgeschlossen</li>
+            <li>Ändere die Ausleihdauer.</li>
+            <li>Speichere deine Änderungen.</li>
+            <li>Bearbeitung abgeschlossen.</li>
           </ol>
         </section>
 
         <section>
-          <h2>Werkzeug zurückgeben (Pro Gerät alle Schritte separat)</h2>
+          <h2>Werkzeug zurückgeben (Pro Gerät alle Schritte separat).</h2>
           <p>
             Die Rückgabe erfolgt ausschliesslich über den QR-Code Scan. Somit
             müssen die Werkzeuge zurück in die Werkstatt gebracht werden.
           </p>
           <ol>
-            <li>Scanne den QR-Code für die Rückgabe</li>
-            <li>Scanne das Werkzeug, welches du zurückgeben möchtest</li>
-            <li>Rückgabe abgeschlossen</li>
+            <li>Scanne den QR-Code für die Rückgabe.</li>
+            <li>Scanne das Werkzeug, welches du zurückgeben möchtest.</li>
+            <li>Rückgabe abgeschlossen.</li>
           </ol>
         </section>
       </main>
