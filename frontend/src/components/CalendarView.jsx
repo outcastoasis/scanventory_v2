@@ -1,4 +1,3 @@
-// frontend/src/components/CalendarView.jsx
 import { useMemo, useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -16,9 +15,14 @@ import { getToken } from "../utils/authUtils";
 import "../styles/CalendarViewFC.css";
 
 export default function CalendarView({ reservations }) {
-  // View persistieren (FullCalendar View-Keys) + Migration alter RBC-Keys
-  const normalizeView = (v) => {
-    switch (v) {
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 700px)").matches;
+  });
+
+  // Persist FullCalendar view keys and migrate old RBC keys.
+  const normalizeView = (view) => {
+    switch (view) {
       case "month":
         return "dayGridMonth";
       case "week":
@@ -31,7 +35,7 @@ export default function CalendarView({ reservations }) {
       case "timeGridWeek":
       case "timeGridDay":
       case "listWeek":
-        return v;
+        return view;
       default:
         return "dayGridMonth";
     }
@@ -39,25 +43,41 @@ export default function CalendarView({ reservations }) {
 
   const storedView =
     typeof window !== "undefined" ? localStorage.getItem("calendarView") : null;
-
   const initialView = normalizeView(storedView);
 
   const [currentView, setCurrentView] = useState(initialView);
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  // Popup/Edit state
   const [popupOpen, setPopupOpen] = useState(false);
   const [popupData, setPopupData] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const mediaQuery = window.matchMedia("(max-width: 700px)");
+    const onChange = (event) => setIsMobile(event.matches);
+
+    setIsMobile(mediaQuery.matches);
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", onChange);
+      return () => mediaQuery.removeEventListener("change", onChange);
+    }
+
+    mediaQuery.addListener(onChange);
+    return () => mediaQuery.removeListener(onChange);
+  }, []);
+
+  useEffect(() => {
     try {
       localStorage.setItem("calendarView", initialView);
-    } catch {}
+    } catch {
+      // Ignore localStorage errors (e.g. private mode).
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Token → User
   useEffect(() => {
     const token = getToken();
     if (token) {
@@ -78,7 +98,6 @@ export default function CalendarView({ reservations }) {
 
   const fmtTime = (date) => format(new Date(date), "HH:mm", { locale: de });
 
-  // FullCalendar Events aus Reservations (inkl. _res für Popup)
   const fcEvents = useMemo(() => {
     return (reservations || []).map((res) => {
       const start = new Date(res.start);
@@ -90,11 +109,8 @@ export default function CalendarView({ reservations }) {
           .filter(Boolean)
           .join(" ") ||
         "";
-
       const toolLabel = res?.tool?.name || res?.tool || "";
-
-      // Titel ohne Zeit (Zeit rendern wir kontrolliert via eventContent)
-      const title = `${toolLabel} – ${userLabel}`;
+      const title = `${toolLabel} - ${userLabel}`;
 
       return {
         id: String(
@@ -109,9 +125,33 @@ export default function CalendarView({ reservations }) {
     });
   }, [reservations]);
 
+  const closeMorePopover = () => {
+    if (typeof document === "undefined") return;
+
+    const closeButtons = document.querySelectorAll(
+      ".svfc-wrap .fc-popover .fc-popover-close, .svfc-wrap .fc-more-popover .fc-popover-close",
+    );
+
+    if (closeButtons.length > 0) {
+      closeButtons.forEach((button) => {
+        button.dispatchEvent(
+          new MouseEvent("click", { bubbles: true, cancelable: true }),
+        );
+      });
+      return;
+    }
+
+    const popovers = document.querySelectorAll(
+      ".svfc-wrap .fc-popover, .svfc-wrap .fc-more-popover",
+    );
+    popovers.forEach((popover) => popover.remove());
+  };
+
   const openEditFromEvent = (fcEvent) => {
     const res = fcEvent?.extendedProps?._res;
     if (!res) return;
+
+    closeMorePopover();
 
     setPopupData({
       reservation: res,
@@ -131,21 +171,33 @@ export default function CalendarView({ reservations }) {
   };
 
   const handleDatesSet = (arg) => {
-    // arg.view.type ist z.B. dayGridMonth, timeGridWeek, timeGridDay, listWeek
     setCurrentView(arg.view.type);
     try {
       localStorage.setItem("calendarView", arg.view.type);
-    } catch {}
-    // Fokusdatum pflegen
+    } catch {
+      // Ignore localStorage errors (e.g. private mode).
+    }
     setCurrentDate(arg.view.currentStart);
   };
+
+  const toolbarConfig = isMobile
+    ? {
+        left: "prev,next",
+        center: "title",
+        right: "today dayGridMonth,timeGridDay",
+      }
+    : {
+        left: "prev,next today",
+        center: "title",
+        right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+      };
 
   return (
     <div className="svfc-wrap">
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
         locale={deLocale}
-        firstDay={1} // Montag
+        firstDay={1}
         initialView={currentView}
         initialDate={currentDate}
         timeZone="local"
@@ -155,11 +207,7 @@ export default function CalendarView({ reservations }) {
           openEditFromEvent(info.event);
         }}
         datesSet={handleDatesSet}
-        headerToolbar={{
-          left: "prev,next today",
-          center: "title",
-          right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-        }}
+        headerToolbar={toolbarConfig}
         buttonText={{
           today: "Heute",
           month: "Monat",
@@ -167,20 +215,17 @@ export default function CalendarView({ reservations }) {
           day: "Tag",
           list: "Liste",
         }}
-        // Monatsansicht: Wochenhöhe automatisch nach Inhalt (nicht strecken)
         height="auto"
         expandRows={false}
-        // besseres Layout für viele Events
-        dayMaxEvents={false}
+        dayMaxEvents={isMobile ? 2 : false}
         fixedWeekCount={false}
         showNonCurrentDates={true}
-        // Zeiten im Grid konsistent
         slotMinTime="05:00:00"
         slotMaxTime="24:00:00"
         slotEventOverlap={false}
         eventMinHeight={18}
         eventShortHeight={18}
-        dayHeaderFormat={{ weekday: "short" }}
+        dayHeaderFormat={isMobile ? { weekday: "narrow" } : { weekday: "short" }}
         allDaySlot={false}
         nowIndicator={true}
         eventClassNames={(arg) => {
@@ -188,23 +233,20 @@ export default function CalendarView({ reservations }) {
           const now = new Date();
           return end && end < now ? ["svfc-past"] : [];
         }}
-        // Event-Darstellung (wie bisher: "HH:mm – HH:mm | Tool – User")
         eventContent={(arg) => {
-          const ev = arg.event;
-          const start = ev.start;
-          const end = ev.end;
-
-          const time =
-            start && end ? `${fmtTime(start)} – ${fmtTime(end)} | ` : "";
+          const event = arg.event;
+          const start = event.start;
+          const end = event.end;
+          const time = start && end ? `${fmtTime(start)} - ${fmtTime(end)}` : "";
+          const fullText = `${time ? `${time} | ` : ""}${event.title}`;
 
           const now = new Date();
           const isPast = end ? end < now : false;
 
           return (
             <div className={"svfc-ev" + (isPast ? " is-past" : "")}>
-              <span className="svfc-ev-text">
-                {time}
-                {ev.title}
+              <span className="svfc-ev-text" title={fullText}>
+                {fullText}
               </span>
             </div>
           );

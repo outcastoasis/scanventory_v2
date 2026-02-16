@@ -1,11 +1,49 @@
-/* Scope: nur innerhalb deiner Seite */
 .svfc-wrap .fc {
   --svfc-blue: #2563eb;
   --svfc-gray: #cfd2d8;
   --svfc-gray-text: #404247;
 }
 
-/* FullCalendars eigene Event-Flächen neutralisieren (betrifft DayGrid + TimeGrid + Multi-Day Bars) */
+/* Toolbar and controls */
+.svfc-wrap .fc .fc-toolbar.fc-header-toolbar {
+  margin-bottom: 0.9rem;
+  gap: 0.65rem;
+}
+
+.svfc-wrap .fc .fc-toolbar-chunk {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.svfc-wrap .fc .fc-toolbar-title {
+  margin: 0;
+  color: #1f2937;
+  line-height: 1.1;
+  font-size: clamp(1.55rem, 2.6vw, 2rem);
+}
+
+.svfc-wrap .fc .fc-button-group {
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+.svfc-wrap .fc .fc-button {
+  border-radius: 8px;
+  min-height: 2.45rem;
+  padding: 0.45rem 0.78rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+.svfc-wrap .fc .fc-button-group .fc-button {
+  border-radius: 8px;
+}
+
+/* Neutralize FullCalendar default event backgrounds */
 .svfc-wrap .fc .fc-event,
 .svfc-wrap .fc .fc-daygrid-event,
 .svfc-wrap .fc .fc-timegrid-event,
@@ -16,7 +54,7 @@
   cursor: pointer;
 }
 
-/* Dein gerendertes eventContent ist die optische Quelle */
+/* Custom event chip */
 .svfc-wrap .svfc-ev {
   background: var(--svfc-blue);
   color: #fff;
@@ -25,16 +63,15 @@
     transform 120ms ease,
     box-shadow 120ms ease;
 }
-/* Hover */
+
 .svfc-wrap .svfc-ev:hover {
-  background: #173eaa; /* etwas dunkler als #2563eb */
-}
-/* Vergangene Events Hover */
-.svfc-wrap .svfc-ev.is-past:hover {
-  background: #9ea2ac; /* dunkleres Grau */
+  background: #173eaa;
 }
 
-/* Vergangenheit */
+.svfc-wrap .svfc-ev.is-past:hover {
+  background: #9ea2ac;
+}
+
 .svfc-wrap .svfc-ev.is-past {
   background: var(--svfc-gray);
   color: var(--svfc-gray-text);
@@ -51,53 +88,133 @@
   border-color: var(--svfc-gray) !important;
 }
 
-.fc-h-event {
+.svfc-wrap .fc .fc-h-event {
   border-radius: 6px;
   overflow: hidden;
 }
 
-.fc-daygrid-dot-event {
+.svfc-wrap .fc .fc-daygrid-dot-event {
   margin-top: -1px;
-  border-radius: 6px;
-  overflow: hidden;
   margin-bottom: -1px;
   padding: 1px;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
-.fc .fc-daygrid-event {
+.svfc-wrap .fc .fc-daygrid-event {
   margin-top: 1px;
   font-size: 0.85rem;
 }
 
-/* --- TimeGrid (Woche/Tag) Verbesserungen --- */
-
-/* FullCalendar legt innen Padding an – neutralisieren, damit dein Chip sauber passt */
+/* TimeGrid tweaks */
 .svfc-wrap .fc .fc-timegrid-event .fc-event-main {
   padding: 0;
 }
 
-/* Event-Fläche sauber clippen */
 .svfc-wrap .fc .fc-timegrid-event {
   overflow: hidden;
   border-radius: 6px;
 }
 
-/* Dein Chip soll die ganze Höhe/Breite nutzen */
 .svfc-wrap .fc .fc-timegrid-event .svfc-ev {
   display: block;
   height: 100%;
   width: 100%;
+  line-height: 1.15;
 }
 
-/* In der Woche ist einzeiliges "nowrap" oft zu eng -> hier erlaubt Mehrzeiligkeit */
 .svfc-wrap .fc .fc-timegrid-event .svfc-ev-text {
+  display: block;
   white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: block;
 }
 
-/* Optional: etwas bessere Lesbarkeit bei vielen Zeilen */
-.svfc-wrap .fc .fc-timegrid-event .svfc-ev {
-  line-height: 1.15;
+/* Mobile calendar layout */
+@media (max-width: 700px) {
+  .svfc-wrap .fc .fc-toolbar.fc-header-toolbar {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    row-gap: 0.55rem;
+    column-gap: 0.45rem;
+  }
+
+  .svfc-wrap .fc .fc-toolbar-chunk:nth-child(1) {
+    order: 1;
+  }
+
+  .svfc-wrap .fc .fc-toolbar-chunk:nth-child(3) {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .svfc-wrap .fc .fc-toolbar-chunk:nth-child(2) {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .svfc-wrap .fc .fc-toolbar-title {
+    font-size: 1.9rem;
+  }
+
+  .svfc-wrap .fc .fc-button {
+    min-height: 2.2rem;
+    padding: 0.36rem 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .svfc-wrap .fc .fc-col-header-cell-cushion {
+    padding: 0.35rem 0.1rem;
+    font-size: 0.94rem;
+  }
+
+  .svfc-wrap .fc .fc-daygrid-day-number {
+    font-size: 0.94rem;
+  }
+
+  .svfc-wrap .fc .fc-daygrid-event {
+    font-size: 0.76rem;
+  }
+
+  .svfc-wrap .fc .fc-daygrid-event .svfc-ev {
+    border-radius: 5px;
+  }
+
+  /* Keep "+ weitere" popover fully visible on mobile */
+  .svfc-wrap .fc .fc-popover,
+  .svfc-wrap .fc .fc-more-popover {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%);
+    width: min(92vw, 360px);
+    max-width: 92vw;
+    z-index: 30;
+  }
+
+  .svfc-wrap .fc .fc-popover-body,
+  .svfc-wrap .fc .fc-more-popover .fc-popover-body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .svfc-wrap .fc .fc-popover .svfc-ev-text,
+  .svfc-wrap .fc .fc-more-popover .svfc-ev-text {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 430px) {
+  .svfc-wrap .fc .fc-toolbar-title {
+    font-size: 1.65rem;
+  }
+
+  .svfc-wrap .fc .fc-button {
+    min-height: 2rem;
+    padding: 0.32rem 0.5rem;
+    font-size: 0.84rem;
+  }
 }
