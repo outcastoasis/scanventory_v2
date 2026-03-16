@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -14,7 +14,17 @@ import { getToken } from "../utils/authUtils";
 
 import "../styles/CalendarViewFC.css";
 
-export default function CalendarView({ reservations }) {
+const isSameMonth = (left, right) =>
+  left instanceof Date &&
+  right instanceof Date &&
+  left.getFullYear() === right.getFullYear() &&
+  left.getMonth() === right.getMonth();
+
+export default function CalendarView({
+  reservations,
+  autoFollowCurrentMonth = false,
+}) {
+  const calendarRef = useRef(null);
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.matchMedia("(max-width: 700px)").matches;
@@ -180,6 +190,41 @@ export default function CalendarView({ reservations }) {
     setCurrentDate(arg.view.currentStart);
   };
 
+  useEffect(() => {
+    if (!autoFollowCurrentMonth || currentView !== "dayGridMonth") {
+      return undefined;
+    }
+
+    const syncCurrentMonth = () => {
+      const api = calendarRef.current?.getApi();
+      if (!api) return;
+
+      const today = new Date();
+      if (isSameMonth(currentDate, today)) return;
+
+      api.gotoDate(today);
+    };
+
+    syncCurrentMonth();
+
+    const intervalId = window.setInterval(syncCurrentMonth, 60000);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        syncCurrentMonth();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange,
+      );
+    };
+  }, [autoFollowCurrentMonth, currentDate, currentView]);
+
   const toolbarConfig = isMobile
     ? {
         left: "prev,next",
@@ -195,6 +240,7 @@ export default function CalendarView({ reservations }) {
   return (
     <div className="svfc-wrap">
       <FullCalendar
+        ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
         locale={deLocale}
         firstDay={1}

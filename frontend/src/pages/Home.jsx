@@ -36,6 +36,10 @@ import LoginPopup from "../components/LoginPopup";
 import "../styles/LoginPopup.css";
 
 function Home() {
+  const autoFollowCurrentMonth =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("autofollowMonth") === "1";
+
   const boxRef = useRef(null);
   const [flashType, setFlashType] = useState(null); // "success" | "error" | null
   const flashTimerRef = useRef(null);
@@ -1062,7 +1066,10 @@ function Home() {
 
       <section className="home-calendar">
         <h2>Kalender</h2>
-        <CalendarView reservations={reservations} />
+        <CalendarView
+          reservations={reservations}
+          autoFollowCurrentMonth={autoFollowCurrentMonth}
+        />
       </section>
 
       <section className="home-scanner-head">
