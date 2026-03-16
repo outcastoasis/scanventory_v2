@@ -337,9 +337,16 @@ function Home() {
 
   const fetchReservations = () => {
     fetchWithAuth(`${API_URL}/api/reservations`)
-      .then((res) => res.json())
-      .then((data) => setReservations(data))
-      .catch(() => console.error("Fehler beim Laden der Reservationen"));
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Reservations-Request fehlgeschlagen: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => setReservations(Array.isArray(data) ? data : []))
+      .catch((err) =>
+        console.error("Fehler beim Laden der Reservationen:", err),
+      );
   };
 
   const handleLogin = () => {
@@ -773,62 +780,59 @@ function Home() {
   };
 
   useEffect(() => {
-    const token = getToken();
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        const now = Math.floor(Date.now() / 1000);
-        if (decoded.exp && decoded.exp > now) {
-          setLoggedInUser(decoded.username || "");
-          setRole(decoded.role);
-
-          fetch(`${API_URL}/api/me`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              if (data.permissions) setPermissions(data.permissions);
-              if (data.user) setMe(data.user);
-            })
-            .catch((err) =>
-              console.error("Fehler beim Abrufen der Berechtigungen:", err),
-            );
-
-          const timeout = decoded.exp * 1000 - Date.now();
-          const logoutTimer = setTimeout(() => {
-            clearToken();
-            setLoggedInUser(null);
-            setRole(null);
-            alert("⏳ Deine Sitzung ist abgelaufen.");
-            window.location.reload();
-          }, timeout);
-
-          fetchReservations(); // Initial
-
-          const interval = setInterval(() => {
-            fetchReservations();
-          }, 30000); // ⏱ Polling
-
-          return () => {
-            clearTimeout(logoutTimer);
-            clearInterval(interval);
-          };
-        } else {
-          clearToken();
-        }
-      } catch {
-        clearToken();
-      }
-    } else {
-      fetchReservations(); // Für Gäste
+    const startReservationPolling = () => {
+      fetchReservations();
       const interval = setInterval(() => {
         fetchReservations();
       }, 30000);
       return () => clearInterval(interval);
+    };
+
+    const token = getToken();
+    if (!token || isTokenExpired()) {
+      clearToken();
+      return startReservationPolling();
     }
-  }, []);
+
+    try {
+      const decoded = jwtDecode(token);
+      setLoggedInUser(decoded.username || "");
+      setRole(decoded.role);
+
+      fetch(`${API_URL}/api/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.permissions) setPermissions(data.permissions);
+          if (data.user) setMe(data.user);
+        })
+        .catch((err) =>
+          console.error("Fehler beim Abrufen der Berechtigungen:", err),
+        );
+
+      const timeout = decoded.exp * 1000 - Date.now();
+      const logoutTimer = setTimeout(() => {
+        clearToken();
+        setLoggedInUser(null);
+        setRole(null);
+        alert("⏳ Deine Sitzung ist abgelaufen.");
+        window.location.reload();
+      }, timeout);
+
+      const stopReservationPolling = startReservationPolling();
+
+      return () => {
+        clearTimeout(logoutTimer);
+        stopReservationPolling();
+      };
+    } catch {
+      clearToken();
+      return startReservationPolling();
+    }
+  }, [API_URL]);
 
   useEffect(() => {
     const reload = () => fetchReservations();
