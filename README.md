@@ -301,6 +301,117 @@ sudo nginx -t && sudo systemctl restart nginx
 
 ---
 
+## Roadmap für UI-, Frontend- und Backend-Optimierungen
+
+Diese Roadmap bündelt die wichtigsten technischen und UI-bezogenen Verbesserungen für **Scanventory**. Ziel ist es, die Wartbarkeit, Performance, Benutzerfreundlichkeit und Systemsicherheit schrittweise zu erhöhen.
+
+### 1. Quick Wins
+
+Diese Maßnahmen haben einen hohen Nutzen bei vergleichsweise geringem Aufwand:
+
+- **API-Zugriffe zentralisieren**
+  - Einen gemeinsamen API-Client für Base-URL, Auth-Header, Fehlerbehandlung und Response-Parsing einführen.
+  - Dadurch werden doppelte `fetch`-Logik und inkonsistente Fehlerbehandlung im Frontend reduziert.
+
+- **Navigation ohne Seiten-Reload**
+  - `window.location.href` und `window.location.reload()` durch React-Router-Navigation und lokales State-Management ersetzen.
+  - Das verbessert die Nutzererfahrung und macht die Anwendung spürbar flüssiger.
+
+- **Einheitliches Feedback-System**
+  - `alert()` und `confirm()` durch eigene Dialoge, Toasts oder Statusmeldungen ersetzen.
+  - Das wirkt moderner, ist mobilfreundlicher und sorgt für konsistentere UX.
+
+- **API-Konfiguration vereinheitlichen**
+  - Die Base-URL-Konfiguration im Frontend konsolidieren, damit Entwicklungs- und Produktionsbetrieb klar getrennt und zuverlässig funktionieren.
+
+- **Seiteneffekte aus Lese-Endpunkten entfernen**
+  - Alte Reservationen nicht mehr während `GET /api/reservations` löschen.
+  - Cleanup-Prozesse stattdessen über Scheduler oder separate Wartungsroutinen ausführen.
+
+### 2. Mittelfristige Verbesserungen
+
+Diese Punkte verbessern die interne Architektur und schaffen eine stabilere Basis für weitere Features:
+
+- **Große Frontend-Seiten zerlegen**
+  - Besonders `Home.jsx` sollte in kleinere Hooks und Komponenten aufgeteilt werden.
+  - Vorschläge:
+    - `useAuthSession`
+    - `useScannerFlow`
+    - `useReservations`
+    - `ScanStatusPanel`
+    - `DurationModal`
+    - `UserMenu`
+
+- **Scanner-Workflow robuster machen**
+  - Scanner-Eingaben nur verarbeiten, wenn kein Formularfeld fokussiert ist.
+  - Zusätzlich einen sichtbaren Scanner-Status anzeigen, damit Nutzer jederzeit wissen, ob Scan-Eingaben aktiv angenommen werden.
+
+- **Spezialisierte Reservation-Endpunkte einführen**
+  - Zusätzliche API-Routen wie:
+    - `/api/reservations/today`
+    - `/api/reservations/active`
+    - `/api/reservations/upcoming`
+  - Dadurch wird das Frontend einfacher, schneller und zielgerichteter.
+
+- **`is_borrowed` vereinfachen**
+  - Den Status nicht an vielen Stellen gleichzeitig pflegen.
+  - Entweder dynamisch aus aktiven Reservationen ableiten oder nur noch an einer klar definierten zentralen Stelle aktualisieren.
+
+- **Logging-System verbessern**
+  - Laufzeit-Logs und Audit-Logs stärker trennen.
+  - Direkte Datenbank-Commits bei jedem Logeintrag vermeiden.
+
+### 3. Systemische und langfristige Optimierungen
+
+Diese Maßnahmen erhöhen Sicherheit, Datenqualität und Zukunftsfähigkeit:
+
+- **Authentifizierung härten**
+  - `SECRET_KEY` ohne Fallback erzwingen.
+  - CORS enger konfigurieren.
+  - Mittelfristig prüfen, ob HttpOnly-Cookies oder ein robusteres Session-Konzept sinnvoll sind.
+
+- **Unbekannte QR-Codes kontrolliert behandeln**
+  - Unbekannte Benutzer- oder Werkzeug-QRs nicht automatisch sofort als neue Datensätze anlegen.
+  - Stattdessen besser einen kontrollierten Import- oder Prüfprozess einführen.
+
+- **Datenbank-Performance verbessern**
+  - Indizes für häufige Reservation-Abfragen ergänzen, insbesondere auf:
+    - `tool_id`
+    - `start_time`
+    - `end_time`
+
+- **Tests aufbauen**
+  - Backend:
+    - Rechteprüfung
+    - Konfliktprüfung bei Reservationen
+    - Rückgabe-Logik
+    - QR-Flow
+  - Frontend:
+    - Scanner-Workflow
+    - Kalenderdarstellung
+    - Login-/Session-Verhalten
+
+### Empfohlene Umsetzungsreihenfolge
+
+1. API-Client vereinheitlichen
+2. Navigation ohne Reload umbauen
+3. `Home.jsx` in Hooks und Teilkomponenten zerlegen
+4. Reservation-API aufräumen und spezialisieren
+5. `is_borrowed`-Logik vereinfachen
+6. Auth, Logging und Tests härten
+
+### Erwarteter Nutzen
+
+Durch diese Optimierungen gewinnt das Projekt in mehreren Bereichen:
+
+- bessere Wartbarkeit im Frontend und Backend
+- klarere Datenflüsse und weniger Seiteneffekte
+- höhere Performance auf schwächerer Hardware wie Raspberry Pi
+- konsistentere und modernere Benutzerführung
+- bessere Grundlage für zukünftige Erweiterungen
+
+---
+
 ## 📄 Lizenz
 
 MIT – freie Nutzung für Bildung & interne Zwecke.
