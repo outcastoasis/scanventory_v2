@@ -35,7 +35,9 @@
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(7, minmax(98px, 1fr));
-  grid-template-rows: 22px repeat(var(--event-rows), minmax(34px, max-content)) 1fr;
+  grid-template-rows:
+    22px repeat(var(--event-rows), minmax(34px, max-content))
+    1fr;
   background: #fff;
 }
 
@@ -160,7 +162,7 @@
   display: block;
   min-width: 0;
   margin-top: 2px;
-  font-size: 0.96rem;
+  font-size: 1.2rem;
   font-weight: 400;
   overflow-wrap: anywhere;
 }
@@ -177,7 +179,7 @@
 .svcw-event-user {
   display: block;
   margin-top: 1px;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   opacity: 0.96;
   overflow-wrap: anywhere;
 }
