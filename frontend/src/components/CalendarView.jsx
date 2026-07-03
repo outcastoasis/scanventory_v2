@@ -5,24 +5,60 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import deLocale from "@fullcalendar/core/locales/de";
-import { format } from "date-fns";
+import {
+  addDays,
+  format,
+  isSameDay,
+  isSameMonth,
+  isSameWeek,
+  startOfWeek,
+} from "date-fns";
 import de from "date-fns/locale/de";
 import { jwtDecode } from "jwt-decode";
 
+import CustomWeekView from "./CustomWeekView";
 import ReservationPopup from "./ReservationPopup";
 import { getToken } from "../utils/authUtils";
 
 import "../styles/CalendarViewFC.css";
 
-const isSameMonth = (left, right) =>
-  left instanceof Date &&
-  right instanceof Date &&
-  left.getFullYear() === right.getFullYear() &&
-  left.getMonth() === right.getMonth();
+const WEEK_START_OPTIONS = { weekStartsOn: 1 };
+
+const VIEW_LABELS = {
+  dayGridMonth: "Monat",
+  timeGridWeek: "Woche",
+  timeGridDay: "Tag",
+  listWeek: "Liste",
+};
+
+const formatToolbarTitle = (view, date) => {
+  const current = date instanceof Date ? date : new Date();
+
+  if (view === "dayGridMonth") {
+    return format(current, "MMMM yyyy", { locale: de });
+  }
+
+  if (view === "timeGridDay") {
+    return format(current, "d. MMMM yyyy", { locale: de });
+  }
+
+  const weekStart = startOfWeek(current, WEEK_START_OPTIONS);
+  const weekEnd = addDays(weekStart, 6);
+  const startPattern =
+    weekStart.getFullYear() === weekEnd.getFullYear()
+      ? "d. MMMM"
+      : "d. MMMM yyyy";
+
+  return `${format(weekStart, startPattern, { locale: de })} - ${format(
+    weekEnd,
+    "d. MMMM yyyy",
+    { locale: de },
+  )}`;
+};
 
 export default function CalendarView({
   reservations,
-  autoFollowCurrentMonth = false,
+  autoFollowCurrentWeek = false,
 }) {
   const calendarRef = useRef(null);
   const [isMobile, setIsMobile] = useState(() => {
@@ -53,7 +89,9 @@ export default function CalendarView({
 
   const storedView =
     typeof window !== "undefined" ? localStorage.getItem("calendarView") : null;
-  const initialView = normalizeView(storedView);
+  const initialView = autoFollowCurrentWeek
+    ? "timeGridWeek"
+    : normalizeView(storedView);
 
   const [currentView, setCurrentView] = useState(initialView);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -80,6 +118,8 @@ export default function CalendarView({
   }, []);
 
   useEffect(() => {
+    if (autoFollowCurrentWeek) return;
+
     try {
       localStorage.setItem("calendarView", initialView);
     } catch {
@@ -157,8 +197,7 @@ export default function CalendarView({
     popovers.forEach((popover) => popover.remove());
   };
 
-  const openEditFromEvent = (fcEvent) => {
-    const res = fcEvent?.extendedProps?._res;
+  const openEditFromReservation = (res) => {
     if (!res) return;
 
     closeMorePopover();
@@ -174,6 +213,10 @@ export default function CalendarView({
     setPopupOpen(true);
   };
 
+  const openEditFromEvent = (fcEvent) => {
+    openEditFromReservation(fcEvent?.extendedProps?._res);
+  };
+
   const onSaved = () => {
     setPopupOpen(false);
     setPopupData(null);
@@ -182,35 +225,35 @@ export default function CalendarView({
 
   const handleDatesSet = (arg) => {
     setCurrentView(arg.view.type);
-    try {
-      localStorage.setItem("calendarView", arg.view.type);
-    } catch {
-      // Ignore localStorage errors (e.g. private mode).
+    if (!autoFollowCurrentWeek) {
+      try {
+        localStorage.setItem("calendarView", arg.view.type);
+      } catch {
+        // Ignore localStorage errors (e.g. private mode).
+      }
     }
     setCurrentDate(arg.view.currentStart);
   };
 
   useEffect(() => {
-    if (!autoFollowCurrentMonth || currentView !== "dayGridMonth") {
+    if (!autoFollowCurrentWeek) {
       return undefined;
     }
 
-    const syncCurrentMonth = () => {
-      const api = calendarRef.current?.getApi();
-      if (!api) return;
-
+    const syncCurrentWeek = () => {
       const today = new Date();
-      if (isSameMonth(currentDate, today)) return;
-
-      api.gotoDate(today);
+      setCurrentView("timeGridWeek");
+      setCurrentDate((previous) =>
+        isSameWeek(previous, today, WEEK_START_OPTIONS) ? previous : today,
+      );
     };
 
-    syncCurrentMonth();
+    syncCurrentWeek();
 
-    const intervalId = window.setInterval(syncCurrentMonth, 60000);
+    const intervalId = window.setInterval(syncCurrentWeek, 60000);
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        syncCurrentMonth();
+        syncCurrentWeek();
       }
     };
 
@@ -218,86 +261,195 @@ export default function CalendarView({
 
     return () => {
       window.clearInterval(intervalId);
-      document.removeEventListener(
-        "visibilitychange",
-        handleVisibilityChange,
-      );
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [autoFollowCurrentMonth, currentDate, currentView]);
+  }, [autoFollowCurrentWeek]);
 
-  const toolbarConfig = isMobile
-    ? {
-        left: "prev,next",
-        center: "title",
-        right: "today dayGridMonth,timeGridDay",
-      }
-    : {
-        left: "prev,next today",
-        center: "title",
-        right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-      };
+  const isWeekView = currentView === "timeGridWeek";
+
+  const persistView = (view) => {
+    if (autoFollowCurrentWeek) return;
+
+    try {
+      localStorage.setItem("calendarView", view);
+    } catch {
+      // Ignore localStorage errors (e.g. private mode).
+    }
+  };
+
+  const changeView = (view) => {
+    setCurrentView(view);
+    persistView(view);
+
+    if (view !== "timeGridWeek") {
+      const api = calendarRef.current?.getApi();
+      api?.changeView(view, currentDate);
+    }
+  };
+
+  const shiftDate = (direction) => {
+    if (isWeekView) {
+      setCurrentDate((previous) => addDays(previous, direction * 7));
+      return;
+    }
+
+    const api = calendarRef.current?.getApi();
+    if (direction < 0) api?.prev();
+    else api?.next();
+  };
+
+  const goToday = () => {
+    if (isWeekView) {
+      setCurrentDate(new Date());
+      return;
+    }
+
+    calendarRef.current?.getApi()?.today();
+  };
+
+  const visibleViews = isMobile
+    ? ["dayGridMonth", "timeGridWeek", "timeGridDay"]
+    : ["dayGridMonth", "timeGridWeek", "timeGridDay", "listWeek"];
+  const today = new Date();
+  const isShowingToday =
+    currentView === "dayGridMonth"
+      ? isSameMonth(currentDate, today)
+      : currentView === "timeGridDay"
+        ? isSameDay(currentDate, today)
+        : isSameWeek(currentDate, today, WEEK_START_OPTIONS);
 
   return (
     <div className="svfc-wrap">
-      <FullCalendar
-        ref={calendarRef}
-        plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
-        locale={deLocale}
-        firstDay={1}
-        initialView={currentView}
-        initialDate={currentDate}
-        timeZone="local"
-        events={fcEvents}
-        eventClick={(info) => {
-          info.jsEvent?.preventDefault?.();
-          openEditFromEvent(info.event);
-        }}
-        datesSet={handleDatesSet}
-        headerToolbar={toolbarConfig}
-        buttonText={{
-          today: "Heute",
-          month: "Monat",
-          week: "Woche",
-          day: "Tag",
-          list: "Liste",
-        }}
-        height="auto"
-        expandRows={false}
-        dayMaxEvents={isMobile ? 2 : false}
-        fixedWeekCount={false}
-        showNonCurrentDates={true}
-        slotMinTime="05:00:00"
-        slotMaxTime="24:00:00"
-        slotEventOverlap={false}
-        eventMinHeight={18}
-        eventShortHeight={18}
-        dayHeaderFormat={isMobile ? { weekday: "narrow" } : { weekday: "short" }}
-        allDaySlot={false}
-        nowIndicator={true}
-        eventClassNames={(arg) => {
-          const end = arg.event.end;
-          const now = new Date();
-          return end && end < now ? ["svfc-past"] : [];
-        }}
-        eventContent={(arg) => {
-          const event = arg.event;
-          const start = event.start;
-          const end = event.end;
-          const time = start && end ? `${fmtTime(start)} - ${fmtTime(end)}` : "";
-          const fullText = `${time ? `${time} | ` : ""}${event.title}`;
-
-          const now = new Date();
-          const isPast = end ? end < now : false;
-
-          return (
-            <div className={"svfc-ev" + (isPast ? " is-past" : "")}>
-              <span className="svfc-ev-text" title={fullText}>
-                {fullText}
-              </span>
+      <div className="fc svfc-toolbar-only">
+        <div className="fc-toolbar fc-header-toolbar">
+          <div className="fc-toolbar-chunk">
+            <div className="fc-button-group">
+              <button
+                className="fc-prev-button fc-button fc-button-primary"
+                type="button"
+                aria-label="Vorherige"
+                onClick={() => shiftDate(-1)}
+              >
+                <span className="fc-icon fc-icon-chevron-left" />
+              </button>
+              <button
+                className="fc-next-button fc-button fc-button-primary"
+                type="button"
+                aria-label="Nächste"
+                onClick={() => shiftDate(1)}
+              >
+                <span className="fc-icon fc-icon-chevron-right" />
+              </button>
             </div>
-          );
-        }}
-      />
+            <button
+              className={
+                "fc-today-button fc-button fc-button-primary" +
+                (isShowingToday ? " fc-button-disabled" : "")
+              }
+              type="button"
+              disabled={isShowingToday}
+              onClick={goToday}
+            >
+              Heute
+            </button>
+          </div>
+
+          <div className="fc-toolbar-chunk">
+            <h2 className="fc-toolbar-title">
+              {formatToolbarTitle(currentView, currentDate)}
+            </h2>
+          </div>
+
+          <div className="fc-toolbar-chunk">
+            <div className="fc-button-group">
+              {visibleViews.map((view) => (
+                <button
+                  className={
+                    "fc-button fc-button-primary" +
+                    (currentView === view ? " fc-button-active" : "")
+                  }
+                  type="button"
+                  aria-pressed={currentView === view}
+                  key={view}
+                  onClick={() => changeView(view)}
+                >
+                  {VIEW_LABELS[view]}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {isWeekView ? (
+        <CustomWeekView
+          reservations={reservations}
+          weekStart={currentDate}
+          onReservationClick={openEditFromReservation}
+        />
+      ) : (
+        <FullCalendar
+          key={currentView}
+          ref={calendarRef}
+          plugins={[
+            dayGridPlugin,
+            timeGridPlugin,
+            listPlugin,
+            interactionPlugin,
+          ]}
+          locale={deLocale}
+          firstDay={1}
+          initialView={currentView}
+          initialDate={currentDate}
+          timeZone="local"
+          events={fcEvents}
+          eventClick={(info) => {
+            info.jsEvent?.preventDefault?.();
+            openEditFromEvent(info.event);
+          }}
+          datesSet={handleDatesSet}
+          headerToolbar={false}
+          height="auto"
+          expandRows={false}
+          dayMaxEvents={isMobile ? 2 : false}
+          fixedWeekCount={false}
+          showNonCurrentDates={true}
+          slotMinTime="05:00:00"
+          slotMaxTime="24:00:00"
+          slotEventOverlap={false}
+          eventMinHeight={18}
+          eventShortHeight={18}
+          dayHeaderFormat={
+            isMobile ? { weekday: "narrow" } : { weekday: "short" }
+          }
+          allDaySlot={false}
+          nowIndicator={true}
+          eventClassNames={(arg) => {
+            const end = arg.event.end;
+            const now = new Date();
+            return end && end < now ? ["svfc-past"] : [];
+          }}
+          eventContent={(arg) => {
+            const event = arg.event;
+            const start = event.start;
+            const end = event.end;
+            const time =
+              start && end ? `${fmtTime(start)} - ${fmtTime(end)}` : "";
+            const fullText = `${time ? `${time} | ` : ""}${event.title}`;
+
+            const now = new Date();
+            const isPast = end ? end < now : false;
+
+            return (
+              <div className={"svfc-ev" + (isPast ? " is-past" : "")}>
+                <span className="svfc-ev-text" title={fullText}>
+                  {fullText}
+                </span>
+              </div>
+            );
+          }}
+        />
+      )}
 
       {popupOpen && (
         <ReservationPopup

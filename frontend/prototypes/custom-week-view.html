@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scanventory Wochenansicht Prototyp</title>
+    <style>
+      :root {
+        --page-bg: #f7f9fc;
+        --calendar-bg: #fff;
+        --border: #e5e7eb;
+        --text: #0f172a;
+        --muted: #667085;
+        --button: #26354a;
+        --button-active: #111827;
+        --disabled: #d9dadd;
+        --blue: #3f63e6;
+        --upcoming: #afd5de;
+        --past: #cfd2d8;
+        --today-soft: #eef3ff;
+        --today-line: #3f63e6;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--page-bg);
+        color: var(--text);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Arial, sans-serif;
+        letter-spacing: 0;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .prototype-page {
+        width: min(940px, calc(100% - 32px));
+        margin: 34px auto;
+      }
+
+      .home-calendar {
+        background: var(--calendar-bg);
+        border-radius: 8px;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
+        padding: 16px;
+      }
+
+      .home-calendar h2 {
+        margin: 0 0 8px;
+        font-size: 1.2rem;
+        line-height: 1.2;
+      }
+
+      .calendar-toolbar {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .toolbar-left,
+      .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .nav-button,
+      .view-button,
+      .today-button {
+        min-height: 34px;
+        border: 0;
+        border-radius: 7px;
+        font-weight: 700;
+      }
+
+      .nav-button {
+        width: 42px;
+        padding: 0;
+        background: var(--button);
+        color: #fff;
+        font-size: 24px;
+        line-height: 1;
+      }
+
+      .today-button {
+        padding: 0 14px;
+        background: var(--disabled);
+        color: #9ca3af;
+      }
+
+      .view-button {
+        padding: 0 13px;
+        background: var(--button);
+        color: #fff;
+        font-size: 0.86rem;
+      }
+
+      .view-button.is-active {
+        background: var(--button-active);
+      }
+
+      .calendar-title {
+        margin: 0;
+        text-align: center;
+        font-size: clamp(1.35rem, 2.6vw, 1.8rem);
+        line-height: 1.15;
+      }
+
+      .week-month-shell {
+        border: 1px solid var(--border);
+        background: #fff;
+        overflow-x: auto;
+      }
+
+      .week-month-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(98px, 1fr));
+        min-width: 720px;
+      }
+
+      .week-day-name {
+        min-height: 28px;
+        padding: 6px 8px 4px;
+        border-right: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        color: #5a63ff;
+        text-align: center;
+        font-size: 0.82rem;
+        font-weight: 800;
+      }
+
+      .week-day-name:nth-child(7) {
+        border-right: 0;
+      }
+
+      .week-day-name.is-today {
+        background: var(--today-soft);
+        box-shadow: inset 0 -3px 0 var(--today-line);
+        color: var(--today-line);
+      }
+
+      .week-body {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(7, minmax(98px, 1fr));
+        grid-template-rows: 22px repeat(var(--event-rows), minmax(26px, max-content)) 1fr;
+        min-height: 330px;
+        background: #fff;
+      }
+
+      .day-bg {
+        grid-row: 1 / -1;
+        border-right: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        background: #fff;
+      }
+
+      .day-bg.is-today {
+        background: var(--today-soft);
+        box-shadow: inset 0 0 0 2px rgba(31, 138, 91, 0.18);
+      }
+
+      .day-bg:nth-of-type(7) {
+        border-right: 0;
+      }
+
+      .day-number {
+        z-index: 2;
+        align-self: start;
+        justify-self: end;
+        padding: 4px 7px 0 0;
+        color: #5a63ff;
+        font-size: 0.76rem;
+      }
+
+      .day-number.is-today {
+        margin: 3px 5px 0 0;
+        padding: 2px 6px;
+        border-radius: 999px;
+        background: var(--today-line);
+        color: #fff;
+        font-weight: 850;
+      }
+
+      .event-bar {
+        z-index: 3;
+        align-self: start;
+        min-width: 0;
+        min-height: 23px;
+        margin: 2px 3px;
+        padding: 3px 6px;
+        border-radius: 5px;
+        background: var(--upcoming);
+        color: #404247;
+        line-height: 1.15;
+      }
+
+      .event-bar.is-multi {
+        box-shadow: inset 4px 0 0 rgba(255, 255, 255, 0.28);
+      }
+
+      .event-bar.is-long {
+        padding-top: 4px;
+        padding-bottom: 5px;
+      }
+
+      .event-bar.is-current {
+        background: var(--blue);
+        color: #fff;
+      }
+
+      .event-bar.is-past {
+        background: var(--past);
+        color: #404247;
+        font-style: italic;
+      }
+
+      .event-bar.continues-before {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        box-shadow: inset 4px 0 0 rgba(255, 255, 255, 0.4);
+      }
+
+      .event-bar.continues-after {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        box-shadow: inset -4px 0 0 rgba(255, 255, 255, 0.4);
+      }
+
+      .event-bar.continues-before.continues-after {
+        box-shadow:
+          inset 4px 0 0 rgba(255, 255, 255, 0.4),
+          inset -4px 0 0 rgba(255, 255, 255, 0.4);
+      }
+
+      .event-title {
+        display: block;
+        margin-top: 3px;
+        font-size: 0.74rem;
+        font-weight: 400;
+        overflow-wrap: anywhere;
+      }
+
+      .event-bar.is-current .event-title {
+        font-weight: 700;
+      }
+
+      .event-bar.is-past .event-title {
+        font-style: italic;
+        font-weight: 400;
+      }
+
+      .event-title-text {
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+
+      .event-meta {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        min-width: 0;
+      }
+
+      .time-badge {
+        display: inline-flex;
+        align-items: center;
+        min-width: 0;
+        max-width: 100%;
+        min-height: 17px;
+        padding: 1px 5px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.72);
+        color: inherit;
+        font-size: 0.66rem;
+        font-style: normal;
+        font-weight: 750;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+      }
+
+      .event-bar.is-current .time-badge {
+        background: rgba(255, 255, 255, 0.24);
+        color: #fff;
+      }
+
+      .event-bar.is-past .time-badge {
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      .event-detail {
+        display: block;
+        margin-top: 1px;
+        font-size: 0.66rem;
+        opacity: 0.96;
+        overflow-wrap: anywhere;
+      }
+
+      .continuation-mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 0.85em;
+        font-size: 0.85rem;
+        font-weight: 950;
+        line-height: 1;
+      }
+
+      .continuation-mark.is-after {
+        margin-left: auto;
+        text-align: right;
+      }
+
+      @media (max-width: 840px) {
+        .prototype-page {
+          width: min(100%, 760px);
+          margin: 0 auto;
+        }
+
+        .home-calendar {
+          border-radius: 0;
+          padding: 12px;
+        }
+
+        .calendar-toolbar {
+          grid-template-columns: auto auto;
+          justify-content: space-between;
+          gap: 8px;
+        }
+
+        .calendar-title {
+          grid-column: 1 / -1;
+          grid-row: 2;
+          justify-self: start;
+          margin-top: 2px;
+          text-align: left;
+          font-size: 1.55rem;
+        }
+
+        .toolbar-left {
+          grid-column: 1;
+        }
+
+        .toolbar-right {
+          grid-column: 2;
+          justify-self: end;
+        }
+
+        .view-button:not(.is-active) {
+          display: none;
+        }
+
+        .nav-button {
+          width: 39px;
+          min-height: 32px;
+          font-size: 22px;
+        }
+
+        .today-button,
+        .view-button {
+          min-height: 32px;
+          padding: 0 10px;
+          font-size: 0.82rem;
+        }
+
+        .week-month-shell {
+          border-left: 0;
+          border-right: 0;
+        }
+
+        .week-month-grid,
+        .week-body {
+          grid-template-columns: repeat(7, minmax(98px, 1fr));
+          min-width: 720px;
+        }
+
+        .week-body {
+          min-height: 390px;
+          grid-template-rows: 22px repeat(var(--event-rows), minmax(30px, max-content)) 1fr;
+        }
+
+        .event-bar {
+          min-height: 27px;
+          padding: 4px 5px;
+        }
+
+        .event-title {
+          font-size: 0.75rem;
+        }
+
+        .event-detail {
+          font-size: 0.67rem;
+        }
+      }
+
+      @media (max-width: 430px) {
+        .home-calendar {
+          padding: 10px;
+        }
+
+        .calendar-title {
+          font-size: 1.38rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="prototype-page">
+      <section class="home-calendar">
+        <h2>Kalender</h2>
+
+        <div class="calendar-toolbar" aria-label="Kalender Navigation">
+          <div class="toolbar-left">
+            <button class="nav-button" type="button" aria-label="Vorherige Woche">
+              &lsaquo;
+            </button>
+            <button class="nav-button" type="button" aria-label="Naechste Woche">
+              &rsaquo;
+            </button>
+            <button class="today-button" type="button" aria-disabled="true">
+              Heute
+            </button>
+          </div>
+
+          <h1 class="calendar-title">29. Juni - 5. Juli 2026</h1>
+
+          <div class="toolbar-right" aria-label="Ansicht">
+            <button class="view-button" type="button">Monat</button>
+            <button class="view-button is-active" type="button">Woche</button>
+            <button class="view-button" type="button">Tag</button>
+            <button class="view-button" type="button">Liste</button>
+          </div>
+        </div>
+
+        <section class="week-month-shell" aria-label="Custom Wochenansicht">
+          <div class="week-month-grid" id="weekGrid"></div>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      const days = [
+        { key: "mo", short: "Mo", number: "29" },
+        { key: "di", short: "Di", number: "30" },
+        { key: "mi", short: "Mi", number: "1" },
+        { key: "do", short: "Do", number: "2", today: true },
+        { key: "fr", short: "Fr", number: "3" },
+        { key: "sa", short: "Sa", number: "4" },
+        { key: "so", short: "So", number: "5" },
+      ];
+
+      const reservations = [
+        {
+          start: "prev",
+          end: "mi",
+          time: "Mo 23.06. 08:00 - Mi 17:00",
+          tool: "Vergangene Testreservation Hydraulikheber",
+          user: "Admin",
+        },
+        {
+          start: "prev",
+          end: "do",
+          time: "Fr 26.06. 10:00 - Do 14:00",
+          tool: "Anhänger mit Kompressor und Schlauchpaket",
+          user: "Jonas Roth",
+          kind: "multi",
+        },
+        {
+          start: "fr",
+          end: "next",
+          time: "Fr 07:00 - Mi 08.07. 17:00",
+          tool: "Gerüstbau Spezialwerkzeug Set Ostflügel",
+          user: "Lea Huber",
+          kind: "chain",
+        },
+        {
+          start: "prev",
+          end: "next",
+          time: "Fr 26.06. 08:00 - Mi 08.07. 17:00",
+          tool: "Bautrockner Grossgerät sehr lange Langzeitmiete",
+          user: "admin",
+          kind: "long",
+        },
+        {
+          start: "mo",
+          end: "fr",
+          time: "Mo 13:00 - Fr 16:00",
+          tool: "Drehmomentschluessel 40-200 Nm",
+          user: "Marco Frei",
+          kind: "multi",
+        },
+        {
+          start: "di",
+          end: "so",
+          time: "Di 08:00 - So 18:00",
+          tool: "Mobiles Baustellen-Set Sanitär Komplettpaket Nordtrakt mit extra langem Namen",
+          user: "Petra Meier",
+          kind: "long",
+        },
+        {
+          start: "do",
+          end: "sa",
+          time: "Do 06:00 - Sa 12:00",
+          tool: "Akkuschrauber 01",
+          user: "admin",
+          kind: "chain",
+        },
+        { start: "do", end: "do", time: "06:00 - 23:45", tool: "Leiter 01", user: "admin" },
+        { start: "do", end: "do", time: "06:00 - 23:45", tool: "P-Touch 01", user: "admin" },
+        { start: "do", end: "do", time: "06:00 - 23:45", tool: "Staubsauger 01", user: "admin" },
+        { start: "do", end: "do", time: "06:00 - 23:45", tool: "Werkzeugkoffer 01", user: "admin" },
+        { start: "fr", end: "fr", time: "05:30 - 16:00", tool: "Stichsaege Makita DJV181", user: "Nina Keller" },
+        {
+          start: "fr",
+          end: "fr",
+          time: "07:00 - 19:00",
+          tool: "Winkelschleifer Bosch GWS 18V-15 SC Professional mit Absaughaube",
+          user: "Marco Frei",
+          kind: "long",
+        },
+        { start: "fr", end: "fr", time: "07:15 - 18:30", tool: "Kabeltrommel 50m IP44", user: "Petra Meier" },
+        { start: "fr", end: "fr", time: "11:00 - 15:30", tool: "Bohrkrone Set SDS-max", user: "Jonas Roth" },
+        { start: "sa", end: "sa", time: "08:00 - 13:00", tool: "Akkuschrauber Set DeWalt", user: "Lea Huber" },
+        { start: "sa", end: "sa", time: "08:00 - 18:00", tool: "Baustellenradio Makita", user: "Stefan Wyss" },
+        { start: "sa", end: "sa", time: "09:00 - 12:00", tool: "Multimeter Fluke 117", user: "admin" },
+      ];
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function dayIndex(key) {
+        return days.findIndex((day) => day.key === key);
+      }
+
+      function rawDayIndex(key) {
+        if (key === "prev") return -1;
+        if (key === "next") return days.length;
+        return dayIndex(key);
+      }
+
+      function isFree(rows, rowIndex, start, end) {
+        const row = rows[rowIndex] || [];
+        for (let index = start; index <= end; index += 1) {
+          if (row[index]) return false;
+        }
+        return true;
+      }
+
+      function markBusy(rows, rowIndex, start, end) {
+        rows[rowIndex] ||= [];
+        for (let index = start; index <= end; index += 1) {
+          rows[rowIndex][index] = true;
+        }
+      }
+
+      function layoutReservations(items) {
+        const rows = [];
+        const todayIndex = days.findIndex((day) => day.today);
+        return [...items]
+          .map((item) => ({
+            ...item,
+            rawStartIndex: rawDayIndex(item.start),
+            rawEndIndex: rawDayIndex(item.end),
+          }))
+          .map((item) => ({
+            ...item,
+            continuesBefore: item.rawStartIndex < 0,
+            continuesAfter: item.rawEndIndex > days.length - 1,
+            startIndex: Math.max(0, item.rawStartIndex),
+            endIndex: Math.min(days.length - 1, item.rawEndIndex),
+          }))
+          .map((item) => ({
+            ...item,
+            state:
+              item.rawEndIndex < todayIndex
+                ? "past"
+                : item.rawStartIndex <= todayIndex && item.rawEndIndex >= todayIndex
+                  ? "current"
+                  : "upcoming",
+          }))
+          .filter((item) => item.rawEndIndex >= 0 && item.rawStartIndex <= days.length - 1)
+          .filter((item) => item.startIndex >= 0 && item.endIndex >= item.startIndex)
+          .sort((a, b) => {
+            const spanA = b.endIndex - b.startIndex;
+            const spanB = a.endIndex - a.startIndex;
+            return spanA - spanB || a.startIndex - b.startIndex;
+          })
+          .map((item) => {
+            let rowIndex = 0;
+            while (!isFree(rows, rowIndex, item.startIndex, item.endIndex)) {
+              rowIndex += 1;
+            }
+            markBusy(rows, rowIndex, item.startIndex, item.endIndex);
+            return { ...item, rowIndex };
+          });
+      }
+
+      function eventClass(item) {
+        return [
+          "event-bar",
+          item.startIndex !== item.endIndex ? "is-multi" : "",
+          item.continuesBefore ? "continues-before" : "",
+          item.continuesAfter ? "continues-after" : "",
+          item.state === "current" ? "is-current" : "",
+          item.state === "past" ? "is-past" : "",
+          item.kind === "long" ? "is-long" : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+      }
+
+      function renderEvent(item) {
+        const isMulti = item.startIndex !== item.endIndex;
+        const startCol = item.startIndex + 1;
+        const endCol = item.endIndex + 2;
+        const row = item.rowIndex + 2;
+        const leftMark = item.continuesBefore ? "←" : "";
+        const rightMark = item.continuesAfter ? "→" : "";
+        const markerText = `${leftMark}${rightMark}`;
+        const label = `${markerText ? `${markerText} ` : ""}${item.time} | ${item.tool} - ${item.user}`;
+
+        return `
+          <div
+            class="${eventClass(item)}"
+            style="grid-column: ${startCol} / ${endCol}; grid-row: ${row};"
+            aria-label="${escapeHtml(label)}"
+          >
+            <span class="event-meta">
+              ${leftMark ? '<span class="continuation-mark">←</span>' : ""}
+              <span class="time-badge">${escapeHtml(item.time)}</span>
+              ${rightMark ? '<span class="continuation-mark is-after">→</span>' : ""}
+            </span>
+            <span class="event-title"><span class="event-title-text">${escapeHtml(item.tool)}</span></span>
+            <span class="event-detail">${escapeHtml(item.user)}</span>
+          </div>
+        `;
+      }
+
+      function renderWeekGrid() {
+        const laidOutReservations = layoutReservations(reservations);
+        const rowCount = Math.max(1, ...laidOutReservations.map((item) => item.rowIndex + 1));
+        const head = days
+          .map((day) => `<div class="week-day-name ${day.today ? "is-today" : ""}">${day.short}</div>`)
+          .join("");
+
+        const backgrounds = days
+          .map(
+            (day, index) => `
+              <div class="day-bg ${day.today ? "is-today" : ""}" style="grid-column: ${index + 1};"></div>
+              <span class="day-number ${day.today ? "is-today" : ""}" style="grid-column: ${index + 1}; grid-row: 1;">${day.number}</span>
+            `,
+          )
+          .join("");
+
+        document.getElementById("weekGrid").innerHTML = `
+          ${head}
+          <div class="week-body" style="--event-rows: ${rowCount};">
+            ${backgrounds}
+            ${laidOutReservations.map(renderEvent).join("")}
+          </div>
+        `;
+      }
+
+      renderWeekGrid();
+    </script>
+  </body>
+</html>

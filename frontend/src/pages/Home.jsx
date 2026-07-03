@@ -36,9 +36,9 @@ import LoginPopup from "../components/LoginPopup";
 import "../styles/LoginPopup.css";
 
 function Home() {
-  const autoFollowCurrentMonth =
+  const autoFollowCurrentWeek =
     typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("autofollowMonth") === "1";
+    new URLSearchParams(window.location.search).get("autofollowWeek") === "1";
 
   const boxRef = useRef(null);
   const [flashType, setFlashType] = useState(null); // "success" | "error" | null
@@ -1068,7 +1068,7 @@ function Home() {
         <h2>Kalender</h2>
         <CalendarView
           reservations={reservations}
-          autoFollowCurrentMonth={autoFollowCurrentMonth}
+          autoFollowCurrentWeek={autoFollowCurrentWeek}
         />
       </section>
 

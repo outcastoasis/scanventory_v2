@@ -11,6 +11,7 @@
 - QR-Code-System für Benutzer, Werkzeuge & Funktionen
 - Rollenbasiertes Berechtigungssystem (`admin`, `supervisor`, `user`, `guest`)
 - Kalender- und Listenansicht für alle Reservationen
+- Custom-Wochenansicht für statische Ausleihe-Displays
 - Adminbereich zur Verwaltung von Benutzern, Werkzeugen & Rechten
 - Unterstützung für CSV-Import & QR-Export (PNG/ZIP)
 - Unterstützung für manuelle & gescannte Reservationen
@@ -128,6 +129,36 @@ VITE_API_URL=http://localhost:5050
 ```
 
 Frontend erreichbar unter: [http://localhost:5173](http://localhost:5173)
+
+---
+
+## Kalender-Display / Wochen-Autopilot
+
+Für ein statisches Display in der Ausleihe kann die Startseite mit einem
+Autopilot-Link geöffnet werden:
+
+```text
+http://localhost:5173/?autofollowWeek=1
+```
+
+Mit `autofollowWeek=1` passiert Folgendes:
+
+- Die Kalenderansicht startet automatisch in der Wochenansicht.
+- Die angezeigte Woche wird regelmässig mit der aktuellen Woche synchronisiert.
+- Beim Wechsel in eine neue Kalenderwoche springt das Display selbst auf die neue Woche.
+- Die erzwungene Wochenansicht wird nicht in `localStorage` gespeichert.
+- Normale Benutzer ohne diesen Query-Parameter bleiben beim gespeicherten oder standardmässigen Kalenderverhalten.
+
+Die frühere Monats-Automatisierung wurde durch diesen Wochen-Autopilot ersetzt.
+
+Die Wochenansicht ist eine eigene React-Komponente (`CustomWeekView`) und zeigt
+Reservationen als horizontale Balken im Wochenraster. Mehrtagesbuchungen werden
+über mehrere Tage gespannt; Buchungen, die vor oder nach der sichtbaren Woche
+weiterlaufen, werden mit Fortsetzungsmarkierungen angezeigt. Farben:
+
+- Blau: aktuell laufende Reservation
+- Hellblau: kommende Reservation
+- Grau: vergangene Reservation
 
 ---
 
@@ -286,7 +317,9 @@ sudo nginx -t && sudo systemctl restart nginx
 
 - Werkzeugausleihe über QR-Codes (usr + tool + dur)
 - Rückgabe über QR-Code "return"
-- Übersicht aller Reservationen im Kalender (öffentlich)
+- Übersicht aller Reservationen im Kalender (Monat, Custom-Woche, Tag, Liste)
+- Wochen-Autopilot für statische Ausleihe-Displays per `?autofollowWeek=1`
+- Bearbeiten von Reservationen direkt aus den Kalendereinträgen
 - Adminpanel für Benutzer/Werkzeug/Rechte
 - Rollen- und Rechteverwaltung über die Datenbank
 - Login-System mit Token (JWT)

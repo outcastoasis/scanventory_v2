@@ -1,5 +1,5 @@
 // frontend/src/pages/ManualReservations.jsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -22,6 +22,8 @@ function ManualReservations() {
   const [permissions, setPermissions] = useState({});
   const [availableUsers, setAvailableUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const startPickerRef = useRef(null);
+  const endPickerRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -248,7 +250,7 @@ function ManualReservations() {
     });
   }, [filteredTools, sortConfig]);
 
-  // ✅ kleines Helper-Rendering fuer Sort-Icon (wie AdminTools)
+  // ✅ kleines Helper-Rendering für Sort-Icon (wie AdminTools)
   const SortIcon = ({ colKey }) => (
     <span className="sort-icon">
       {sortConfig.key === colKey
@@ -285,6 +287,7 @@ function ManualReservations() {
         <div className="manualres-row">
           <label>Von:</label>
           <DatePicker
+            ref={startPickerRef}
             selected={start}
             onChange={(date) => {
               if (!date) return;
@@ -303,6 +306,14 @@ function ManualReservations() {
                 newEnd.setHours(23, 45, 0, 0);
                 setEnd(newEnd);
               }
+
+            }}
+            onCalendarClose={() => {
+              if (!start) return;
+
+              window.setTimeout(() => {
+                endPickerRef.current?.setOpen?.(true);
+              }, 0);
             }}
             showTimeSelect
             timeFormat="HH:mm"
@@ -313,6 +324,7 @@ function ManualReservations() {
 
           <label>Bis:</label>
           <DatePicker
+            ref={endPickerRef}
             selected={end}
             onChange={(date) => {
               if (!date) return;
