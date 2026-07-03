@@ -169,7 +169,7 @@ export default function CustomWeekView({
     1,
     ...laidOutReservations.map((item) => item.rowIndex + 1),
   );
-  const minBodyHeight = Math.max(92, 34 + rowCount * 34);
+  const minBodyHeight = Math.max(98, 34 + rowCount * 38);
 
   return (
     <section className="svcw-shell" aria-label="Custom Wochenansicht">

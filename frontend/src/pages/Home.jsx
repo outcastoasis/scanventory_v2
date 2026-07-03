@@ -1271,7 +1271,7 @@ function Home() {
         <div className="home-footer-left">
           <span className="home-footer-app">Scanventory</span>
           <span className="home-footer-sep">-</span>
-          <span className="home-footer-version">v1.1.0</span>
+          <span className="home-footer-version">v1.2.0</span>
         </div>
 
         <div className="home-footer-right">

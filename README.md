@@ -302,6 +302,55 @@ sudo nginx -t && sudo systemctl restart nginx
 
 ---
 
+### 9. Client-Raspberry-Pi: Chromium Kiosk Mode
+
+Auf dem Client-Raspberry-Pi für das statische Ausleihe-Display läuft Chromium im
+Kiosk Mode und öffnet die Wochenansicht mit Autopilot:
+
+```text
+http://192.168.240.96/?autofollowWeek=1
+```
+
+Die Kiosk-Konfiguration ist ein `systemd`-Service und gehört auf dem Client-RPi
+in eine Service-Datei, z. B.:
+
+```bash
+sudo nano /etc/systemd/system/chromium-kiosk.service
+```
+
+Nicht mit der serverseitigen Nginx-Konfiguration unter
+`/etc/nginx/sites-available/scanventory_v2` verwechseln.
+
+Inhalt:
+
+```ini
+[Unit]
+Description=Chromium Kiosk Mode
+After=graphical.target
+
+[Service]
+User=pi
+Environment=XDG_SESSION_TYPE=x11
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/pi/.Xauthority
+ExecStart=/bin/bash -c 'unclutter & exec /usr/bin/chromium --noerrdialogs --disable-infobars --kiosk http://192.168.240.96/?autofollowWeek=1'
+Restart=on-failure
+
+[Install]
+WantedBy=graphical.target
+```
+
+Service aktivieren und starten:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable chromium-kiosk.service
+sudo systemctl start chromium-kiosk.service
+sudo systemctl status chromium-kiosk.service
+```
+
+---
+
 ## 📸 Screenshots
 
 ![Startseite Screenshot](./screenshots/startseite.png)
