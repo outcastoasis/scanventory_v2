@@ -1,11 +1,10 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   addDays,
   differenceInCalendarDays,
   endOfDay,
   format,
   isSameDay,
-  isToday,
   startOfDay,
   startOfWeek,
 } from "date-fns";
@@ -138,7 +137,25 @@ export default function CustomWeekView({
   weekStart,
   onReservationClick,
 }) {
-  const now = new Date();
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const updateNow = () => setNow(new Date());
+    const intervalId = window.setInterval(updateNow, 60000);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        updateNow();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
   const normalizedWeekStart = useMemo(
     () => startOfWeek(weekStart || new Date(), WEEK_START_OPTIONS),
     [weekStart],
@@ -155,10 +172,10 @@ export default function CustomWeekView({
           date,
           short: format(date, "EE", { locale: de }),
           number: format(date, "d", { locale: de }),
-          isCurrentDay: isToday(date),
+          isCurrentDay: isSameDay(date, now),
         };
       }),
-    [normalizedWeekStart],
+    [normalizedWeekStart, now],
   );
 
   const laidOutReservations = useMemo(

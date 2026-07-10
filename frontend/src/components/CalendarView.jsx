@@ -277,13 +277,30 @@ export default function CalendarView({
     }
   };
 
+  const getDateForViewChange = (view) => {
+    const today = new Date();
+
+    if (
+      view === "timeGridWeek" &&
+      currentView === "dayGridMonth" &&
+      isSameMonth(currentDate, today)
+    ) {
+      return today;
+    }
+
+    return currentDate;
+  };
+
   const changeView = (view) => {
+    const targetDate = getDateForViewChange(view);
+
+    setCurrentDate(targetDate);
     setCurrentView(view);
     persistView(view);
 
     if (view !== "timeGridWeek") {
       const api = calendarRef.current?.getApi();
-      api?.changeView(view, currentDate);
+      api?.changeView(view, targetDate);
     }
   };
 
